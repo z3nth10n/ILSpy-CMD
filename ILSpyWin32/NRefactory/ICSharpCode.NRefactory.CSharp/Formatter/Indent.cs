@@ -1,21 +1,21 @@
-﻿// 
+﻿//
 // Indent.cs
-//  
+//
 // Author:
 //       Mike Krüger <mkrueger@novell.com>
-// 
+//
 // Copyright (c) 2010 Novell, Inc (http://www.novell.com)
-// 
+//
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
 // in the Software without restriction, including without limitation the rights
 // to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
-// 
+//
 // The above copyright notice and this permission notice shall be included in
 // all copies or substantial portions of the Software.
-// 
+//
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 // FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -41,14 +41,16 @@ namespace ICSharpCode.NRefactory.CSharp
 
 	public class Indent
 	{
-		readonly CloneableStack<IndentType> indentStack = new CloneableStack<IndentType>();
-		readonly TextEditorOptions options;
-		int curIndent;
-		int extraSpaces;
-		string indentString;
+		private readonly CloneableStack<IndentType> indentStack = new CloneableStack<IndentType>();
+		private readonly TextEditorOptions options;
+		private int curIndent;
+		private int extraSpaces;
+		private string indentString;
 
-		public int CurIndent {
-			get {
+		public int CurIndent
+		{
+			get
+			{
 				return curIndent;
 			}
 		}
@@ -59,7 +61,7 @@ namespace ICSharpCode.NRefactory.CSharp
 			Reset();
 		}
 
-		Indent(Indent engine)
+		private Indent(Indent engine)
 		{
 			this.indentStack = engine.indentStack.Clone();
 			this.options = engine.options;
@@ -129,8 +131,10 @@ namespace ICSharpCode.NRefactory.CSharp
 			return false;
 		}
 
-		public int Count {
-			get {
+		public int Count
+		{
+			get
+			{
 				return indentStack.Count;
 			}
 		}
@@ -140,39 +144,49 @@ namespace ICSharpCode.NRefactory.CSharp
 			return indentStack.Peek();
 		}
 
-		int GetIndent(IndentType indentType)
+		private int GetIndent(IndentType indentType)
 		{
-			switch (indentType) {
+			switch (indentType)
+			{
 				case IndentType.Block:
 					return options.IndentSize;
+
 				case IndentType.DoubleBlock:
 					return options.IndentSize * 2;
+
 				case IndentType.Alignment:
 				case IndentType.Continuation:
 					return options.ContinuationIndent;
+
 				case IndentType.Label:
 					return options.LabelIndent;
+
 				case IndentType.Empty:
 					return 0;
+
 				default:
 					throw new ArgumentOutOfRangeException();
 			}
 		}
 
-		void Update()
+		private void Update()
 		{
-			if (options.TabsToSpaces) {
+			if (options.TabsToSpaces)
+			{
 				indentString = new string(' ', curIndent + ExtraSpaces);
 				return;
 			}
 			indentString = new string('\t', curIndent / options.TabSize) + new string(' ', curIndent % options.TabSize) + new string(' ', ExtraSpaces);
 		}
 
-		public int ExtraSpaces {
-			get {
+		public int ExtraSpaces
+		{
+			get
+			{
 				return extraSpaces;
 			}
-			set {
+			set
+			{
 				if (value < 0)
 					throw new ArgumentOutOfRangeException("ExtraSpaces >= 0 but was " + value);
 				extraSpaces = value;
@@ -180,9 +194,10 @@ namespace ICSharpCode.NRefactory.CSharp
 			}
 		}
 
-
-		public string IndentString {
-			get {
+		public string IndentString
+		{
+			get
+			{
 				return indentString;
 			}
 		}
@@ -192,11 +207,11 @@ namespace ICSharpCode.NRefactory.CSharp
 			return string.Format("[Indent: curIndent={0}]", curIndent);
 		}
 
-		public Indent GetIndentWithoutSpace ()
+		public Indent GetIndentWithoutSpace()
 		{
 			var result = new Indent(options);
 			foreach (var i in indentStack)
-					result.Push(i);
+				result.Push(i);
 			return result;
 		}
 
@@ -234,13 +249,13 @@ namespace ICSharpCode.NRefactory.CSharp
 		public void SetAlignment(int i, bool forceSpaces = false)
 		{
 			var alignChars = Math.Max(0, i);
-			if (forceSpaces) {
+			if (forceSpaces)
+			{
 				ExtraSpaces = alignChars;
 				return;
 			}
 			RemoveAlignment();
 			Push(IndentType.Alignment);
 		}
-
 	}
 }

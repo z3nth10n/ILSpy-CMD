@@ -1,21 +1,21 @@
-﻿// 
+﻿//
 // TypeOfIsExpression.cs
 //
 // Author:
 //       Mike Krüger <mkrueger@novell.com>
-// 
+//
 // Copyright (c) 2010 Novell, Inc (http://www.novell.com)
-// 
+//
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
 // in the Software without restriction, including without limitation the rights
 // to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
-// 
+//
 // The above copyright notice and this permission notice shall be included in
 // all copies or substantial portions of the Software.
-// 
+//
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 // FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -32,18 +32,21 @@ namespace ICSharpCode.NRefactory.CSharp
 	/// </summary>
 	public class IsExpression : Expression
 	{
-		public readonly static TokenRole IsKeywordRole = new TokenRole ("is");
-		
-		public Expression Expression {
+		public readonly static TokenRole IsKeywordRole = new TokenRole("is");
+
+		public Expression Expression
+		{
 			get { return GetChildByRole(Roles.Expression); }
 			set { SetChildByRole(Roles.Expression, value); }
 		}
-		
-		public CSharpTokenNode IsToken {
-			get { return GetChildByRole (IsKeywordRole); }
+
+		public CSharpTokenNode IsToken
+		{
+			get { return GetChildByRole(IsKeywordRole); }
 		}
-		
-		public AstType Type {
+
+		public AstType Type
+		{
 			get { return GetChildByRole(Roles.Type); }
 			set { SetChildByRole(Roles.Type, value); }
 		}
@@ -52,28 +55,27 @@ namespace ICSharpCode.NRefactory.CSharp
 		{
 		}
 
-		public IsExpression (Expression expression, AstType type)
+		public IsExpression(Expression expression, AstType type)
 		{
-			AddChild (expression, Roles.Expression);
-			AddChild (type, Roles.Type);
+			AddChild(expression, Roles.Expression);
+			AddChild(type, Roles.Type);
 		}
 
-		
-		public override void AcceptVisitor (IAstVisitor visitor)
+		public override void AcceptVisitor(IAstVisitor visitor)
 		{
-			visitor.VisitIsExpression (this);
+			visitor.VisitIsExpression(this);
 		}
-			
-		public override T AcceptVisitor<T> (IAstVisitor<T> visitor)
+
+		public override T AcceptVisitor<T>(IAstVisitor<T> visitor)
 		{
-			return visitor.VisitIsExpression (this);
+			return visitor.VisitIsExpression(this);
 		}
-		
-		public override S AcceptVisitor<T, S> (IAstVisitor<T, S> visitor, T data)
+
+		public override S AcceptVisitor<T, S>(IAstVisitor<T, S> visitor, T data)
 		{
-			return visitor.VisitIsExpression (this, data);
+			return visitor.VisitIsExpression(this, data);
 		}
-		
+
 		protected internal override bool DoMatch(AstNode other, PatternMatching.Match match)
 		{
 			IsExpression o = other as IsExpression;
@@ -81,6 +83,7 @@ namespace ICSharpCode.NRefactory.CSharp
 		}
 
 		#region Builder methods
+
 		public override MemberReferenceExpression Member(string memberName)
 		{
 			return new MemberReferenceExpression { Target = this, MemberName = memberName };
@@ -132,19 +135,19 @@ namespace ICSharpCode.NRefactory.CSharp
 
 		public override CastExpression CastTo(AstType type)
 		{
-			return new CastExpression { Type = type,  Expression = new ParenthesizedExpression(this) };
+			return new CastExpression { Type = type, Expression = new ParenthesizedExpression(this) };
 		}
 
 		public override AsExpression CastAs(AstType type)
 		{
-			return new AsExpression { Type = type,  Expression = new ParenthesizedExpression(this) };
+			return new AsExpression { Type = type, Expression = new ParenthesizedExpression(this) };
 		}
 
 		public override IsExpression IsType(AstType type)
 		{
-			return new IsExpression { Type = type,  Expression = new ParenthesizedExpression(this) };
+			return new IsExpression { Type = type, Expression = new ParenthesizedExpression(this) };
 		}
-		#endregion
+
+		#endregion Builder methods
 	}
 }
-

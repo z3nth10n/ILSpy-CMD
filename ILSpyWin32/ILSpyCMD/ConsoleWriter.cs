@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text;
 
 namespace ILSpyCMD
@@ -9,6 +7,7 @@ namespace ILSpyCMD
 	public class ConsoleWriterEventArgs : EventArgs
 	{
 		public string Value { get; private set; }
+
 		public ConsoleWriterEventArgs(string value)
 		{
 			Value = value;
@@ -32,6 +31,7 @@ namespace ILSpyCMD
 		}
 
 		public event EventHandler<ConsoleWriterEventArgs> WriteEvent;
+
 		public event EventHandler<ConsoleWriterEventArgs> WriteLineEvent;
 	}
 }

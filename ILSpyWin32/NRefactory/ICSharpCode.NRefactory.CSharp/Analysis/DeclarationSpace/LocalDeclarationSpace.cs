@@ -1,21 +1,21 @@
-// 
+//
 // LovalVariableDeclarationSpace.cs
-//  
+//
 // Author:
 //       Simon Lindgren <simon.n.lindgren@gmail.com>
-// 
+//
 // Copyright (c) 2013 Simon Lindgren
-// 
+//
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
 // in the Software without restriction, including without limitation the rights
 // to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
-// 
+//
 // The above copyright notice and this permission notice shall be included in
 // all copies or substantial portions of the Software.
-// 
+//
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 // FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -24,9 +24,9 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 using ICSharpCode.NRefactory.Utils;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System;
 
 namespace ICSharpCode.NRefactory.CSharp.Analysis
 {
@@ -41,17 +41,18 @@ namespace ICSharpCode.NRefactory.CSharp.Analysis
 		/// <remarks>
 		/// This maps from variable name
 		/// </remarks>
-		MultiDictionary<string, AstNode> declarations = new MultiDictionary<string, AstNode> ();
+		private MultiDictionary<string, AstNode> declarations = new MultiDictionary<string, AstNode>();
 
 		public LocalDeclarationSpace()
 		{
-			Children = new List<LocalDeclarationSpace> ();
+			Children = new List<LocalDeclarationSpace>();
 		}
 
 		/// <summary>
 		/// The child declaration spaces.
 		/// </summary>
-		public IList<LocalDeclarationSpace> Children {
+		public IList<LocalDeclarationSpace> Children
+		{
 			get;
 			private set;
 		}
@@ -60,7 +61,8 @@ namespace ICSharpCode.NRefactory.CSharp.Analysis
 		/// The parent declaration space.
 		/// </summary>
 		/// <value>The parent.</value>
-		public LocalDeclarationSpace Parent {
+		public LocalDeclarationSpace Parent
+		{
 			get;
 			private set;
 		}
@@ -69,8 +71,10 @@ namespace ICSharpCode.NRefactory.CSharp.Analysis
 		/// The names declared in this declaration space, excluding child spaces.
 		/// </summary>
 		/// <value>The declared names.</value>
-		public ICollection<string> DeclaredNames {
-			get {
+		public ICollection<string> DeclaredNames
+		{
+			get
+			{
 				return declarations.Keys;
 			}
 		}
@@ -82,7 +86,7 @@ namespace ICSharpCode.NRefactory.CSharp.Analysis
 		/// <param name="name">The declaration name.</param>
 		public IEnumerable<AstNode> GetNameDeclarations(string name)
 		{
-			return declarations [name].Concat(Children.SelectMany(child => child.GetNameDeclarations(name)));
+			return declarations[name].Concat(Children.SelectMany(child => child.GetNameDeclarations(name)));
 		}
 
 		/// <summary>
@@ -125,7 +129,7 @@ namespace ICSharpCode.NRefactory.CSharp.Analysis
 			if (name == null)
 				throw new ArgumentNullException("name");
 
-			if (declarations.Keys.Contains(name)) 
+			if (declarations.Keys.Contains(name))
 				return true;
 			return includeChildren && Children.Any(child => child.ContainsName(name, true));
 		}
@@ -147,7 +151,7 @@ namespace ICSharpCode.NRefactory.CSharp.Analysis
 			return IsNameUsedBySelfOrParent(name) || Children.Any(child => child.ContainsName(name, true));
 		}
 
-		bool IsNameUsedBySelfOrParent(string name)
+		private bool IsNameUsedBySelfOrParent(string name)
 		{
 			if (declarations.Keys.Contains(name))
 				return true;

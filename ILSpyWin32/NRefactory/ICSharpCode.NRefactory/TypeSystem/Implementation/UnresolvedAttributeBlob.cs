@@ -38,7 +38,7 @@ namespace ICSharpCode.NRefactory.TypeSystem.Implementation
 		internal readonly ITypeReference attributeType;
 		internal readonly IList<ITypeReference> ctorParameterTypes;
 		internal readonly byte[] blob;
-		
+
 		public UnresolvedAttributeBlob(ITypeReference attributeType, IList<ITypeReference> ctorParameterTypes, byte[] blob)
 		{
 			if (attributeType == null)
@@ -51,23 +51,24 @@ namespace ICSharpCode.NRefactory.TypeSystem.Implementation
 			this.ctorParameterTypes = ctorParameterTypes;
 			this.blob = blob;
 		}
-		
-		DomRegion IUnresolvedAttribute.Region {
+
+		DomRegion IUnresolvedAttribute.Region
+		{
 			get { return DomRegion.Empty; }
 		}
-		
+
 		public IAttribute CreateResolvedAttribute(ITypeResolveContext context)
 		{
 			if (context.CurrentAssembly == null)
 				throw new InvalidOperationException("Cannot resolve CecilUnresolvedAttribute without a parent assembly");
 			return new CecilResolvedAttribute(context, this);
 		}
-		
+
 		int ISupportsInterning.GetHashCodeForInterning()
 		{
 			return attributeType.GetHashCode() ^ ctorParameterTypes.GetHashCode() ^ BlobReader.GetBlobHashCode(blob);
 		}
-		
+
 		bool ISupportsInterning.EqualsForInterning(ISupportsInterning other)
 		{
 			UnresolvedAttributeBlob o = other as UnresolvedAttributeBlob;

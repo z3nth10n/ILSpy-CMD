@@ -23,17 +23,16 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
-using System;
 using ICSharpCode.NRefactory.Editor;
-using System.Threading;
-using System.Linq;
-using ICSharpCode.NRefactory.CSharp.Refactoring;
 using ICSharpCode.NRefactory.TypeSystem;
+using System;
 using System.Collections.Generic;
+using System.Threading;
 
 namespace ICSharpCode.NRefactory.CSharp
 {
-	public enum FormattingMode {
+	public enum FormattingMode
+	{
 		OnTheFly,
 		Intrusive
 	}
@@ -43,14 +42,16 @@ namespace ICSharpCode.NRefactory.CSharp
 	/// </summary>
 	public class CSharpFormatter
 	{
-		readonly CSharpFormattingOptions policy;
-		readonly TextEditorOptions options;
+		private readonly CSharpFormattingOptions policy;
+		private readonly TextEditorOptions options;
 
 		/// <summary>
 		/// Gets the formatting policy the formatter uses.
 		/// </summary>
-		public CSharpFormattingOptions Policy {
-			get {
+		public CSharpFormattingOptions Policy
+		{
+			get
+			{
 				return policy;
 			}
 		}
@@ -59,20 +60,24 @@ namespace ICSharpCode.NRefactory.CSharp
 		/// Gets the text editor options the formatter uses.
 		/// Note: If none was specified TextEditorOptions.Default gets used.
 		/// </summary>
-		public TextEditorOptions TextEditorOptions {
-			get {
+		public TextEditorOptions TextEditorOptions
+		{
+			get
+			{
 				return options;
 			}
 		}
 
-		List<DomRegion> formattingRegions = new List<DomRegion> ();
+		private List<DomRegion> formattingRegions = new List<DomRegion>();
 		internal TextLocation lastFormattingLocation = new TextLocation(int.MaxValue, int.MaxValue);
 
 		/// <summary>
 		/// Gets the formatting regions. NOTE: Will get changed to IReadOnlyList.
 		/// </summary>
-		public IList<DomRegion> FormattingRegions {
-			get {
+		public IList<DomRegion> FormattingRegions
+		{
+			get
+			{
 				return formattingRegions;
 			}
 		}
@@ -81,7 +86,8 @@ namespace ICSharpCode.NRefactory.CSharp
 		/// Gets or sets the formatting mode. For on the fly formatting a lightweight formatting mode
 		/// gives better results.
 		/// </summary>
-		public FormattingMode FormattingMode {
+		public FormattingMode FormattingMode
+		{
 			get;
 			set;
 		}
@@ -104,7 +110,7 @@ namespace ICSharpCode.NRefactory.CSharp
 		/// </summary>
 		public string Format(IDocument document)
 		{
-			return InternalFormat (new StringBuilderDocument (document.Text));
+			return InternalFormat(new StringBuilderDocument(document.Text));
 		}
 
 		/// <summary>
@@ -112,12 +118,12 @@ namespace ICSharpCode.NRefactory.CSharp
 		/// </summary>
 		public string Format(string text)
 		{
-			return InternalFormat (new StringBuilderDocument (text));
+			return InternalFormat(new StringBuilderDocument(text));
 		}
 
-		string InternalFormat(IDocument document)
+		private string InternalFormat(IDocument document)
 		{
-			var syntaxTree = SyntaxTree.Parse (document, document.FileName);
+			var syntaxTree = SyntaxTree.Parse(document, document.FileName);
 			var changes = AnalyzeFormatting(document, syntaxTree);
 			changes.ApplyChanges();
 			return document.Text;
@@ -129,7 +135,7 @@ namespace ICSharpCode.NRefactory.CSharp
 		/// <param name="document">Document.</param>
 		/// <param name="syntaxTree">Syntax tree.</param>
 		/// <param name="token">The cancellation token.</param>
-		public FormattingChanges AnalyzeFormatting(IDocument document, SyntaxTree syntaxTree, CancellationToken token = default (CancellationToken))
+		public FormattingChanges AnalyzeFormatting(IDocument document, SyntaxTree syntaxTree, CancellationToken token = default(CancellationToken))
 		{
 			if (document == null)
 				throw new ArgumentNullException("document");
@@ -144,16 +150,17 @@ namespace ICSharpCode.NRefactory.CSharp
 		/// <summary>
 		/// Adds a region in the document that should be formatted.
 		/// </summary>
-		public void AddFormattingRegion (DomRegion region)
+		public void AddFormattingRegion(DomRegion region)
 		{
 			formattingRegions.Add(region);
-			if (formattingRegions.Count == 1) {
+			if (formattingRegions.Count == 1)
+			{
 				lastFormattingLocation = region.End;
-			} else {
+			}
+			else
+			{
 				lastFormattingLocation = lastFormattingLocation < region.End ? region.End : lastFormattingLocation;
 			}
 		}
-
 	}
 }
-

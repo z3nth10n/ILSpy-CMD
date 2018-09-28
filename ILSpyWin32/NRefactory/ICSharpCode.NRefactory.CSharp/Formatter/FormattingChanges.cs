@@ -23,13 +23,11 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
-using System;
-using ICSharpCode.NRefactory.Editor;
-using System.Threading;
-using System.Linq;
 using ICSharpCode.NRefactory.CSharp.Refactoring;
-using ICSharpCode.NRefactory.TypeSystem;
+using ICSharpCode.NRefactory.Editor;
+using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace ICSharpCode.NRefactory.CSharp
 {
@@ -39,18 +37,20 @@ namespace ICSharpCode.NRefactory.CSharp
 	/// </summary>
 	public class FormattingChanges
 	{
-		readonly IDocument document;
-		readonly internal List<TextReplaceAction> changes = new List<TextReplaceAction> ();
+		private readonly IDocument document;
+		readonly internal List<TextReplaceAction> changes = new List<TextReplaceAction>();
 
-		internal FormattingChanges (IDocument document)
+		internal FormattingChanges(IDocument document)
 		{
 			if (document == null)
 				throw new ArgumentNullException("document");
 			this.document = document;
 		}
 
-		public int Count {
-			get {
+		public int Count
+		{
+			get
+			{
 				return changes.Count;
 			}
 		}
@@ -89,25 +89,31 @@ namespace ICSharpCode.NRefactory.CSharp
 
 			TextReplaceAction previousChange = null;
 			int delta = 0;
-			var depChanges = new List<TextReplaceAction> ();
-			foreach (var change in changes.OrderBy(c => c.Offset)) {
-				if (previousChange != null) {
-					if (change.Equals(previousChange)) {
+			var depChanges = new List<TextReplaceAction>();
+			foreach (var change in changes.OrderBy(c => c.Offset))
+			{
+				if (previousChange != null)
+				{
+					if (change.Equals(previousChange))
+					{
 						// ignore duplicate changes
 						continue;
 					}
-					if (change.Offset < previousChange.Offset + previousChange.RemovalLength) {
-						throw new InvalidOperationException ("Detected overlapping changes " + change + "/" + previousChange);
+					if (change.Offset < previousChange.Offset + previousChange.RemovalLength)
+					{
+						throw new InvalidOperationException("Detected overlapping changes " + change + "/" + previousChange);
 					}
 				}
 				previousChange = change;
 				bool skipChange = change.Offset + change.RemovalLength < startOffset || change.Offset > endOffset;
 				skipChange |= filter != null && filter(change.Offset + delta, change.RemovalLength, change.NewText);
 				skipChange &= !depChanges.Contains(change);
-				if (!skipChange) {
+				if (!skipChange)
+				{
 					documentReplace(change.Offset + delta, change.RemovalLength, change.NewText);
 					delta += change.NewText.Length - change.RemovalLength;
-					if (change.DependsOn != null) {
+					if (change.DependsOn != null)
+					{
 						depChanges.Add(change.DependsOn);
 					}
 				}
@@ -125,13 +131,13 @@ namespace ICSharpCode.NRefactory.CSharp
 				throw new ArgumentOutOfRangeException("removedChars", "Should be >= 0");
 			if (removedChars > offset + document.TextLength)
 				throw new ArgumentOutOfRangeException("removedChars", "Tried to remove beyond end of text");
-			if (removedChars == 0 && string.IsNullOrEmpty (insertedText))
+			if (removedChars == 0 && string.IsNullOrEmpty(insertedText))
 				return null;
-			var action = new TextReplaceAction (offset, removedChars, insertedText);
+			var action = new TextReplaceAction(offset, removedChars, insertedText);
 			changes.Add(action);
 			return action;
 		}
-		
+
 		internal sealed class TextReplaceAction
 		{
 			internal readonly int Offset;
@@ -139,7 +145,7 @@ namespace ICSharpCode.NRefactory.CSharp
 			internal readonly string NewText;
 			internal TextReplaceAction DependsOn;
 
-			public TextReplaceAction (int offset, int removalLength, string newText)
+			public TextReplaceAction(int offset, int removalLength, string newText)
 			{
 				this.Offset = offset;
 				this.RemovalLength = removalLength;
@@ -149,7 +155,8 @@ namespace ICSharpCode.NRefactory.CSharp
 			public override bool Equals(object obj)
 			{
 				TextReplaceAction other = obj as TextReplaceAction;
-				if (other == null) {
+				if (other == null)
+				{
 					return false;
 				}
 				return this.Offset == other.Offset && this.RemovalLength == other.RemovalLength && this.NewText == other.NewText;

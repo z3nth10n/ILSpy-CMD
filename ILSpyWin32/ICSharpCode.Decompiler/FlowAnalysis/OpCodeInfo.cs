@@ -1,14 +1,14 @@
 ﻿// Copyright (c) 2011 AlphaSierraPapa for the SharpDevelop Team
-// 
+//
 // Permission is hereby granted, free of charge, to any person obtaining a copy of this
 // software and associated documentation files (the "Software"), to deal in the Software
 // without restriction, including without limitation the rights to use, copy, modify, merge,
 // publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons
 // to whom the Software is furnished to do so, subject to the following conditions:
-// 
+//
 // The above copyright notice and this permission notice shall be included in all copies or
 // substantial portions of the Software.
-// 
+//
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
 // INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
 // PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
@@ -16,39 +16,43 @@
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
 
+using Mono.Cecil.Cil;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-
-using Mono.Cecil.Cil;
 
 namespace ICSharpCode.Decompiler.FlowAnalysis
 {
 	/// <summary>
 	/// Additional info about opcodes.
 	/// </summary>
-	sealed class OpCodeInfo
+	internal sealed class OpCodeInfo
 	{
 		public static bool IsUnconditionalBranch(OpCode opcode)
 		{
 			if (opcode.OpCodeType == OpCodeType.Prefix)
 				return false;
-			switch (opcode.FlowControl) {
+			switch (opcode.FlowControl)
+			{
 				case FlowControl.Branch:
 				case FlowControl.Throw:
 				case FlowControl.Return:
 					return true;
+
 				case FlowControl.Next:
 				case FlowControl.Call:
 				case FlowControl.Cond_Branch:
 					return false;
+
 				default:
 					throw new NotSupportedException(opcode.FlowControl.ToString());
 			}
 		}
-		
-		static readonly OpCodeInfo[] knownOpCodes = {
+
+		private static readonly OpCodeInfo[] knownOpCodes = {
+
 			#region Base Instructions
+
 			new OpCodeInfo(OpCodes.Add)        { CanThrow = false },
 			new OpCodeInfo(OpCodes.Add_Ovf)    { CanThrow = true  },
 			new OpCodeInfo(OpCodes.Add_Ovf_Un) { CanThrow = true  },
@@ -125,7 +129,7 @@ namespace ICSharpCode.Decompiler.FlowAnalysis
 			new OpCodeInfo(OpCodes.Conv_Ovf_U8_Un) { CanThrow = true },
 			new OpCodeInfo(OpCodes.Conv_Ovf_I_Un)  { CanThrow = true },
 			new OpCodeInfo(OpCodes.Conv_Ovf_U_Un)  { CanThrow = true },
-			
+
 			//new OpCodeInfo(OpCodes.Cpblk)      { CanThrow = true }, - no idea whether this might cause trouble for the type system, C# shouldn't use it so I'll disable it
 			new OpCodeInfo(OpCodes.Div)        { CanThrow = true },
 			new OpCodeInfo(OpCodes.Div_Un)     { CanThrow = true },
@@ -218,8 +222,11 @@ namespace ICSharpCode.Decompiler.FlowAnalysis
 			new OpCodeInfo(OpCodes.Sub_Ovf_Un) { CanThrow = true  },
 			new OpCodeInfo(OpCodes.Switch)     { CanThrow = false },
 			new OpCodeInfo(OpCodes.Xor)        { CanThrow = false },
-			#endregion
+
+			#endregion Base Instructions
+
 			#region Object model instructions
+
 			// CanThrow is true by default - most OO instructions can throw, so we don't specify CanThrow all of the time
 			new OpCodeInfo(OpCodes.Box),
 			new OpCodeInfo(OpCodes.Callvirt),
@@ -271,15 +278,17 @@ namespace ICSharpCode.Decompiler.FlowAnalysis
 			new OpCodeInfo(OpCodes.Throw),
 			new OpCodeInfo(OpCodes.Unbox),
 			new OpCodeInfo(OpCodes.Unbox_Any),
-			#endregion
+
+			#endregion Object model instructions
 		};
-		static readonly Dictionary<Code, OpCodeInfo> knownOpCodeDict = knownOpCodes.ToDictionary(info => info.OpCode.Code);
-		
+
+		private static readonly Dictionary<Code, OpCodeInfo> knownOpCodeDict = knownOpCodes.ToDictionary(info => info.OpCode.Code);
+
 		public static OpCodeInfo Get(OpCode opCode)
 		{
 			return Get(opCode.Code);
 		}
-		
+
 		public static OpCodeInfo Get(Code code)
 		{
 			OpCodeInfo info;
@@ -288,22 +297,22 @@ namespace ICSharpCode.Decompiler.FlowAnalysis
 			else
 				throw new NotSupportedException(code.ToString());
 		}
-		
-		OpCode opcode;
-		
+
+		private OpCode opcode;
+
 		private OpCodeInfo(OpCode opcode)
 		{
 			this.opcode = opcode;
 			this.CanThrow = true;
 		}
-		
+
 		public OpCode OpCode { get { return opcode; } }
-		
+
 		/// <summary>
 		/// 'Move' kind of instructions have one input (may be stack or local variable) and copy that value to all outputs (again stack or local variable).
 		/// </summary>
 		public bool IsMoveInstruction { get; private set; }
-		
+
 		/// <summary>
 		/// Specifies whether this opcode is capable of throwing exceptions.
 		/// </summary>

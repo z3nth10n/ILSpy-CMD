@@ -24,28 +24,28 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+using ICSharpCode.NRefactory.Semantics;
+using ICSharpCode.NRefactory.Utils;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
-using ICSharpCode.NRefactory.Semantics;
-using ICSharpCode.NRefactory.Utils;
 
 namespace ICSharpCode.NRefactory.TypeSystem.Implementation
 {
-	sealed class CecilResolvedAttribute : IAttribute
+	internal sealed class CecilResolvedAttribute : IAttribute
 	{
-		readonly ITypeResolveContext context;
-		readonly byte[] blob;
-		readonly IList<ITypeReference> ctorParameterTypes;
-		readonly IType attributeType;
-		
-		IMethod constructor;
-		volatile bool constructorResolved;
-		
-		IList<ResolveResult> positionalArguments;
-		IList<KeyValuePair<IMember, ResolveResult>> namedArguments;
-		
+		private readonly ITypeResolveContext context;
+		private readonly byte[] blob;
+		private readonly IList<ITypeReference> ctorParameterTypes;
+		private readonly IType attributeType;
+
+		private IMethod constructor;
+		private volatile bool constructorResolved;
+
+		private IList<ResolveResult> positionalArguments;
+		private IList<KeyValuePair<IMember, ResolveResult>> namedArguments;
+
 		public CecilResolvedAttribute(ITypeResolveContext context, UnresolvedAttributeBlob unresolved)
 		{
 			this.context = context;
@@ -53,39 +53,47 @@ namespace ICSharpCode.NRefactory.TypeSystem.Implementation
 			this.ctorParameterTypes = unresolved.ctorParameterTypes;
 			this.attributeType = unresolved.attributeType.Resolve(context);
 		}
-		
+
 		public CecilResolvedAttribute(ITypeResolveContext context, IType attributeType)
 		{
 			this.context = context;
 			this.attributeType = attributeType;
 			this.ctorParameterTypes = EmptyList<ITypeReference>.Instance;
 		}
-		
-		DomRegion IAttribute.Region {
+
+		DomRegion IAttribute.Region
+		{
 			get { return DomRegion.Empty; }
 		}
-		
-		public IType AttributeType {
+
+		public IType AttributeType
+		{
 			get { return attributeType; }
 		}
-		
-		public IMethod Constructor {
-			get {
-				if (!constructorResolved) {
+
+		public IMethod Constructor
+		{
+			get
+			{
+				if (!constructorResolved)
+				{
 					constructor = ResolveConstructor();
 					constructorResolved = true;
 				}
 				return constructor;
 			}
 		}
-		
-		IMethod ResolveConstructor()
+
+		private IMethod ResolveConstructor()
 		{
 			var parameterTypes = ctorParameterTypes.Resolve(context);
-			foreach (var ctor in attributeType.GetConstructors(m => m.Parameters.Count == parameterTypes.Count)) {
+			foreach (var ctor in attributeType.GetConstructors(m => m.Parameters.Count == parameterTypes.Count))
+			{
 				bool ok = true;
-				for (int i = 0; i < parameterTypes.Count; i++) {
-					if (!ctor.Parameters[i].Type.Equals(parameterTypes[i])) {
+				for (int i = 0; i < parameterTypes.Count; i++)
+				{
+					if (!ctor.Parameters[i].Type.Equals(parameterTypes[i]))
+					{
 						ok = false;
 						break;
 					}
@@ -95,35 +103,41 @@ namespace ICSharpCode.NRefactory.TypeSystem.Implementation
 			}
 			return null;
 		}
-		
-		public IList<ResolveResult> PositionalArguments {
-			get {
+
+		public IList<ResolveResult> PositionalArguments
+		{
+			get
+			{
 				var result = LazyInit.VolatileRead(ref this.positionalArguments);
-				if (result != null) {
+				if (result != null)
+				{
 					return result;
 				}
 				DecodeBlob();
 				return positionalArguments;
 			}
 		}
-		
-		public IList<KeyValuePair<IMember, ResolveResult>> NamedArguments {
-			get {
+
+		public IList<KeyValuePair<IMember, ResolveResult>> NamedArguments
+		{
+			get
+			{
 				var result = LazyInit.VolatileRead(ref this.namedArguments);
-				if (result != null) {
+				if (result != null)
+				{
 					return result;
 				}
 				DecodeBlob();
 				return namedArguments;
 			}
 		}
-		
+
 		public override string ToString()
 		{
 			return "[" + attributeType.ToString() + "(...)]";
 		}
-		
-		void DecodeBlob()
+
+		private void DecodeBlob()
 		{
 			var positionalArguments = new List<ResolveResult>();
 			var namedArguments = new List<KeyValuePair<IMember, ResolveResult>>();
@@ -131,28 +145,34 @@ namespace ICSharpCode.NRefactory.TypeSystem.Implementation
 			Interlocked.CompareExchange(ref this.positionalArguments, positionalArguments, null);
 			Interlocked.CompareExchange(ref this.namedArguments, namedArguments, null);
 		}
-		
-		void DecodeBlob(List<ResolveResult> positionalArguments, List<KeyValuePair<IMember, ResolveResult>> namedArguments)
+
+		private void DecodeBlob(List<ResolveResult> positionalArguments, List<KeyValuePair<IMember, ResolveResult>> namedArguments)
 		{
 			if (blob == null)
 				return;
 			BlobReader reader = new BlobReader(blob, context.CurrentAssembly);
-			if (reader.ReadUInt16() != 0x0001) {
+			if (reader.ReadUInt16() != 0x0001)
+			{
 				Debug.WriteLine("Unknown blob prolog");
 				return;
 			}
-			foreach (var ctorParameter in ctorParameterTypes.Resolve(context)) {
+			foreach (var ctorParameter in ctorParameterTypes.Resolve(context))
+			{
 				ResolveResult arg;
 				bool isError;
-				try {
-					arg = reader.ReadFixedArg (ctorParameter);
+				try
+				{
+					arg = reader.ReadFixedArg(ctorParameter);
 					positionalArguments.Add(arg);
 					isError = arg.IsError;
-				} catch (Exception ex) {
+				}
+				catch (Exception ex)
+				{
 					Debug.WriteLine("Crash during blob decoding: " + ex);
 					isError = true;
 				}
-				if (isError) {
+				if (isError)
+				{
 					// After a decoding error, we must stop decoding the blob because
 					// we might have read too few bytes due to the error.
 					// Just fill up the remaining arguments with ErrorResolveResult:
@@ -161,14 +181,18 @@ namespace ICSharpCode.NRefactory.TypeSystem.Implementation
 					return;
 				}
 			}
-			try {
+			try
+			{
 				ushort numNamed = reader.ReadUInt16();
-				for (int i = 0; i < numNamed; i++) {
+				for (int i = 0; i < numNamed; i++)
+				{
 					var namedArg = reader.ReadNamedArg(attributeType);
 					if (namedArg.Key != null)
 						namedArguments.Add(namedArg);
 				}
-			} catch (Exception ex) {
+			}
+			catch (Exception ex)
+			{
 				Debug.WriteLine("Crash during blob decoding: " + ex);
 			}
 		}

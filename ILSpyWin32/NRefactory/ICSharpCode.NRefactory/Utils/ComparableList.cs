@@ -35,77 +35,84 @@ namespace ICSharpCode.NRefactory.Utils
 	/// </summary>
 	public sealed class ComparableList<T> : IList<T>, IEquatable<ComparableList<T>>
 	{
-		List<T> elements;
+		private List<T> elements;
 
 		public ComparableList()
 		{
-			elements = new List<T> ();
+			elements = new List<T>();
 		}
 
 		public ComparableList(IEnumerable<T> values)
 		{
-			elements = new List<T> (values);
+			elements = new List<T>(values);
 		}
 
-		public int IndexOf (T item)
+		public int IndexOf(T item)
 		{
 			if (item == null)
-				throw new ArgumentNullException ("item");
-			return elements.IndexOf (item);
+				throw new ArgumentNullException("item");
+			return elements.IndexOf(item);
 		}
 
-		public void Insert (int index, T item)
+		public void Insert(int index, T item)
 		{
-			elements.Insert (index, item);
+			elements.Insert(index, item);
 		}
 
-		public void RemoveAt (int index)
+		public void RemoveAt(int index)
 		{
-			elements.RemoveAt (index);
+			elements.RemoveAt(index);
 		}
 
-		public T this [int index] {
-			get {
-				return elements [index];
+		public T this[int index]
+		{
+			get
+			{
+				return elements[index];
 			}
-			set {
-				elements [index] = value;
+			set
+			{
+				elements[index] = value;
 			}
 		}
 
-		public void Add (T item)
+		public void Add(T item)
 		{
-			elements.Add (item);
+			elements.Add(item);
 		}
 
-		public void Clear ()
+		public void Clear()
 		{
-			elements.Clear ();
+			elements.Clear();
 		}
 
-		public bool Contains (T item)
+		public bool Contains(T item)
 		{
-			return elements.Contains (item);
+			return elements.Contains(item);
 		}
 
-		public void CopyTo (T[] array, int arrayIndex)
+		public void CopyTo(T[] array, int arrayIndex)
 		{
-			elements.CopyTo (array, arrayIndex);
+			elements.CopyTo(array, arrayIndex);
 		}
 
-		public bool Remove (T item)
+		public bool Remove(T item)
 		{
-			return elements.Remove (item);
+			return elements.Remove(item);
 		}
 
-		public int Count {
-			get {
+		public int Count
+		{
+			get
+			{
 				return elements.Count;
 			}
 		}
 
-		public bool IsReadOnly {
-			get {
+		public bool IsReadOnly
+		{
+			get
+			{
 				return false;
 			}
 		}
@@ -117,22 +124,25 @@ namespace ICSharpCode.NRefactory.Utils
 
 		IEnumerator IEnumerable.GetEnumerator()
 		{
-			return GetEnumerator ();
+			return GetEnumerator();
 		}
 
-		public override bool Equals (object obj)
+		public override bool Equals(object obj)
 		{
-			return Equals (obj as ComparableList<T>);
+			return Equals(obj as ComparableList<T>);
 		}
 
-		public bool Equals (ComparableList<T> obj)
+		public bool Equals(ComparableList<T> obj)
 		{
-			if (obj == null || Count != obj.Count) {
+			if (obj == null || Count != obj.Count)
+			{
 				return false;
 			}
 
-			for (int index = 0; index < Count; ++index) {
-				if (!this [index].Equals(obj [index])) {
+			for (int index = 0; index < Count; ++index)
+			{
+				if (!this[index].Equals(obj[index]))
+				{
 					return false;
 				}
 			}
@@ -140,11 +150,13 @@ namespace ICSharpCode.NRefactory.Utils
 			return true;
 		}
 
-		public override int GetHashCode ()
+		public override int GetHashCode()
 		{
 			int hash = 19;
-			foreach (var item in this) {
-				unchecked {
+			foreach (var item in this)
+			{
+				unchecked
+				{
 					hash *= 31;
 					hash += item.GetHashCode();
 				}
@@ -152,15 +164,16 @@ namespace ICSharpCode.NRefactory.Utils
 			return hash;
 		}
 
-		public static bool operator==(ComparableList<T> item1, ComparableList<T> item2) {
-			if (object.ReferenceEquals (item1, null))
-				return object.ReferenceEquals (item2, null);
-			return item1.Equals (item2);
+		public static bool operator ==(ComparableList<T> item1, ComparableList<T> item2)
+		{
+			if (object.ReferenceEquals(item1, null))
+				return object.ReferenceEquals(item2, null);
+			return item1.Equals(item2);
 		}
 
-		public static bool operator!=(ComparableList<T> item1, ComparableList<T> item2) {
+		public static bool operator !=(ComparableList<T> item1, ComparableList<T> item2)
+		{
 			return !(item1 == item2);
 		}
 	}
 }
-

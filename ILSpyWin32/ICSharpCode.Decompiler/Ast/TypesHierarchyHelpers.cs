@@ -1,14 +1,14 @@
 ﻿// Copyright (c) 2011 AlphaSierraPapa for the SharpDevelop Team
-// 
+//
 // Permission is hereby granted, free of charge, to any person obtaining a copy of this
 // software and associated documentation files (the "Software"), to deal in the Software
 // without restriction, including without limitation the rights to use, copy, modify, merge,
 // publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons
 // to whom the Software is furnished to do so, subject to the following conditions:
-// 
+//
 // The above copyright notice and this permission notice shall be included in all copies or
 // substantial portions of the Software.
-// 
+//
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
 // INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
 // PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
@@ -16,12 +16,11 @@
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
 
+using Mono.Cecil;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Text;
-using Mono.Cecil;
 
 namespace ICSharpCode.Decompiler.Ast
 {
@@ -31,11 +30,13 @@ namespace ICSharpCode.Decompiler.Ast
 		{
 			if (resolveTypeArguments)
 				return BaseTypes(derivedType).Any(t => t.Item == baseType);
-			else {
+			else
+			{
 				var comparableBaseType = baseType.Resolve();
 				if (comparableBaseType == null)
 					return false;
-				while (derivedType.BaseType != null) {
+				while (derivedType.BaseType != null)
+				{
 					var resolvedBaseType = derivedType.BaseType.Resolve();
 					if (resolvedBaseType == null)
 						return false;
@@ -118,7 +119,8 @@ namespace ICSharpCode.Decompiler.Ast
 
 			foreach (var baseType in BaseTypes(method.DeclaringType))
 				foreach (var baseMethod in baseType.Item.Methods)
-					if (MatchMethod(baseType.ApplyTo(baseMethod), gMethod) && IsVisibleFromDerived(baseMethod, method.DeclaringType)) {
+					if (MatchMethod(baseType.ApplyTo(baseMethod), gMethod) && IsVisibleFromDerived(baseMethod, method.DeclaringType))
+					{
 						yield return baseMethod;
 						if (baseMethod.IsNewSlot == baseMethod.IsVirtual)
 							yield break;
@@ -145,7 +147,8 @@ namespace ICSharpCode.Decompiler.Ast
 			foreach (var baseType in BaseTypes(property.DeclaringType))
 				foreach (var baseProperty in baseType.Item.Properties)
 					if (MatchProperty(baseType.ApplyTo(baseProperty), gProperty)
-							&& IsVisibleFromDerived(baseProperty, property.DeclaringType)) {
+							&& IsVisibleFromDerived(baseProperty, property.DeclaringType))
+					{
 						if (isIndexer != baseProperty.IsIndexer())
 							continue;
 						yield return baseProperty;
@@ -165,13 +168,13 @@ namespace ICSharpCode.Decompiler.Ast
 
 			foreach (var baseType in BaseTypes(eventDef.DeclaringType))
 				foreach (var baseEvent in baseType.Item.Events)
-					if (MatchEvent(baseType.ApplyTo(baseEvent), gEvent) && IsVisibleFromDerived(baseEvent, eventDef.DeclaringType)) {
+					if (MatchEvent(baseType.ApplyTo(baseEvent), gEvent) && IsVisibleFromDerived(baseEvent, eventDef.DeclaringType))
+					{
 						yield return baseEvent;
 						var anyEventAccessor = baseEvent.AddMethod ?? baseEvent.RemoveMethod;
 						if (anyEventAccessor.IsNewSlot == anyEventAccessor.IsVirtual)
 							yield break;
 					}
-
 		}
 
 		/// <summary>
@@ -194,14 +197,17 @@ namespace ICSharpCode.Decompiler.Ast
 			if (baseMember.DeclaringType.Module == derivedType.Module)
 				return true;
 
-			if (attrs == MethodAttributes.Assembly || attrs == MethodAttributes.FamANDAssem) {
+			if (attrs == MethodAttributes.Assembly || attrs == MethodAttributes.FamANDAssem)
+			{
 				var derivedTypeAsm = derivedType.Module.Assembly;
 				var asm = baseMember.DeclaringType.Module.Assembly;
 
-				if (asm.HasCustomAttributes) {
+				if (asm.HasCustomAttributes)
+				{
 					var attributes = asm.CustomAttributes
 						.Where(attr => attr.AttributeType.FullName == "System.Runtime.CompilerServices.InternalsVisibleToAttribute");
-					foreach (var attribute in attributes) {
+					foreach (var attribute in attributes)
+					{
 						string assemblyName = attribute.ConstructorArguments[0].Value as string;
 						assemblyName = assemblyName.Split(',')[0]; // strip off any public key info
 						if (assemblyName == derivedTypeAsm.Name.Name)
@@ -226,17 +232,20 @@ namespace ICSharpCode.Decompiler.Ast
 				return method.Attributes;
 
 			var prop = member as PropertyDefinition;
-			if (prop != null) {
+			if (prop != null)
+			{
 				return (prop.GetMethod ?? prop.SetMethod).Attributes;
-		}
+			}
 
 			var evnt = member as EventDefinition;
-			if (evnt != null) {
+			if (evnt != null)
+			{
 				return (evnt.AddMethod ?? evnt.RemoveMethod).Attributes;
 			}
 
 			var nestedType = member as TypeDefinition;
-			if (nestedType != null) {
+			if (nestedType != null)
+			{
 				if (nestedType.IsNestedPrivate)
 					return MethodAttributes.Private;
 				if (nestedType.IsNestedAssembly || nestedType.IsNestedFamilyAndAssembly)
@@ -260,16 +269,19 @@ namespace ICSharpCode.Decompiler.Ast
 			if (mCandidate.IsSpecialName != method.Item.IsSpecialName)
 				return false;
 
-			if (mCandidate.HasGenericParameters || mMethod.HasGenericParameters) {
+			if (mCandidate.HasGenericParameters || mMethod.HasGenericParameters)
+			{
 				if (!mCandidate.HasGenericParameters || !mMethod.HasGenericParameters || mCandidate.GenericParameters.Count != mMethod.GenericParameters.Count)
 					return false;
 			}
 
-			if (mCandidate.HasParameters || mMethod.HasParameters) {
+			if (mCandidate.HasParameters || mMethod.HasParameters)
+			{
 				if (!mCandidate.HasParameters || !mMethod.HasParameters || mCandidate.Parameters.Count != mMethod.Parameters.Count)
 					return false;
 
-				for (int index = 0; index < mCandidate.Parameters.Count; index++) {
+				for (int index = 0; index < mCandidate.Parameters.Count; index++)
+				{
 					if (!MatchParameters(candidate.ApplyTo(mCandidate.Parameters[index]), method.ApplyTo(mMethod.Parameters[index])))
 						return false;
 				}
@@ -283,11 +295,14 @@ namespace ICSharpCode.Decompiler.Ast
 			var candidateContext = CreateGenericContext(candidate.DeclaringType);
 			var gCandidate = candidateContext.ApplyTo(candidate);
 
-			if (interfaceContextType is GenericInstanceType) {
+			if (interfaceContextType is GenericInstanceType)
+			{
 				var methodContext = new GenericContext<TypeDefinition>(interfaceContextType.Resolve(), ((GenericInstanceType)interfaceContextType).GenericArguments);
 				var gMethod = methodContext.ApplyTo(method);
 				return MatchMethod(gCandidate, gMethod);
-			} else {
+			}
+			else
+			{
 				var methodContext = CreateGenericContext(interfaceContextType.Resolve());
 				var gMethod = candidateContext.ApplyTo(method);
 				return MatchMethod(gCandidate, gMethod);
@@ -304,11 +319,13 @@ namespace ICSharpCode.Decompiler.Ast
 			if ((mCandidate.GetMethod ?? mCandidate.SetMethod).HasOverrides)
 				return false;
 
-			if (mCandidate.HasParameters || mProperty.HasParameters) {
+			if (mCandidate.HasParameters || mProperty.HasParameters)
+			{
 				if (!mCandidate.HasParameters || !mProperty.HasParameters || mCandidate.Parameters.Count != mProperty.Parameters.Count)
 					return false;
 
-				for (int index = 0; index < mCandidate.Parameters.Count; index++) {
+				for (int index = 0; index < mCandidate.Parameters.Count; index++)
+				{
 					if (!MatchParameters(candidate.ApplyTo(mCandidate.Parameters[index]), property.ApplyTo(mProperty.Parameters[index])))
 						return false;
 				}
@@ -366,13 +383,16 @@ namespace ICSharpCode.Decompiler.Ast
 
 		private static IEnumerable<GenericContext<TypeDefinition>> BaseTypes(GenericContext<TypeDefinition> type)
 		{
-			while (type.Item.BaseType != null) {
+			while (type.Item.BaseType != null)
+			{
 				var baseType = type.Item.BaseType;
 				var genericBaseType = baseType as GenericInstanceType;
-				if (genericBaseType != null) {
+				if (genericBaseType != null)
+				{
 					type = new GenericContext<TypeDefinition>(genericBaseType.ResolveOrThrow(),
 						genericBaseType.GenericArguments.Select(t => type.ResolveWithContext(t)));
-				} else
+				}
+				else
 					type = new GenericContext<TypeDefinition>(baseType.ResolveOrThrow());
 				yield return type;
 			}
@@ -385,11 +405,13 @@ namespace ICSharpCode.Decompiler.Ast
 				: new GenericContext<TypeDefinition>(type);
 		}
 
-		struct GenericContext<T> where T : class
+		private struct GenericContext<T> where T : class
 		{
 			private static readonly ReadOnlyCollection<TypeReference> Empty = new ReadOnlyCollection<TypeReference>(new List<TypeReference>());
+
 			private static readonly GenericParameter UnresolvedGenericTypeParameter =
 				new DummyGenericParameterProvider(false).DummyParameter;
+
 			private static readonly GenericParameter UnresolvedGenericMethodParameter =
 				new DummyGenericParameterProvider(true).DummyParameter;
 
@@ -412,7 +434,8 @@ namespace ICSharpCode.Decompiler.Ast
 
 				Item = item;
 				var list = new List<TypeReference>();
-				foreach (var arg in typeArguments) {
+				foreach (var arg in typeArguments)
+				{
 					var resolved = arg != null ? arg.Resolve() : arg;
 					list.Add(resolved != null ? resolved : arg);
 				}
@@ -430,12 +453,13 @@ namespace ICSharpCode.Decompiler.Ast
 				var genericParameter = type as GenericParameter;
 				if (genericParameter != null)
 					if (genericParameter.Owner.GenericParameterType == GenericParameterType.Type)
-					return this.TypeArguments[genericParameter.Position];
+						return this.TypeArguments[genericParameter.Position];
 					else
 						return genericParameter.Owner.GenericParameterType == GenericParameterType.Type
 							? UnresolvedGenericTypeParameter : UnresolvedGenericMethodParameter;
 				var typeSpecification = type as TypeSpecification;
-				if (typeSpecification != null) {
+				if (typeSpecification != null)
+				{
 					var resolvedElementType = ResolveWithContext(typeSpecification.ElementType);
 					return ReplaceElementType(typeSpecification, resolvedElementType);
 				}
@@ -445,7 +469,8 @@ namespace ICSharpCode.Decompiler.Ast
 			private TypeReference ReplaceElementType(TypeSpecification ts, TypeReference newElementType)
 			{
 				var arrayType = ts as ArrayType;
-				if (arrayType != null) {
+				if (arrayType != null)
+				{
 					if (newElementType == arrayType.ElementType)
 						return arrayType;
 					var newArrayType = new ArrayType(newElementType, arrayType.Rank);
@@ -454,9 +479,10 @@ namespace ICSharpCode.Decompiler.Ast
 					return newArrayType;
 				}
 				var byReferenceType = ts as ByReferenceType;
-				if (byReferenceType != null) {
+				if (byReferenceType != null)
+				{
 					return new ByReferenceType(newElementType);
-			}
+				}
 				// TODO: should we throw an exception instead calling Resolve method?
 				return ts.ResolveOrThrow();
 			}
@@ -468,8 +494,8 @@ namespace ICSharpCode.Decompiler.Ast
 
 			private class DummyGenericParameterProvider : IGenericParameterProvider
 			{
-				readonly Mono.Cecil.GenericParameterType type;
-				readonly Mono.Collections.Generic.Collection<GenericParameter> parameters;
+				private readonly Mono.Cecil.GenericParameterType type;
+				private readonly Mono.Collections.Generic.Collection<GenericParameter> parameters;
 
 				public DummyGenericParameterProvider(bool methodTypeParameter)
 				{
@@ -477,12 +503,12 @@ namespace ICSharpCode.Decompiler.Ast
 						Mono.Cecil.GenericParameterType.Type;
 					parameters = new Mono.Collections.Generic.Collection<GenericParameter>(1);
 					parameters.Add(new GenericParameter(this));
-		}
+				}
 
 				public GenericParameter DummyParameter
 				{
 					get { return parameters[0]; }
-	}
+				}
 
 				bool IGenericParameterProvider.HasGenericParameters
 				{

@@ -1,14 +1,14 @@
 // Copyright (c) 2010-2013 AlphaSierraPapa for the SharpDevelop Team
-// 
+//
 // Permission is hereby granted, free of charge, to any person obtaining a copy of this
 // software and associated documentation files (the "Software"), to deal in the Software
 // without restriction, including without limitation the rights to use, copy, modify, merge,
 // publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons
 // to whom the Software is furnished to do so, subject to the following conditions:
-// 
+//
 // The above copyright notice and this permission notice shall be included in all copies or
 // substantial portions of the Software.
-// 
+//
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
 // INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
 // PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
@@ -16,6 +16,8 @@
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
 
+using ICSharpCode.NRefactory.Editor;
+using ICSharpCode.NRefactory.TypeSystem;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -23,8 +25,6 @@ using System.IO;
 using System.Runtime.Serialization;
 using System.Text;
 using System.Xml;
-using ICSharpCode.NRefactory.Editor;
-using ICSharpCode.NRefactory.TypeSystem;
 
 namespace ICSharpCode.NRefactory.Documentation
 {
@@ -41,22 +41,25 @@ namespace ICSharpCode.NRefactory.Documentation
 	public class XmlDocumentationProvider : IDocumentationProvider, IDeserializationCallback
 	{
 		#region Cache
-		sealed class XmlDocumentationCache
+
+		private sealed class XmlDocumentationCache
 		{
-			readonly KeyValuePair<string, string>[] entries;
-			int pos;
-			
+			private readonly KeyValuePair<string, string>[] entries;
+			private int pos;
+
 			public XmlDocumentationCache(int size = 50)
 			{
 				if (size <= 0)
 					throw new ArgumentOutOfRangeException("size", size, "Value must be positive");
 				this.entries = new KeyValuePair<string, string>[size];
 			}
-			
+
 			internal bool TryGet(string key, out string value)
 			{
-				foreach (var pair in entries) {
-					if (pair.Key == key) {
+				foreach (var pair in entries)
+				{
+					if (pair.Key == key)
+					{
 						value = pair.Value;
 						return true;
 					}
@@ -64,7 +67,7 @@ namespace ICSharpCode.NRefactory.Documentation
 				value = null;
 				return false;
 			}
-			
+
 			internal void Add(string key, string value)
 			{
 				entries[pos++] = new KeyValuePair<string, string>(key, value);
@@ -72,41 +75,43 @@ namespace ICSharpCode.NRefactory.Documentation
 					pos = 0;
 			}
 		}
-		#endregion
-		
+
+		#endregion Cache
+
 		[Serializable]
-		struct IndexEntry : IComparable<IndexEntry>
+		private struct IndexEntry : IComparable<IndexEntry>
 		{
 			/// <summary>
 			/// Hash code of the documentation tag
 			/// </summary>
 			internal readonly int HashCode;
-			
+
 			/// <summary>
 			/// Position in the .xml file where the documentation starts
 			/// </summary>
 			internal readonly int PositionInFile;
-			
+
 			internal IndexEntry(int hashCode, int positionInFile)
 			{
 				this.HashCode = hashCode;
 				this.PositionInFile = positionInFile;
 			}
-			
+
 			public int CompareTo(IndexEntry other)
 			{
 				return this.HashCode.CompareTo(other.HashCode);
 			}
 		}
-		
+
 		[NonSerialized]
-		XmlDocumentationCache cache = new XmlDocumentationCache();
-		
-		readonly string fileName;
-		readonly Encoding encoding;
-		volatile IndexEntry[] index; // SORTED array of index entries
-		
+		private XmlDocumentationCache cache = new XmlDocumentationCache();
+
+		private readonly string fileName;
+		private readonly Encoding encoding;
+		private volatile IndexEntry[] index; // SORTED array of index entries
+
 		#region Constructor / Redirection support
+
 		/// <summary>
 		/// Creates a new XmlDocumentationProvider.
 		/// </summary>
@@ -117,21 +122,29 @@ namespace ICSharpCode.NRefactory.Documentation
 		{
 			if (fileName == null)
 				throw new ArgumentNullException("fileName");
-			
-			using (FileStream fs = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.Read | FileShare.Delete)) {
-				using (XmlTextReader xmlReader = new XmlTextReader(fs)) {
+
+			using (FileStream fs = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.Read | FileShare.Delete))
+			{
+				using (XmlTextReader xmlReader = new XmlTextReader(fs))
+				{
 					xmlReader.XmlResolver = null; // no DTD resolving
 					xmlReader.MoveToContent();
-					if (string.IsNullOrEmpty(xmlReader.GetAttribute("redirect"))) {
+					if (string.IsNullOrEmpty(xmlReader.GetAttribute("redirect")))
+					{
 						this.fileName = fileName;
 						this.encoding = xmlReader.Encoding;
 						ReadXmlDoc(xmlReader);
-					} else {
+					}
+					else
+					{
 						string redirectionTarget = GetRedirectionTarget(fileName, xmlReader.GetAttribute("redirect"));
-						if (redirectionTarget != null) {
+						if (redirectionTarget != null)
+						{
 							Debug.WriteLine("XmlDoc " + fileName + " is redirecting to " + redirectionTarget);
-							using (FileStream redirectedFs = new FileStream(redirectionTarget, FileMode.Open, FileAccess.Read, FileShare.Read | FileShare.Delete)) {
-								using (XmlTextReader redirectedXmlReader = new XmlTextReader(redirectedFs)) {
+							using (FileStream redirectedFs = new FileStream(redirectionTarget, FileMode.Open, FileAccess.Read, FileShare.Read | FileShare.Delete))
+							{
+								using (XmlTextReader redirectedXmlReader = new XmlTextReader(redirectedFs))
+								{
 									redirectedXmlReader.XmlResolver = null; // no DTD resolving
 									redirectedXmlReader.MoveToContent();
 									this.fileName = redirectionTarget;
@@ -139,37 +152,39 @@ namespace ICSharpCode.NRefactory.Documentation
 									ReadXmlDoc(redirectedXmlReader);
 								}
 							}
-						} else {
+						}
+						else
+						{
 							throw new XmlException("XmlDoc " + fileName + " is redirecting to " + xmlReader.GetAttribute("redirect") + ", but that file was not found.");
 						}
 					}
 				}
 			}
 		}
-		
-		static string GetRedirectionTarget(string xmlFileName, string target)
+
+		private static string GetRedirectionTarget(string xmlFileName, string target)
 		{
 			string programFilesDir = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86);
 			programFilesDir = AppendDirectorySeparator(programFilesDir);
-			
+
 			string corSysDir = System.Runtime.InteropServices.RuntimeEnvironment.GetRuntimeDirectory();
 			corSysDir = AppendDirectorySeparator(corSysDir);
-			
-			var fileName = target.Replace ("%PROGRAMFILESDIR%", programFilesDir)
-				.Replace ("%CORSYSDIR%", corSysDir);
-			if (!Path.IsPathRooted (fileName))
-				fileName = Path.Combine (Path.GetDirectoryName (xmlFileName), fileName);
+
+			var fileName = target.Replace("%PROGRAMFILESDIR%", programFilesDir)
+				.Replace("%CORSYSDIR%", corSysDir);
+			if (!Path.IsPathRooted(fileName))
+				fileName = Path.Combine(Path.GetDirectoryName(xmlFileName), fileName);
 			return LookupLocalizedXmlDoc(fileName);
 		}
-		
-		static string AppendDirectorySeparator(string dir)
+
+		private static string AppendDirectorySeparator(string dir)
 		{
 			if (dir.EndsWith("\\", StringComparison.Ordinal) || dir.EndsWith("/", StringComparison.Ordinal))
 				return dir;
 			else
 				return dir + Path.DirectorySeparatorChar;
 		}
-		
+
 		/// <summary>
 		/// Given the assembly file name, looks up the XML documentation file name.
 		/// Returns null if no XML documentation file is found.
@@ -179,45 +194,55 @@ namespace ICSharpCode.NRefactory.Documentation
 			string xmlFileName = Path.ChangeExtension(fileName, ".xml");
 			string currentCulture = System.Threading.Thread.CurrentThread.CurrentUICulture.TwoLetterISOLanguageName;
 			string localizedXmlDocFile = GetLocalizedName(xmlFileName, currentCulture);
-			
+
 			Debug.WriteLine("Try find XMLDoc @" + localizedXmlDocFile);
-			if (File.Exists(localizedXmlDocFile)) {
+			if (File.Exists(localizedXmlDocFile))
+			{
 				return localizedXmlDocFile;
 			}
 			Debug.WriteLine("Try find XMLDoc @" + xmlFileName);
-			if (File.Exists(xmlFileName)) {
+			if (File.Exists(xmlFileName))
+			{
 				return xmlFileName;
 			}
-			if (currentCulture != "en") {
+			if (currentCulture != "en")
+			{
 				string englishXmlDocFile = GetLocalizedName(xmlFileName, "en");
 				Debug.WriteLine("Try find XMLDoc @" + englishXmlDocFile);
-				if (File.Exists(englishXmlDocFile)) {
+				if (File.Exists(englishXmlDocFile))
+				{
 					return englishXmlDocFile;
 				}
 			}
 			return null;
 		}
-		
-		static string GetLocalizedName(string fileName, string language)
+
+		private static string GetLocalizedName(string fileName, string language)
 		{
 			string localizedXmlDocFile = Path.GetDirectoryName(fileName);
 			localizedXmlDocFile = Path.Combine(localizedXmlDocFile, language);
 			localizedXmlDocFile = Path.Combine(localizedXmlDocFile, Path.GetFileName(fileName));
 			return localizedXmlDocFile;
 		}
-		#endregion
-		
+
+		#endregion Constructor / Redirection support
+
 		#region Load / Create Index
-		void ReadXmlDoc(XmlTextReader reader)
+
+		private void ReadXmlDoc(XmlTextReader reader)
 		{
 			//lastWriteDate = File.GetLastWriteTimeUtc(fileName);
 			// Open up a second file stream for the line<->position mapping
-			using (FileStream fs = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.Read | FileShare.Delete)) {
+			using (FileStream fs = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.Read | FileShare.Delete))
+			{
 				LinePositionMapper linePosMapper = new LinePositionMapper(fs, encoding);
 				List<IndexEntry> indexList = new List<IndexEntry>();
-				while (reader.Read()) {
-					if (reader.IsStartElement()) {
-						switch (reader.LocalName) {
+				while (reader.Read())
+				{
+					if (reader.IsStartElement())
+					{
+						switch (reader.LocalName)
+						{
 							case "members":
 								ReadMembersSection(reader, linePosMapper, indexList);
 								break;
@@ -228,27 +253,29 @@ namespace ICSharpCode.NRefactory.Documentation
 				this.index = indexList.ToArray(); // volatile write
 			}
 		}
-		
-		sealed class LinePositionMapper
+
+		private sealed class LinePositionMapper
 		{
-			readonly FileStream fs;
-			readonly Decoder decoder;
-			int currentLine = 1;
-			
+			private readonly FileStream fs;
+			private readonly Decoder decoder;
+			private int currentLine = 1;
+
 			// buffers for use with Decoder:
-			byte[] input = new byte[1];
-			char[] output = new char[1];
-			
+			private byte[] input = new byte[1];
+
+			private char[] output = new char[1];
+
 			public LinePositionMapper(FileStream fs, Encoding encoding)
 			{
 				this.decoder = encoding.GetDecoder();
 				this.fs = fs;
 			}
-			
+
 			public int GetPositionForLine(int line)
 			{
 				Debug.Assert(line >= currentLine);
-				while (line > currentLine) {
+				while (line > currentLine)
+				{
 					int b = fs.ReadByte();
 					if (b < 0)
 						throw new EndOfStreamException();
@@ -257,25 +284,31 @@ namespace ICSharpCode.NRefactory.Documentation
 					input[0] = (byte)b;
 					decoder.Convert(input, 0, 1, output, 0, 1, false, out bytesUsed, out charsUsed, out completed);
 					Debug.Assert(bytesUsed == 1);
-					if (charsUsed == 1 && output[0] == '\n') {
+					if (charsUsed == 1 && output[0] == '\n')
+					{
 						currentLine++;
 					}
 				}
 				return checked((int)fs.Position);
 			}
 		}
-		
-		static void ReadMembersSection(XmlTextReader reader, LinePositionMapper linePosMapper, List<IndexEntry> indexList)
+
+		private static void ReadMembersSection(XmlTextReader reader, LinePositionMapper linePosMapper, List<IndexEntry> indexList)
 		{
-			while (reader.Read()) {
-				switch (reader.NodeType) {
+			while (reader.Read())
+			{
+				switch (reader.NodeType)
+				{
 					case XmlNodeType.EndElement:
-						if (reader.LocalName == "members") {
+						if (reader.LocalName == "members")
+						{
 							return;
 						}
 						break;
+
 					case XmlNodeType.Element:
-						if (reader.LocalName == "member") {
+						if (reader.LocalName == "member")
+						{
 							int pos = linePosMapper.GetPositionForLine(reader.LineNumber) + Math.Max(reader.LinePosition - 2, 0);
 							string memberAttr = reader.GetAttribute("name");
 							if (memberAttr != null)
@@ -286,26 +319,30 @@ namespace ICSharpCode.NRefactory.Documentation
 				}
 			}
 		}
-		
+
 		/// <summary>
 		/// Hash algorithm used for the index.
 		/// This is a custom implementation so that old index files work correctly
 		/// even when the .NET string.GetHashCode implementation changes
 		/// (e.g. due to .NET 4.5 hash randomization)
 		/// </summary>
-		static int GetHashCode(string key)
+		private static int GetHashCode(string key)
 		{
-			unchecked {
+			unchecked
+			{
 				int h = 0;
-				foreach (char c in key) {
+				foreach (char c in key)
+				{
 					h = (h << 5) - h + c;
 				}
 				return h;
 			}
 		}
-		#endregion
-		
+
+		#endregion Load / Create Index
+
 		#region GetDocumentation
+
 		/// <summary>
 		/// Get the documentation for the member with the specified documentation key.
 		/// </summary>
@@ -315,37 +352,45 @@ namespace ICSharpCode.NRefactory.Documentation
 				throw new ArgumentNullException("key");
 			return GetDocumentation(key, true);
 		}
-		
-		string GetDocumentation(string key, bool allowReload)
+
+		private string GetDocumentation(string key, bool allowReload)
 		{
 			int hashcode = GetHashCode(key);
 			var index = this.index; // read volatile field
-			// index is sorted, so we can use binary search
+									// index is sorted, so we can use binary search
 			int m = Array.BinarySearch(index, new IndexEntry(hashcode, 0));
 			if (m < 0)
 				return null;
 			// correct hash code found.
 			// possibly there are multiple items with the same hash, so go to the first.
-			while (--m >= 0 && index[m].HashCode == hashcode);
+			while (--m >= 0 && index[m].HashCode == hashcode) ;
 			// m is now 1 before the first item with the correct hash
-			
+
 			XmlDocumentationCache cache = this.cache;
-			lock (cache) {
+			lock (cache)
+			{
 				string val;
-				if (!cache.TryGet(key, out val)) {
-					try {
+				if (!cache.TryGet(key, out val))
+				{
+					try
+					{
 						// go through all items that have the correct hash
-						while (++m < index.Length && index[m].HashCode == hashcode) {
+						while (++m < index.Length && index[m].HashCode == hashcode)
+						{
 							val = LoadDocumentation(key, index[m].PositionInFile);
 							if (val != null)
 								break;
 						}
 						// cache the result (even if it is null)
 						cache.Add(key, val);
-					} catch (IOException) {
+					}
+					catch (IOException)
+					{
 						// may happen if the documentation file was deleted/is inaccessible/changed (EndOfStreamException)
 						return allowReload ? ReloadAndGetDocumentation(key) : null;
-					} catch (XmlException) {
+					}
+					catch (XmlException)
+					{
 						// may happen if the documentation file was changed so that the file position no longer starts on a valid XML element
 						return allowReload ? ReloadAndGetDocumentation(key) : null;
 					}
@@ -353,57 +398,78 @@ namespace ICSharpCode.NRefactory.Documentation
 				return val;
 			}
 		}
-		
-		string ReloadAndGetDocumentation(string key)
+
+		private string ReloadAndGetDocumentation(string key)
 		{
-			try {
+			try
+			{
 				// Reload the index
-				using (FileStream fs = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.Read | FileShare.Delete)) {
-					using (XmlTextReader xmlReader = new XmlTextReader(fs)) {
+				using (FileStream fs = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.Read | FileShare.Delete))
+				{
+					using (XmlTextReader xmlReader = new XmlTextReader(fs))
+					{
 						xmlReader.XmlResolver = null; // no DTD resolving
 						xmlReader.MoveToContent();
 						ReadXmlDoc(xmlReader);
 					}
 				}
-			} catch (IOException) {
+			}
+			catch (IOException)
+			{
 				// Ignore errors on reload; IEntity.Documentation callers aren't prepared to handle exceptions
 				this.index = new IndexEntry[0]; // clear index to avoid future load attempts
 				return null;
-			} catch (XmlException) {
+			}
+			catch (XmlException)
+			{
 				this.index = new IndexEntry[0]; // clear index to avoid future load attempts
-				return null;				
+				return null;
 			}
 			return GetDocumentation(key, allowReload: false); // prevent infinite reload loops
 		}
-		#endregion
-		
+
+		#endregion GetDocumentation
+
 		#region GetDocumentation for entity
+
 		/// <inheritdoc/>
 		public DocumentationComment GetDocumentation(IEntity entity)
 		{
 			string xmlDoc = GetDocumentation(IdStringProvider.GetIdString(entity));
-			if (xmlDoc != null) {
+			if (xmlDoc != null)
+			{
 				return new DocumentationComment(new StringTextSource(xmlDoc), new SimpleTypeResolveContext(entity));
-			} else {
+			}
+			else
+			{
 				return null;
 			}
 		}
-		#endregion
-		
+
+		#endregion GetDocumentation for entity
+
 		#region Load / Read XML
-		string LoadDocumentation(string key, int positionInFile)
+
+		private string LoadDocumentation(string key, int positionInFile)
 		{
-			using (FileStream fs = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.Read | FileShare.Delete)) {
+			using (FileStream fs = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.Read | FileShare.Delete))
+			{
 				fs.Position = positionInFile;
 				var context = new XmlParserContext(null, null, null, XmlSpace.None) { Encoding = encoding };
-				using (XmlTextReader r = new XmlTextReader(fs, XmlNodeType.Element, context)) {
+				using (XmlTextReader r = new XmlTextReader(fs, XmlNodeType.Element, context))
+				{
 					r.XmlResolver = null; // no DTD resolving
-					while (r.Read()) {
-						if (r.NodeType == XmlNodeType.Element) {
+					while (r.Read())
+					{
+						if (r.NodeType == XmlNodeType.Element)
+						{
 							string memberAttr = r.GetAttribute("name");
-							if (memberAttr == key) {
+							if (memberAttr == key)
+							{
 								return r.ReadInnerXml();
-							} else {
+							}
+							else
+							{
 								return null;
 							}
 						}
@@ -412,8 +478,9 @@ namespace ICSharpCode.NRefactory.Documentation
 				}
 			}
 		}
-		#endregion
-		
+
+		#endregion Load / Read XML
+
 		public virtual void OnDeserialization(object sender)
 		{
 			cache = new XmlDocumentationCache();

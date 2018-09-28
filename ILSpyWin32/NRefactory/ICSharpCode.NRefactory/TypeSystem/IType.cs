@@ -1,14 +1,14 @@
 ﻿// Copyright (c) 2010-2013 AlphaSierraPapa for the SharpDevelop Team
-// 
+//
 // Permission is hereby granted, free of charge, to any person obtaining a copy of this
 // software and associated documentation files (the "Software"), to deal in the Software
 // without restriction, including without limitation the rights to use, copy, modify, merge,
 // publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons
 // to whom the Software is furnished to do so, subject to the following conditions:
-// 
+//
 // The above copyright notice and this permission notice shall be included in all copies or
 // substantial portions of the Software.
-// 
+//
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
 // INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
 // PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
@@ -35,7 +35,7 @@ namespace ICSharpCode.NRefactory.TypeSystem
 	/// - a managed reference (<see cref="ByReferenceType"/>)
 	/// - one of the special types (<see cref="SpecialType.UnknownType"/>, <see cref="SpecialType.NullType"/>,
 	///      <see cref="SpecialType.Dynamic"/>, <see cref="SpecialType.UnboundTypeArgument"/>)
-	/// 
+	///
 	/// The <see cref="IType.Kind"/> property can be used to switch on the kind of a type.
 	/// </para>
 	/// <para>
@@ -53,7 +53,7 @@ namespace ICSharpCode.NRefactory.TypeSystem
 		/// Gets the type kind.
 		/// </summary>
 		TypeKind Kind { get; }
-		
+
 		/// <summary>
 		/// Gets whether the type is a reference type or value type.
 		/// </summary>
@@ -63,19 +63,19 @@ namespace ICSharpCode.NRefactory.TypeSystem
 		/// null, if the type is not known (e.g. unconstrained generic type parameter or type not found)
 		/// </returns>
 		bool? IsReferenceType { get; }
-		
+
 		/// <summary>
 		/// Gets the underlying type definition.
 		/// Can return null for types which do not have a type definition (for example arrays, pointers, type parameters).
 		/// </summary>
 		ITypeDefinition GetDefinition();
-		
+
 		/// <summary>
 		/// Gets the parent type, if this is a nested type.
 		/// Returns null for top-level types.
 		/// </summary>
 		IType DeclaringType { get; }
-		
+
 		/// <summary>
 		/// Gets the number of type parameters.
 		/// </summary>
@@ -85,7 +85,7 @@ namespace ICSharpCode.NRefactory.TypeSystem
 		/// Gets the type arguments passed to this type.
 		/// If this type is a generic type definition that is not parameterized, this property returns the type parameters,
 		/// as if the type was parameterized with its own type arguments (<c>class C&lt;T&gt; { C&lt;T&gt; field; }</c>).
-		/// 
+		///
 		/// NOTE: The type will change to IReadOnlyList&lt;IType&gt; in future versions.
 		/// </summary>
 		IList<IType> TypeArguments { get; }
@@ -100,7 +100,7 @@ namespace ICSharpCode.NRefactory.TypeSystem
 		/// </summary>
 		/// <returns>The return value of the ITypeVisitor.Visit call</returns>
 		IType AcceptVisitor(TypeVisitor visitor);
-		
+
 		/// <summary>
 		/// Calls ITypeVisitor.Visit for all children of this type, and reconstructs this type with the children based
 		/// on the return values of the visit calls.
@@ -109,13 +109,13 @@ namespace ICSharpCode.NRefactory.TypeSystem
 		/// If the visitor returned the original types for all children (or if there are no children), returns <c>this</c>.
 		/// </returns>
 		IType VisitChildren(TypeVisitor visitor);
-		
+
 		/// <summary>
 		/// Gets the direct base types.
 		/// </summary>
 		/// <returns>Returns the direct base types including interfaces</returns>
 		IEnumerable<IType> DirectBaseTypes { get; }
-		
+
 		/// <summary>
 		/// Creates a type reference that can be used to look up a type equivalent to this type in another compilation.
 		/// </summary>
@@ -131,7 +131,7 @@ namespace ICSharpCode.NRefactory.TypeSystem
 		/// Returns TypeParameterSubstitution.Identity if the type is not parametrized.
 		/// </summary>
 		TypeParameterSubstitution GetSubstitution();
-		
+
 		/// <summary>
 		/// Gets a type visitor that performs the substitution of class type parameters with the type arguments
 		/// of this parameterized type,
@@ -140,7 +140,6 @@ namespace ICSharpCode.NRefactory.TypeSystem
 		/// </summary>
 		TypeParameterSubstitution GetSubstitution(IList<IType> methodTypeArguments);
 
-		
 		/// <summary>
 		/// Gets inner classes (including inherited inner classes).
 		/// </summary>
@@ -165,7 +164,7 @@ namespace ICSharpCode.NRefactory.TypeSystem
 		/// 	class Nested&lt;X> {}
 		/// }
 		/// class Derived&lt;A, B> : Base&lt;B> {}
-		/// 
+		///
 		/// Derived[string,int].GetNestedTypes() = { Base`1+Nested`1[int, unbound] }
 		/// Derived.GetNestedTypes() = { Base`1+Nested`1[`1, unbound] }
 		/// Base[`1].GetNestedTypes() = { Base`1+Nested`1[`1, unbound] }
@@ -173,16 +172,16 @@ namespace ICSharpCode.NRefactory.TypeSystem
 		/// </code>
 		/// </example>
 		IEnumerable<IType> GetNestedTypes(Predicate<ITypeDefinition> filter = null, GetMemberOptions options = GetMemberOptions.None);
-		
+
 		// Note that we cannot 'leak' the additional type parameter as we leak the normal type parameters, because
 		// the index might collide. For example,
 		//   class Base<T> { class Nested<X> {} }
 		//   class Derived<A, B> : Base<B> { }
-		// 
+		//
 		// Derived<string, int>.GetNestedTypes() = Base+Nested<int, UnboundTypeArgument>
 		// Derived.GetNestedTypes() = Base+Nested<`1, >
 		//  Here `1 refers to B, and there's no way to return X as it would collide with B.
-		
+
 		/// <summary>
 		/// Gets inner classes (including inherited inner classes)
 		/// that have <c>typeArguments.Count</c> additional type parameters.
@@ -198,7 +197,7 @@ namespace ICSharpCode.NRefactory.TypeSystem
 		/// from an <see cref="ITypeDefinition"/> and 'leaks' type parameters in member signatures.
 		/// </remarks>
 		IEnumerable<IType> GetNestedTypes(IList<IType> typeArguments, Predicate<ITypeDefinition> filter = null, GetMemberOptions options = GetMemberOptions.None);
-		
+
 		/// <summary>
 		/// Gets all instance constructors for this type.
 		/// </summary>
@@ -214,7 +213,7 @@ namespace ICSharpCode.NRefactory.TypeSystem
 		/// </para>
 		/// </remarks>
 		IEnumerable<IMethod> GetConstructors(Predicate<IUnresolvedMethod> filter = null, GetMemberOptions options = GetMemberOptions.IgnoreInheritedMembers);
-		
+
 		/// <summary>
 		/// Gets all methods that can be called on this type.
 		/// </summary>
@@ -234,14 +233,14 @@ namespace ICSharpCode.NRefactory.TypeSystem
 		/// arguments involve another method's type parameters, the resulting specialized signature
 		/// will be ambiguous as to which method a type parameter belongs to.
 		/// For example, "List[[``0]].GetMethods()" will return "ConvertAll(Converter`2[[``0, ``0]])".
-		/// 
+		///
 		/// If possible, use the other GetMethods() overload to supply type arguments to the method,
 		/// so that both class and method type parameter can be substituted at the same time, so that
 		/// the ambiguity can be avoided.
 		/// </para>
 		/// </remarks>
 		IEnumerable<IMethod> GetMethods(Predicate<IUnresolvedMethod> filter = null, GetMemberOptions options = GetMemberOptions.None);
-		
+
 		/// <summary>
 		/// Gets all generic methods that can be called on this type with the specified type arguments.
 		/// </summary>
@@ -262,7 +261,7 @@ namespace ICSharpCode.NRefactory.TypeSystem
 		/// </para>
 		/// </remarks>
 		IEnumerable<IMethod> GetMethods(IList<IType> typeArguments, Predicate<IUnresolvedMethod> filter = null, GetMemberOptions options = GetMemberOptions.None);
-		
+
 		/// <summary>
 		/// Gets all properties that can be called on this type.
 		/// </summary>
@@ -274,7 +273,7 @@ namespace ICSharpCode.NRefactory.TypeSystem
 		/// and the appropriate <see cref="Implementation.SpecializedProperty"/> will be returned.
 		/// </remarks>
 		IEnumerable<IProperty> GetProperties(Predicate<IUnresolvedProperty> filter = null, GetMemberOptions options = GetMemberOptions.None);
-		
+
 		/// <summary>
 		/// Gets all fields that can be accessed on this type.
 		/// </summary>
@@ -286,7 +285,7 @@ namespace ICSharpCode.NRefactory.TypeSystem
 		/// and the appropriate <see cref="Implementation.SpecializedField"/> will be returned.
 		/// </remarks>
 		IEnumerable<IField> GetFields(Predicate<IUnresolvedField> filter = null, GetMemberOptions options = GetMemberOptions.None);
-		
+
 		/// <summary>
 		/// Gets all events that can be accessed on this type.
 		/// </summary>
@@ -298,7 +297,7 @@ namespace ICSharpCode.NRefactory.TypeSystem
 		/// and the appropriate <see cref="Implementation.SpecializedEvent"/> will be returned.
 		/// </remarks>
 		IEnumerable<IEvent> GetEvents(Predicate<IUnresolvedEvent> filter = null, GetMemberOptions options = GetMemberOptions.None);
-		
+
 		/// <summary>
 		/// Gets all members that can be called on this type.
 		/// </summary>
@@ -317,7 +316,7 @@ namespace ICSharpCode.NRefactory.TypeSystem
 		/// </para>
 		/// </remarks>
 		IEnumerable<IMember> GetMembers(Predicate<IUnresolvedMember> filter = null, GetMemberOptions options = GetMemberOptions.None);
-		
+
 		/// <summary>
 		/// Gets all accessors belonging to properties or events on this type.
 		/// </summary>
@@ -329,7 +328,7 @@ namespace ICSharpCode.NRefactory.TypeSystem
 		/// </remarks>
 		IEnumerable<IMethod> GetAccessors(Predicate<IUnresolvedMethod> filter = null, GetMemberOptions options = GetMemberOptions.None);
 	}
-	
+
 	[Flags]
 	public enum GetMemberOptions
 	{
@@ -338,10 +337,12 @@ namespace ICSharpCode.NRefactory.TypeSystem
 		/// Members will be specialized, and inherited members will be included.
 		/// </summary>
 		None = 0x00,
+
 		/// <summary>
 		/// Do not specialize the returned members - directly return the definitions.
 		/// </summary>
 		ReturnMemberDefinitions = 0x01,
+
 		/// <summary>
 		/// Do not list inherited members - only list members defined directly on this type.
 		/// </summary>

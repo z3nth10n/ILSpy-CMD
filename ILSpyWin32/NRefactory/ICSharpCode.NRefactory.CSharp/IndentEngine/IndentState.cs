@@ -34,7 +34,7 @@ namespace ICSharpCode.NRefactory.CSharp
 	#region IndentState
 
 	/// <summary>
-	///     The base class for all indentation states. 
+	///     The base class for all indentation states.
 	///     Each state defines the logic for indentation based on chars that
 	///     are pushed to it.
 	/// </summary>
@@ -48,7 +48,7 @@ namespace ICSharpCode.NRefactory.CSharp
 		public CSharpIndentEngine Engine;
 
 		/// <summary>
-		///     The parent state. 
+		///     The parent state.
 		///     This state can use the indentation levels of its parent.
 		///     When this state exits, the engine returns to the parent.
 		/// </summary>
@@ -57,7 +57,7 @@ namespace ICSharpCode.NRefactory.CSharp
 		/// <summary>
 		///     The indentation of the current line.
 		///     This is set when the state is created and will be changed to
-		///     <see cref="NextLineIndent"/> when the <see cref="CSharpIndentEngine.newLineChar"/> 
+		///     <see cref="NextLineIndent"/> when the <see cref="CSharpIndentEngine.newLineChar"/>
 		///     is pushed.
 		/// </summary>
 		public Indent ThisLineIndent;
@@ -69,7 +69,7 @@ namespace ICSharpCode.NRefactory.CSharp
 		/// </summary>
 		public Indent NextLineIndent;
 
-		#endregion
+		#endregion Properties
 
 		#region Constructors
 
@@ -96,7 +96,7 @@ namespace ICSharpCode.NRefactory.CSharp
 			NextLineIndent = prototype.NextLineIndent.Clone();
 		}
 
-		#endregion
+		#endregion Constructors
 
 		#region IClonable
 
@@ -107,11 +107,11 @@ namespace ICSharpCode.NRefactory.CSharp
 
 		public abstract IndentState Clone(CSharpIndentEngine engine);
 
-		#endregion
+		#endregion IClonable
 
 		#region Methods
 
-		internal void Initialize (CSharpIndentEngine engine, IndentState parent = null)
+		internal void Initialize(CSharpIndentEngine engine, IndentState parent = null)
 		{
 			Parent = parent;
 			Engine = engine;
@@ -141,7 +141,7 @@ namespace ICSharpCode.NRefactory.CSharp
 			if (Parent != null)
 			{
 				// if a state exits on the newline character, it has to push
-				// it back to its parent (and so on recursively if the parent 
+				// it back to its parent (and so on recursively if the parent
 				// state also exits). Otherwise, the parent state wouldn't
 				// know that the engine isn't on the same line anymore.
 				if (Engine.currentChar == Engine.newLineChar)
@@ -163,7 +163,7 @@ namespace ICSharpCode.NRefactory.CSharp
 		///     The type of the new state. Must be assignable from <see cref="IndentState"/>.
 		/// </typeparam>
 		public void ChangeState<T>()
-			where T : IndentState, new ()
+			where T : IndentState, new()
 		{
 			var t = new T();
 			t.Initialize(Engine, Engine.currentState);
@@ -224,10 +224,10 @@ namespace ICSharpCode.NRefactory.CSharp
 		public virtual void CheckKeywordOnPush(string keyword)
 		{ }
 
-		#endregion
+		#endregion Methods
 	}
 
-	#endregion
+	#endregion IndentState
 
 	#region Null state
 
@@ -255,7 +255,7 @@ namespace ICSharpCode.NRefactory.CSharp
 		}
 	}
 
-	#endregion
+	#endregion Null state
 
 	#region Brackets body states
 
@@ -269,7 +269,6 @@ namespace ICSharpCode.NRefactory.CSharp
 	/// </remarks>
 	public abstract class BracketsBodyBaseState : IndentState
 	{
-	
 		/// <summary>
 		///     When derived in a concrete bracket body state, represents
 		///     the closed bracket character pair.
@@ -286,19 +285,23 @@ namespace ICSharpCode.NRefactory.CSharp
 		public override void Push(char ch)
 		{
 			base.Push(ch);
-			switch (ch) {
+			switch (ch)
+			{
 				case '#':
 					if (Engine.isLineStart)
 						ChangeState<PreProcessorState>();
 					break;
+
 				case '/':
 					if (Engine.previousChar == '/')
 						ChangeState<LineCommentState>();
 					break;
+
 				case '*':
 					if (Engine.previousChar == '/')
 						ChangeState<MultiLineCommentState>();
 					break;
+
 				case '"':
 					if (Engine.previousChar == '@')
 					{
@@ -309,18 +312,23 @@ namespace ICSharpCode.NRefactory.CSharp
 						ChangeState<StringLiteralState>();
 					}
 					break;
+
 				case '\'':
 					ChangeState<CharacterState>();
 					break;
+
 				case '{':
 					ChangeState<BracesBodyState>();
 					break;
+
 				case '(':
 					ChangeState<ParenthesesBodyState>();
 					break;
+
 				case '[':
 					ChangeState<SquareBracketsBodyState>();
 					break;
+
 				default:
 					if (ch == ClosedBracket)
 						ExitState();
@@ -329,7 +337,7 @@ namespace ICSharpCode.NRefactory.CSharp
 		}
 	}
 
-	#endregion
+	#endregion Brackets body base
 
 	#region Braces body state
 
@@ -373,7 +381,8 @@ namespace ICSharpCode.NRefactory.CSharp
 				currentStatement = value;
 			}
 		}
-		Statement currentStatement;
+
+		private Statement currentStatement;
 
 		/// <summary>
 		///    Contains indent levels of nested if statements.
@@ -483,8 +492,8 @@ namespace ICSharpCode.NRefactory.CSharp
 					IsMemberReferenceDotHandled = true;
 
 					ThisLineIndent.RemoveAlignment();
-					while (ThisLineIndent.CurIndent > PreviousLineIndent && 
-					       ThisLineIndent.PopIf(IndentType.Continuation)) ;
+					while (ThisLineIndent.CurIndent > PreviousLineIndent &&
+						   ThisLineIndent.PopIf(IndentType.Continuation)) ;
 					ThisLineIndent.Push(IndentType.Continuation);
 					NextLineIndent = ThisLineIndent.Clone();
 				}
@@ -553,10 +562,12 @@ namespace ICSharpCode.NRefactory.CSharp
 				ThisLineIndent.RemoveAlignment();
 				ThisLineIndent.PopTry();
 				BraceStyle style;
-				if (TryGetBraceStyle(this.CurrentBody, out style)) {
+				if (TryGetBraceStyle(this.CurrentBody, out style))
+				{
 					if (style == BraceStyle.NextLineShifted ||
-						style == BraceStyle.NextLineShifted2||
-						style == BraceStyle.BannerStyle) {
+						style == BraceStyle.NextLineShifted2 ||
+						style == BraceStyle.BannerStyle)
+					{
 						ThisLineIndent.Push(IndentType.Block);
 					}
 				}
@@ -618,7 +629,7 @@ namespace ICSharpCode.NRefactory.CSharp
 			Return
 		}
 
-		static readonly Dictionary<string, Body> bodies = new Dictionary<string, Body>
+		private static readonly Dictionary<string, Body> bodies = new Dictionary<string, Body>
 		{
 			{ "namespace", Body.Namespace },
 			{ "class", Body.Class },
@@ -631,7 +642,7 @@ namespace ICSharpCode.NRefactory.CSharp
 			{ "finally", Body.Finally },
 		};
 
-		static readonly Dictionary<string, Statement> statements = new Dictionary<string, Statement>
+		private static readonly Dictionary<string, Statement> statements = new Dictionary<string, Statement>
 		{
 			{ "if", Statement.If },
 			// { "else", Statement.Else }, // should be handled in CheckKeywordAtPush
@@ -644,7 +655,7 @@ namespace ICSharpCode.NRefactory.CSharp
 			{ "return", Statement.Return },
 		};
 
-		static readonly HashSet<string> blocks = new HashSet<string>
+		private static readonly HashSet<string> blocks = new HashSet<string>
 		{
 			"namespace",
 			"class",
@@ -665,12 +676,12 @@ namespace ICSharpCode.NRefactory.CSharp
 			"using",
 		};
 
-		readonly string[] caseDefaultKeywords = {
+		private readonly string[] caseDefaultKeywords = {
 			"case",
 			"default"
 		};
 
-		readonly string[] classStructKeywords = {
+		private readonly string[] classStructKeywords = {
 			"class",
 			"struct"
 		};
@@ -799,7 +810,7 @@ namespace ICSharpCode.NRefactory.CSharp
 		///     Pushes a new level of indentation depending on the given
 		///     <paramref name="braceStyle"/>.
 		/// </summary>
-		void AddIndentation(BraceStyle braceStyle)
+		private void AddIndentation(BraceStyle braceStyle)
 		{
 			switch (braceStyle)
 			{
@@ -807,6 +818,7 @@ namespace ICSharpCode.NRefactory.CSharp
 					ThisLineIndent.Push(IndentType.Block);
 					NextLineIndent.Push(IndentType.Block);
 					break;
+
 				case BraceStyle.DoNotChange:
 				case BraceStyle.EndOfLine:
 				case BraceStyle.EndOfLineWithoutSpace:
@@ -814,6 +826,7 @@ namespace ICSharpCode.NRefactory.CSharp
 				case BraceStyle.BannerStyle:
 					NextLineIndent.Push(IndentType.Block);
 					break;
+
 				case BraceStyle.NextLineShifted2:
 					ThisLineIndent.Push(IndentType.Block);
 					NextLineIndent.Push(IndentType.DoubleBlock);
@@ -821,7 +834,7 @@ namespace ICSharpCode.NRefactory.CSharp
 			}
 		}
 
-		bool TryGetBraceStyle (Body body, out BraceStyle style)
+		private bool TryGetBraceStyle(Body body, out BraceStyle style)
 		{
 			style = BraceStyle.DoNotChange;
 			switch (body)
@@ -831,36 +844,43 @@ namespace ICSharpCode.NRefactory.CSharp
 						return false;
 					style = Engine.formattingOptions.StatementBraceStyle;
 					return true;
+
 				case Body.Namespace:
 					if (!Engine.formattingOptions.IndentNamespaceBody)
 						return false;
 					style = Engine.formattingOptions.NamespaceBraceStyle;
 					return true;
+
 				case Body.Class:
 					if (!Engine.formattingOptions.IndentClassBody)
 						return false;
 					style = Engine.formattingOptions.ClassBraceStyle;
 					return true;
+
 				case Body.Struct:
 					if (!Engine.formattingOptions.IndentStructBody)
 						return false;
 					style = Engine.formattingOptions.StructBraceStyle;
 					return true;
+
 				case Body.Interface:
 					if (!Engine.formattingOptions.IndentInterfaceBody)
 						return false;
 					style = Engine.formattingOptions.InterfaceBraceStyle;
 					return true;
+
 				case Body.Enum:
 					if (!Engine.formattingOptions.IndentEnumBody)
 						return false;
 					style = Engine.formattingOptions.EnumBraceStyle;
 					return true;
+
 				case Body.Switch:
 					if (!Engine.formattingOptions.IndentSwitchBody)
 						return false;
 					style = Engine.formattingOptions.StatementBraceStyle;
 					return true;
+
 				case Body.Try:
 				case Body.Catch:
 				case Body.Finally:
@@ -874,7 +894,7 @@ namespace ICSharpCode.NRefactory.CSharp
 		///     Pushes a new level of indentation depending on the given
 		///     <paramref name="body"/>.
 		/// </summary>
-		void AddIndentation(Body body)
+		private void AddIndentation(Body body)
 		{
 			var isExpression = Parent is ParenthesesBodyState || Parent is SquareBracketsBodyState ||
 				(Parent is BracesBodyState && ((BracesBodyState)Parent).IsRightHandExpression);
@@ -887,7 +907,9 @@ namespace ICSharpCode.NRefactory.CSharp
 			if (TryGetBraceStyle(body, out style))
 			{
 				AddIndentation(style);
-			} else {
+			}
+			else
+			{
 				NextLineIndent.Push(IndentType.Empty);
 			}
 		}
@@ -898,7 +920,7 @@ namespace ICSharpCode.NRefactory.CSharp
 		/// <returns>
 		///     The correct <see cref="Body"/> type for this state.
 		/// </returns>
-		static Body extractBody(IndentState state)
+		private static Body extractBody(IndentState state)
 		{
 			if (state != null && state is BracesBodyState)
 			{
@@ -908,10 +930,10 @@ namespace ICSharpCode.NRefactory.CSharp
 			return Body.None;
 		}
 
-		#endregion
+		#endregion Helpers
 	}
 
-	#endregion
+	#endregion Braces body state
 
 	#region Global body state
 
@@ -931,10 +953,9 @@ namespace ICSharpCode.NRefactory.CSharp
 		public GlobalBodyState()
 		{ }
 
-
 		public GlobalBodyState(CSharpIndentEngine engine)
 		{
-			Initialize (engine, null);
+			Initialize(engine, null);
 		}
 
 		public GlobalBodyState(GlobalBodyState prototype, CSharpIndentEngine engine)
@@ -953,7 +974,7 @@ namespace ICSharpCode.NRefactory.CSharp
 		}
 	}
 
-	#endregion
+	#endregion Global body state
 
 	#region Switch-case body state
 
@@ -992,7 +1013,7 @@ namespace ICSharpCode.NRefactory.CSharp
 			NextLineIndent = ThisLineIndent.Clone();
 
 			// remove all continuations and extra spaces
-			ThisLineIndent.RemoveAlignment(); 
+			ThisLineIndent.RemoveAlignment();
 			ThisLineIndent.PopWhile(IndentType.Continuation);
 
 			NextLineIndent.RemoveAlignment();
@@ -1008,12 +1029,12 @@ namespace ICSharpCode.NRefactory.CSharp
 			}
 		}
 
-		static readonly string[] caseDefaultKeywords = {
+		private static readonly string[] caseDefaultKeywords = {
 			"case",
 			"default"
 		};
 
-		static readonly string[] breakContinueReturnGotoKeywords = {
+		private static readonly string[] breakContinueReturnGotoKeywords = {
 			"break",
 			"continue",
 			"return",
@@ -1039,7 +1060,6 @@ namespace ICSharpCode.NRefactory.CSharp
 			base.CheckKeyword(keyword);
 		}
 
-
 		public override void OnExit()
 		{
 			//Parent.OnExit();
@@ -1051,7 +1071,7 @@ namespace ICSharpCode.NRefactory.CSharp
 		}
 	}
 
-	#endregion
+	#endregion Switch-case body state
 
 	#region Parentheses body state
 
@@ -1086,9 +1106,11 @@ namespace ICSharpCode.NRefactory.CSharp
 		{
 			if (ch == Engine.newLineChar)
 			{
-				if (Engine.formattingOptions.AnonymousMethodBraceStyle == BraceStyle.EndOfLine || 
-					Engine.formattingOptions.AnonymousMethodBraceStyle == BraceStyle.EndOfLineWithoutSpace) {
-					if (NextLineIndent.PopIf(IndentType.Continuation)) {
+				if (Engine.formattingOptions.AnonymousMethodBraceStyle == BraceStyle.EndOfLine ||
+					Engine.formattingOptions.AnonymousMethodBraceStyle == BraceStyle.EndOfLineWithoutSpace)
+				{
+					if (NextLineIndent.PopIf(IndentType.Continuation))
+					{
 						NextLineIndent.Push(IndentType.Block);
 					}
 				}
@@ -1138,7 +1160,7 @@ namespace ICSharpCode.NRefactory.CSharp
 		}
 	}
 
-	#endregion
+	#endregion Parentheses body state
 
 	#region Square brackets body state
 
@@ -1223,9 +1245,9 @@ namespace ICSharpCode.NRefactory.CSharp
 		}
 	}
 
-	#endregion
+	#endregion Square brackets body state
 
-	#endregion
+	#endregion Brackets body states
 
 	#region PreProcessor state
 
@@ -1233,7 +1255,7 @@ namespace ICSharpCode.NRefactory.CSharp
 	///     PreProcessor directive state.
 	/// </summary>
 	/// <remarks>
-	///     Activated when the '#' char is pushed and the 
+	///     Activated when the '#' char is pushed and the
 	///     <see cref="CSharpIndentEngine.isLineStart"/> is true.
 	/// </remarks>
 	public class PreProcessorState : IndentState
@@ -1265,7 +1287,7 @@ namespace ICSharpCode.NRefactory.CSharp
 		public override void Push(char ch)
 		{
 			// HACK: if this change would be left for the CheckKeyword method, we will lose
-			//       it if the next pushed char is newLineChar since ThisLineIndent will be 
+			//       it if the next pushed char is newLineChar since ThisLineIndent will be
 			//       immediately replaced with NextLineIndent. As this most likely will
 			//       happen, we check for "endregion" on every push.
 			if (Engine.wordToken.ToString() == "endregion")
@@ -1293,11 +1315,12 @@ namespace ICSharpCode.NRefactory.CSharp
 						}
 						else
 						{
-							// the if/elif directive is false -> change to a state that will 
+							// the if/elif directive is false -> change to a state that will
 							// ignore any chars until #endif or #elif
 							ChangeState<PreProcessorCommentState>();
 						}
 						break;
+
 					case PreProcessorDirective.Elif:
 						if (Engine.ifDirectiveEvalResults.Count > 0)
 						{
@@ -1311,10 +1334,11 @@ namespace ICSharpCode.NRefactory.CSharp
 						// previous if was true -> comment
 						ChangeState<PreProcessorCommentState>();
 						break;
+
 					case PreProcessorDirective.Else:
 						if (Engine.ifDirectiveEvalResults.Count > 0 && Engine.ifDirectiveEvalResults.Peek())
 						{
-							// some if/elif directive was true -> change to a state that will 
+							// some if/elif directive was true -> change to a state that will
 							// ignore any chars until #endif
 							ChangeState<PreProcessorCommentState>();
 						}
@@ -1325,6 +1349,7 @@ namespace ICSharpCode.NRefactory.CSharp
 								ExitState();
 						}
 						break;
+
 					case PreProcessorDirective.Define:
 						var defineSymbol = DirectiveStatement.ToString().Trim();
 						if (!Engine.conditionalSymbols.Contains(defineSymbol))
@@ -1332,6 +1357,7 @@ namespace ICSharpCode.NRefactory.CSharp
 							Engine.conditionalSymbols.Add(defineSymbol);
 						}
 						break;
+
 					case PreProcessorDirective.Undef:
 						var undefineSymbol = DirectiveStatement.ToString().Trim();
 						if (Engine.conditionalSymbols.Contains(undefineSymbol))
@@ -1339,6 +1365,7 @@ namespace ICSharpCode.NRefactory.CSharp
 							Engine.conditionalSymbols.Remove(undefineSymbol);
 						}
 						break;
+
 					case PreProcessorDirective.Endif:
 						// marks the end of this block
 						if (Engine.currentState is PreProcessorCommentState)
@@ -1347,6 +1374,7 @@ namespace ICSharpCode.NRefactory.CSharp
 						Engine.ifDirectiveEvalResults.Pop();
 						Engine.ifDirectiveIndents.Pop();
 						break;
+
 					case PreProcessorDirective.Region:
 					case PreProcessorDirective.Pragma:
 					case PreProcessorDirective.Warning:
@@ -1380,7 +1408,7 @@ namespace ICSharpCode.NRefactory.CSharp
 			NextLineIndent = Parent.NextLineIndent.Clone();
 		}
 
-		static readonly Dictionary<string, PreProcessorDirective> preProcessorDirectives = new Dictionary<string, PreProcessorDirective>
+		private static readonly Dictionary<string, PreProcessorDirective> preProcessorDirectives = new Dictionary<string, PreProcessorDirective>
 		{
 			{ "if", PreProcessorDirective.If },
 			{ "elif", PreProcessorDirective.Elif },
@@ -1456,12 +1484,12 @@ namespace ICSharpCode.NRefactory.CSharp
 
 		#region Pre processor evaluation (from cs-tokenizer.cs)
 
-		static bool is_identifier_start_character(int c)
+		private static bool is_identifier_start_character(int c)
 		{
 			return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_' || Char.IsLetter((char)c);
 		}
 
-		static bool is_identifier_part_character(char c)
+		private static bool is_identifier_part_character(char c)
 		{
 			if (c >= 'a' && c <= 'z')
 				return true;
@@ -1478,7 +1506,7 @@ namespace ICSharpCode.NRefactory.CSharp
 			return Char.IsLetter(c) || Char.GetUnicodeCategory(c) == UnicodeCategory.ConnectorPunctuation;
 		}
 
-		bool eval_val(string s)
+		private bool eval_val(string s)
 		{
 			if (s == "true")
 				return true;
@@ -1489,7 +1517,7 @@ namespace ICSharpCode.NRefactory.CSharp
 				Engine.customConditionalSymbols != null && Engine.customConditionalSymbols.Contains(s);
 		}
 
-		bool pp_primary(ref string s)
+		private bool pp_primary(ref string s)
 		{
 			s = s.Trim();
 			int len = s.Length;
@@ -1535,7 +1563,7 @@ namespace ICSharpCode.NRefactory.CSharp
 			return false;
 		}
 
-		bool pp_unary(ref string s)
+		private bool pp_unary(ref string s)
 		{
 			s = s.Trim();
 			int len = s.Length;
@@ -1560,7 +1588,7 @@ namespace ICSharpCode.NRefactory.CSharp
 			}
 		}
 
-		bool pp_eq(ref string s)
+		private bool pp_eq(ref string s)
 		{
 			bool va = pp_unary(ref s);
 
@@ -1585,15 +1613,13 @@ namespace ICSharpCode.NRefactory.CSharp
 					s = s.Substring(2);
 
 					return va != pp_unary(ref s);
-
 				}
 			}
 
 			return va;
-
 		}
 
-		bool pp_and(ref string s)
+		private bool pp_and(ref string s)
 		{
 			bool va = pp_eq(ref s);
 
@@ -1620,7 +1646,7 @@ namespace ICSharpCode.NRefactory.CSharp
 		//
 		// Evaluates an expression for `#if' or `#elif'
 		//
-		bool pp_expr(ref string s, bool isTerm)
+		private bool pp_expr(ref string s, bool isTerm)
 		{
 			bool va = pp_and(ref s);
 			s = s.Trim();
@@ -1638,7 +1664,6 @@ namespace ICSharpCode.NRefactory.CSharp
 					}
 					else
 					{
-
 						return false;
 					}
 				}
@@ -1651,7 +1676,7 @@ namespace ICSharpCode.NRefactory.CSharp
 			return va;
 		}
 
-		bool eval(string s)
+		private bool eval(string s)
 		{
 			bool v = pp_expr(ref s, true);
 			s = s.Trim();
@@ -1663,10 +1688,10 @@ namespace ICSharpCode.NRefactory.CSharp
 			return v;
 		}
 
-		#endregion
+		#endregion Pre processor evaluation (from cs-tokenizer.cs)
 	}
 
-	#endregion
+	#endregion PreProcessor state
 
 	#region PreProcessorComment state
 
@@ -1699,7 +1724,7 @@ namespace ICSharpCode.NRefactory.CSharp
 		public override void InitializeState()
 		{
 			if (Engine.formattingOptions.IndentPreprocessorDirectives &&
-			    Engine.ifDirectiveIndents.Count > 0)
+				Engine.ifDirectiveIndents.Count > 0)
 			{
 				ThisLineIndent = Engine.ifDirectiveIndents.Peek().Clone();
 				NextLineIndent = ThisLineIndent.Clone();
@@ -1717,7 +1742,7 @@ namespace ICSharpCode.NRefactory.CSharp
 		}
 	}
 
-	#endregion
+	#endregion PreProcessorComment state
 
 	#region LineComment state
 
@@ -1777,7 +1802,7 @@ namespace ICSharpCode.NRefactory.CSharp
 		}
 	}
 
-	#endregion
+	#endregion LineComment state
 
 	#region DocComment state
 
@@ -1815,7 +1840,7 @@ namespace ICSharpCode.NRefactory.CSharp
 		}
 	}
 
-	#endregion
+	#endregion DocComment state
 
 	#region MultiLineComment state
 
@@ -1867,7 +1892,7 @@ namespace ICSharpCode.NRefactory.CSharp
 		}
 	}
 
-	#endregion
+	#endregion MultiLineComment state
 
 	#region StringLiteral state
 
@@ -1894,9 +1919,12 @@ namespace ICSharpCode.NRefactory.CSharp
 		{
 			base.Push(ch);
 
-			if (ch == Engine.newLineChar || (!IsEscaped && ch == '"')) {
+			if (ch == Engine.newLineChar || (!IsEscaped && ch == '"'))
+			{
 				ExitState();
-			} else {
+			}
+			else
+			{
 				IsEscaped = ch == '\\' && !IsEscaped;
 			}
 		}
@@ -1913,7 +1941,7 @@ namespace ICSharpCode.NRefactory.CSharp
 		}
 	}
 
-	#endregion
+	#endregion StringLiteral state
 
 	#region Verbatim string state
 
@@ -1962,7 +1990,7 @@ namespace ICSharpCode.NRefactory.CSharp
 		}
 	}
 
-	#endregion
+	#endregion Verbatim string state
 
 	#region Character state
 
@@ -2013,5 +2041,5 @@ namespace ICSharpCode.NRefactory.CSharp
 		}
 	}
 
-	#endregion
+	#endregion Character state
 }

@@ -1,14 +1,14 @@
 ﻿// Copyright (c) 2010-2013 AlphaSierraPapa for the SharpDevelop Team
-// 
+//
 // Permission is hereby granted, free of charge, to any person obtaining a copy of this
 // software and associated documentation files (the "Software"), to deal in the Software
 // without restriction, including without limitation the rights to use, copy, modify, merge,
 // publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons
 // to whom the Software is furnished to do so, subject to the following conditions:
-// 
+//
 // The above copyright notice and this permission notice shall be included in all copies or
 // substantial portions of the Software.
-// 
+//
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
 // INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
 // PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
@@ -36,7 +36,7 @@ namespace ICSharpCode.NRefactory.Utils
 		{
 			return PreOrder(new T[] { root }, recursion);
 		}
-		
+
 		/// <summary>
 		/// Converts a tree data structure into a flat list by traversing it in pre-order.
 		/// </summary>
@@ -46,26 +46,33 @@ namespace ICSharpCode.NRefactory.Utils
 		public static IEnumerable<T> PreOrder<T>(IEnumerable<T> input, Func<T, IEnumerable<T>> recursion)
 		{
 			Stack<IEnumerator<T>> stack = new Stack<IEnumerator<T>>();
-			try {
+			try
+			{
 				stack.Push(input.GetEnumerator());
-				while (stack.Count > 0) {
-					while (stack.Peek().MoveNext()) {
+				while (stack.Count > 0)
+				{
+					while (stack.Peek().MoveNext())
+					{
 						T element = stack.Peek().Current;
 						yield return element;
 						IEnumerable<T> children = recursion(element);
-						if (children != null) {
+						if (children != null)
+						{
 							stack.Push(children.GetEnumerator());
 						}
 					}
 					stack.Pop().Dispose();
 				}
-			} finally {
-				while (stack.Count > 0) {
+			}
+			finally
+			{
+				while (stack.Count > 0)
+				{
 					stack.Pop().Dispose();
 				}
 			}
 		}
-		
+
 		/// <summary>
 		/// Converts a tree data structure into a flat list by traversing it in post-order.
 		/// </summary>
@@ -76,7 +83,7 @@ namespace ICSharpCode.NRefactory.Utils
 		{
 			return PostOrder(new T[] { root }, recursion);
 		}
-		
+
 		/// <summary>
 		/// Converts a tree data structure into a flat list by traversing it in post-order.
 		/// </summary>
@@ -86,15 +93,21 @@ namespace ICSharpCode.NRefactory.Utils
 		public static IEnumerable<T> PostOrder<T>(IEnumerable<T> input, Func<T, IEnumerable<T>> recursion)
 		{
 			Stack<IEnumerator<T>> stack = new Stack<IEnumerator<T>>();
-			try {
+			try
+			{
 				stack.Push(input.GetEnumerator());
-				while (stack.Count > 0) {
-					while (stack.Peek().MoveNext()) {
+				while (stack.Count > 0)
+				{
+					while (stack.Peek().MoveNext())
+					{
 						T element = stack.Peek().Current;
 						IEnumerable<T> children = recursion(element);
-						if (children != null) {
+						if (children != null)
+						{
 							stack.Push(children.GetEnumerator());
-						} else {
+						}
+						else
+						{
 							yield return element;
 						}
 					}
@@ -102,8 +115,11 @@ namespace ICSharpCode.NRefactory.Utils
 					if (stack.Count > 0)
 						yield return stack.Peek().Current;
 				}
-			} finally {
-				while (stack.Count > 0) {
+			}
+			finally
+			{
+				while (stack.Count > 0)
+				{
 					stack.Pop().Dispose();
 				}
 			}

@@ -1,14 +1,14 @@
 // Copyright (c) 2010-2013 AlphaSierraPapa for the SharpDevelop Team
-// 
+//
 // Permission is hereby granted, free of charge, to any person obtaining a copy of this
 // software and associated documentation files (the "Software"), to deal in the Software
 // without restriction, including without limitation the rights to use, copy, modify, merge,
 // publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons
 // to whom the Software is furnished to do so, subject to the following conditions:
-// 
+//
 // The above copyright notice and this permission notice shall be included in all copies or
 // substantial portions of the Software.
-// 
+//
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
 // INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
 // PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
@@ -31,90 +31,99 @@ namespace ICSharpCode.NRefactory.CSharp
 	public abstract class Expression : AstNode
 	{
 		#region Null
-		public new static readonly Expression Null = new NullExpression ();
-		
-		sealed class NullExpression : Expression
+
+		public new static readonly Expression Null = new NullExpression();
+
+		private sealed class NullExpression : Expression
 		{
-			public override bool IsNull {
-				get {
+			public override bool IsNull
+			{
+				get
+				{
 					return true;
 				}
 			}
-			
-			public override void AcceptVisitor (IAstVisitor visitor)
+
+			public override void AcceptVisitor(IAstVisitor visitor)
 			{
 				visitor.VisitNullNode(this);
 			}
-			
-			public override T AcceptVisitor<T> (IAstVisitor<T> visitor)
+
+			public override T AcceptVisitor<T>(IAstVisitor<T> visitor)
 			{
 				return visitor.VisitNullNode(this);
 			}
-			
-			public override S AcceptVisitor<T, S> (IAstVisitor<T, S> visitor, T data)
+
+			public override S AcceptVisitor<T, S>(IAstVisitor<T, S> visitor, T data)
 			{
 				return visitor.VisitNullNode(this, data);
 			}
-			
+
 			protected internal override bool DoMatch(AstNode other, PatternMatching.Match match)
 			{
 				return other == null || other.IsNull;
 			}
 		}
-		#endregion
-		
+
+		#endregion Null
+
 		#region PatternPlaceholder
+
 		public static implicit operator Expression(PatternMatching.Pattern pattern)
 		{
 			return pattern != null ? new PatternPlaceholder(pattern) : null;
 		}
-		
-		sealed class PatternPlaceholder : Expression, PatternMatching.INode
+
+		private sealed class PatternPlaceholder : Expression, PatternMatching.INode
 		{
-			readonly PatternMatching.Pattern child;
-			
+			private readonly PatternMatching.Pattern child;
+
 			public PatternPlaceholder(PatternMatching.Pattern child)
 			{
 				this.child = child;
 			}
-			
-			public override NodeType NodeType {
+
+			public override NodeType NodeType
+			{
 				get { return NodeType.Pattern; }
 			}
-			
-			public override void AcceptVisitor (IAstVisitor visitor)
+
+			public override void AcceptVisitor(IAstVisitor visitor)
 			{
 				visitor.VisitPatternPlaceholder(this, child);
 			}
-				
-			public override T AcceptVisitor<T> (IAstVisitor<T> visitor)
+
+			public override T AcceptVisitor<T>(IAstVisitor<T> visitor)
 			{
 				return visitor.VisitPatternPlaceholder(this, child);
 			}
-			
+
 			public override S AcceptVisitor<T, S>(IAstVisitor<T, S> visitor, T data)
 			{
 				return visitor.VisitPatternPlaceholder(this, child, data);
 			}
-			
+
 			protected internal override bool DoMatch(AstNode other, PatternMatching.Match match)
 			{
 				return child.DoMatch(other, match);
 			}
-			
+
 			bool PatternMatching.INode.DoMatchCollection(Role role, PatternMatching.INode pos, PatternMatching.Match match, PatternMatching.BacktrackingInfo backtrackingInfo)
 			{
 				return child.DoMatchCollection(role, pos, match, backtrackingInfo);
 			}
 		}
-		#endregion
-		
-		public override NodeType NodeType {
-			get {
+
+		#endregion PatternPlaceholder
+
+		public override NodeType NodeType
+		{
+			get
+			{
 				return NodeType.Expression;
 			}
 		}
-		
+
 		public new Expression Clone()
 		{
 			return (Expression)base.Clone();
@@ -126,8 +135,9 @@ namespace ICSharpCode.NRefactory.CSharp
 				throw new ArgumentNullException("replaceFunction");
 			return (Expression)base.ReplaceWith(node => replaceFunction((Expression)node));
 		}
-		
+
 		#region Builder methods
+
 		/// <summary>
 		/// Builds an member reference expression using this expression as target.
 		/// </summary>
@@ -135,7 +145,7 @@ namespace ICSharpCode.NRefactory.CSharp
 		{
 			return new MemberReferenceExpression { Target = this, MemberName = memberName };
 		}
-		
+
 		/// <summary>
 		/// Builds an indexer expression using this expression as target.
 		/// </summary>
@@ -146,7 +156,7 @@ namespace ICSharpCode.NRefactory.CSharp
 			expr.Arguments.AddRange(arguments);
 			return expr;
 		}
-		
+
 		/// <summary>
 		/// Builds an indexer expression using this expression as target.
 		/// </summary>
@@ -157,7 +167,7 @@ namespace ICSharpCode.NRefactory.CSharp
 			expr.Arguments.AddRange(arguments);
 			return expr;
 		}
-		
+
 		/// <summary>
 		/// Builds an invocation expression using this expression as target.
 		/// </summary>
@@ -165,7 +175,7 @@ namespace ICSharpCode.NRefactory.CSharp
 		{
 			return Invoke(methodName, null, arguments);
 		}
-		
+
 		/// <summary>
 		/// Builds an invocation expression using this expression as target.
 		/// </summary>
@@ -173,7 +183,7 @@ namespace ICSharpCode.NRefactory.CSharp
 		{
 			return Invoke(methodName, null, arguments);
 		}
-		
+
 		/// <summary>
 		/// Builds an invocation expression using this expression as target.
 		/// </summary>
@@ -188,7 +198,7 @@ namespace ICSharpCode.NRefactory.CSharp
 			ie.Arguments.AddRange(arguments);
 			return ie;
 		}
-		
+
 		/// <summary>
 		/// Builds an invocation expression using this expression as target.
 		/// </summary>
@@ -199,7 +209,7 @@ namespace ICSharpCode.NRefactory.CSharp
 			ie.Arguments.AddRange(arguments);
 			return ie;
 		}
-		
+
 		/// <summary>
 		/// Builds an invocation expression using this expression as target.
 		/// </summary>
@@ -210,21 +220,22 @@ namespace ICSharpCode.NRefactory.CSharp
 			ie.Arguments.AddRange(arguments);
 			return ie;
 		}
-		
+
 		public virtual CastExpression CastTo(AstType type)
 		{
-			return new CastExpression { Type = type,  Expression = this };
+			return new CastExpression { Type = type, Expression = this };
 		}
-		
+
 		public virtual AsExpression CastAs(AstType type)
 		{
-			return new AsExpression { Type = type,  Expression = this };
+			return new AsExpression { Type = type, Expression = this };
 		}
-		
+
 		public virtual IsExpression IsType(AstType type)
 		{
-			return new IsExpression { Type = type,  Expression = this };
+			return new IsExpression { Type = type, Expression = this };
 		}
-		#endregion
+
+		#endregion Builder methods
 	}
 }

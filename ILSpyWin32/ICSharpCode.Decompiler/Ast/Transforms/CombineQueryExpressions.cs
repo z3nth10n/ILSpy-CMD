@@ -1,14 +1,14 @@
 ﻿// Copyright (c) 2011 AlphaSierraPapa for the SharpDevelop Team
-// 
+//
 // Permission is hereby granted, free of charge, to any person obtaining a copy of this
 // software and associated documentation files (the "Software"), to deal in the Software
 // without restriction, including without limitation the rights to use, copy, modify, merge,
 // publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons
 // to whom the Software is furnished to do so, subject to the following conditions:
-// 
+//
 // The above copyright notice and this permission notice shall be included in all copies or
 // substantial portions of the Software.
-// 
+//
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
 // INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
 // PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
@@ -16,10 +16,10 @@
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
 
-using System;
-using System.Linq;
 using ICSharpCode.NRefactory.CSharp;
 using ICSharpCode.NRefactory.PatternMatching;
+using System;
+using System.Linq;
 
 namespace ICSharpCode.Decompiler.Ast.Transforms
 {
@@ -28,56 +28,69 @@ namespace ICSharpCode.Decompiler.Ast.Transforms
 	/// </summary>
 	public class CombineQueryExpressions : IAstTransform
 	{
-		readonly DecompilerContext context;
-		
+		private readonly DecompilerContext context;
+
 		public CombineQueryExpressions(DecompilerContext context)
 		{
 			this.context = context;
 		}
-		
+
 		public void Run(AstNode compilationUnit)
 		{
 			if (!context.Settings.QueryExpressions)
 				return;
 			CombineQueries(compilationUnit);
 		}
-		
-		static readonly InvocationExpression castPattern = new InvocationExpression {
-			Target = new MemberReferenceExpression {
+
+		private static readonly InvocationExpression castPattern = new InvocationExpression
+		{
+			Target = new MemberReferenceExpression
+			{
 				Target = new AnyNode("inExpr"),
 				MemberName = "Cast",
 				TypeArguments = { new AnyNode("targetType") }
-			}};
-		
-		void CombineQueries(AstNode node)
+			}
+		};
+
+		private void CombineQueries(AstNode node)
 		{
-			for (AstNode child = node.FirstChild; child != null; child = child.NextSibling) {
+			for (AstNode child = node.FirstChild; child != null; child = child.NextSibling)
+			{
 				CombineQueries(child);
 			}
 			QueryExpression query = node as QueryExpression;
-			if (query != null) {
+			if (query != null)
+			{
 				QueryFromClause fromClause = (QueryFromClause)query.Clauses.First();
 				QueryExpression innerQuery = fromClause.Expression as QueryExpression;
-				if (innerQuery != null) {
-					if (TryRemoveTransparentIdentifier(query, fromClause, innerQuery)) {
+				if (innerQuery != null)
+				{
+					if (TryRemoveTransparentIdentifier(query, fromClause, innerQuery))
+					{
 						RemoveTransparentIdentifierReferences(query);
-					} else {
+					}
+					else
+					{
 						QueryContinuationClause continuation = new QueryContinuationClause();
 						continuation.PrecedingQuery = innerQuery.Detach();
 						continuation.Identifier = fromClause.Identifier;
 						fromClause.ReplaceWith(continuation);
 					}
-				} else {
+				}
+				else
+				{
 					Match m = castPattern.Match(fromClause.Expression);
-					if (m.Success) {
+					if (m.Success)
+					{
 						fromClause.Type = m.Get<AstType>("targetType").Single().Detach();
 						fromClause.Expression = m.Get<Expression>("inExpr").Single().Detach();
 					}
 				}
 			}
 		}
-		
-		static readonly QuerySelectClause selectTransparentIdentifierPattern = new QuerySelectClause {
+
+		private static readonly QuerySelectClause selectTransparentIdentifierPattern = new QuerySelectClause
+		{
 			Expression = new Choice {
 				new AnonymousTypeCreateExpression {
 					Initializers = {
@@ -97,14 +110,15 @@ namespace ICSharpCode.Decompiler.Ast.Transforms
 						new AnyNode("nae2Expr")
 					}
 				}
-			}};
-		
-		bool IsTransparentIdentifier(string identifier)
+			}
+		};
+
+		private bool IsTransparentIdentifier(string identifier)
 		{
 			return identifier.StartsWith("<>", StringComparison.Ordinal) && identifier.Contains("TransparentIdentifier");
 		}
-		
-		bool TryRemoveTransparentIdentifier(QueryExpression query, QueryFromClause fromClause, QueryExpression innerQuery)
+
+		private bool TryRemoveTransparentIdentifier(QueryExpression query, QueryFromClause fromClause, QueryExpression innerQuery)
 		{
 			if (!IsTransparentIdentifier(fromClause.Identifier))
 				return false;
@@ -118,7 +132,8 @@ namespace ICSharpCode.Decompiler.Ast.Transforms
 				return false;
 			Expression nae2Expr = match.Get<Expression>("nae2Expr").Single();
 			IdentifierExpression nae2IdentExpr = nae2Expr as IdentifierExpression;
-			if (nae2IdentExpr != null && (nae2 == null || nae2.Name == nae2IdentExpr.Identifier)) {
+			if (nae2IdentExpr != null && (nae2 == null || nae2.Name == nae2IdentExpr.Identifier))
+			{
 				// from * in (from x in ... select new { x = x, y = y }) ...
 				// =>
 				// from x in ... ...
@@ -126,10 +141,13 @@ namespace ICSharpCode.Decompiler.Ast.Transforms
 				selectClause.Remove();
 				// Move clauses from innerQuery to query
 				QueryClause insertionPos = null;
-				foreach (var clause in innerQuery.Clauses) {
+				foreach (var clause in innerQuery.Clauses)
+				{
 					query.Clauses.InsertAfter(insertionPos, insertionPos = clause.Detach());
 				}
-			} else {
+			}
+			else
+			{
 				// from * in (from x in ... select new { x = x, y = expr }) ...
 				// =>
 				// from x in ... let y = expr ...
@@ -137,7 +155,8 @@ namespace ICSharpCode.Decompiler.Ast.Transforms
 				selectClause.Remove();
 				// Move clauses from innerQuery to query
 				QueryClause insertionPos = null;
-				foreach (var clause in innerQuery.Clauses) {
+				foreach (var clause in innerQuery.Clauses)
+				{
 					query.Clauses.InsertAfter(insertionPos, insertionPos = clause.Detach());
 				}
 				string ident;
@@ -153,19 +172,22 @@ namespace ICSharpCode.Decompiler.Ast.Transforms
 			}
 			return true;
 		}
-		
+
 		/// <summary>
 		/// Removes all occurrences of transparent identifiers
 		/// </summary>
-		void RemoveTransparentIdentifierReferences(AstNode node)
+		private void RemoveTransparentIdentifierReferences(AstNode node)
 		{
-			foreach (AstNode child in node.Children) {
+			foreach (AstNode child in node.Children)
+			{
 				RemoveTransparentIdentifierReferences(child);
 			}
 			MemberReferenceExpression mre = node as MemberReferenceExpression;
-			if (mre != null) {
+			if (mre != null)
+			{
 				IdentifierExpression ident = mre.Target as IdentifierExpression;
-				if (ident != null && IsTransparentIdentifier(ident.Identifier)) {
+				if (ident != null && IsTransparentIdentifier(ident.Identifier))
+				{
 					IdentifierExpression newIdent = new IdentifierExpression(mre.MemberName);
 					mre.TypeArguments.MoveTo(newIdent.TypeArguments);
 					newIdent.CopyAnnotationsFrom(mre);

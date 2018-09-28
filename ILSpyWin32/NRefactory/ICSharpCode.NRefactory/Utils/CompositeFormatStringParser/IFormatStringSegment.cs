@@ -33,7 +33,7 @@ namespace ICSharpCode.NRefactory.Utils
 	/// <remarks>
 	/// Implements a complete parser for valid strings as well as
 	/// error reporting and best-effort parsing for invalid strings.
-	/// </remarks>		
+	/// </remarks>
 	public interface IFormatStringSegment
 	{
 		int StartLocation { get; set; }
@@ -44,5 +44,4 @@ namespace ICSharpCode.NRefactory.Utils
 
 		IEnumerable<IFormatStringError> Errors { get; }
 	}
-
 }

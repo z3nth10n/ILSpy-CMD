@@ -32,8 +32,8 @@ namespace ICSharpCode.NRefactory.CSharp
 	/// </summary>
 	public sealed class NullIStateMachineIndentEngine : IStateMachineIndentEngine
 	{
-		readonly ICSharpCode.NRefactory.Editor.IDocument document;
-		int offset;
+		private readonly ICSharpCode.NRefactory.Editor.IDocument document;
+		private int offset;
 
 		public NullIStateMachineIndentEngine(ICSharpCode.NRefactory.Editor.IDocument document)
 		{
@@ -43,97 +43,128 @@ namespace ICSharpCode.NRefactory.CSharp
 		}
 
 		#region IStateMachineIndentEngine implementation
+
 		public IStateMachineIndentEngine Clone()
 		{
 			return new NullIStateMachineIndentEngine(document) { offset = this.offset };
 		}
 
-		bool IStateMachineIndentEngine.IsInsidePreprocessorDirective {
-			get {
+		bool IStateMachineIndentEngine.IsInsidePreprocessorDirective
+		{
+			get
+			{
 				return false;
 			}
 		}
 
-		bool IStateMachineIndentEngine.IsInsidePreprocessorComment {
-			get {
+		bool IStateMachineIndentEngine.IsInsidePreprocessorComment
+		{
+			get
+			{
 				return false;
 			}
 		}
 
-		bool IStateMachineIndentEngine.IsInsideStringLiteral {
-			get {
+		bool IStateMachineIndentEngine.IsInsideStringLiteral
+		{
+			get
+			{
 				return false;
 			}
 		}
 
-		bool IStateMachineIndentEngine.IsInsideVerbatimString {
-			get {
+		bool IStateMachineIndentEngine.IsInsideVerbatimString
+		{
+			get
+			{
 				return false;
 			}
 		}
 
-		bool IStateMachineIndentEngine.IsInsideCharacter {
-			get {
+		bool IStateMachineIndentEngine.IsInsideCharacter
+		{
+			get
+			{
 				return false;
 			}
 		}
 
-		bool IStateMachineIndentEngine.IsInsideString {
-			get {
+		bool IStateMachineIndentEngine.IsInsideString
+		{
+			get
+			{
 				return false;
 			}
 		}
 
-		bool IStateMachineIndentEngine.IsInsideLineComment {
-			get {
+		bool IStateMachineIndentEngine.IsInsideLineComment
+		{
+			get
+			{
 				return false;
 			}
 		}
 
-		bool IStateMachineIndentEngine.IsInsideMultiLineComment {
-			get {
+		bool IStateMachineIndentEngine.IsInsideMultiLineComment
+		{
+			get
+			{
 				return false;
 			}
 		}
 
-		bool IStateMachineIndentEngine.IsInsideDocLineComment {
-			get {
+		bool IStateMachineIndentEngine.IsInsideDocLineComment
+		{
+			get
+			{
 				return false;
 			}
 		}
 
-		bool IStateMachineIndentEngine.IsInsideComment {
-			get {
+		bool IStateMachineIndentEngine.IsInsideComment
+		{
+			get
+			{
 				return false;
 			}
 		}
 
-		bool IStateMachineIndentEngine.IsInsideOrdinaryComment {
-			get {
+		bool IStateMachineIndentEngine.IsInsideOrdinaryComment
+		{
+			get
+			{
 				return false;
 			}
 		}
 
-		bool IStateMachineIndentEngine.IsInsideOrdinaryCommentOrString {
-			get {
+		bool IStateMachineIndentEngine.IsInsideOrdinaryCommentOrString
+		{
+			get
+			{
 				return false;
 			}
 		}
 
-		bool IStateMachineIndentEngine.LineBeganInsideVerbatimString {
-			get {
+		bool IStateMachineIndentEngine.LineBeganInsideVerbatimString
+		{
+			get
+			{
 				return false;
 			}
 		}
 
-		bool IStateMachineIndentEngine.LineBeganInsideMultiLineComment {
-			get {
+		bool IStateMachineIndentEngine.LineBeganInsideMultiLineComment
+		{
+			get
+			{
 				return false;
 			}
 		}
-		#endregion
+
+		#endregion IStateMachineIndentEngine implementation
 
 		#region IDocumentIndentEngine implementation
+
 		void IDocumentIndentEngine.Push(char ch)
 		{
 			offset++;
@@ -154,43 +185,58 @@ namespace ICSharpCode.NRefactory.CSharp
 			return Clone();
 		}
 
-		ICSharpCode.NRefactory.Editor.IDocument IDocumentIndentEngine.Document {
-			get {
+		ICSharpCode.NRefactory.Editor.IDocument IDocumentIndentEngine.Document
+		{
+			get
+			{
 				return document;
 			}
 		}
 
-		string IDocumentIndentEngine.ThisLineIndent {
-			get {
+		string IDocumentIndentEngine.ThisLineIndent
+		{
+			get
+			{
 				return "";
 			}
 		}
 
-		string IDocumentIndentEngine.NextLineIndent {
-			get {
+		string IDocumentIndentEngine.NextLineIndent
+		{
+			get
+			{
 				return "";
 			}
 		}
 
-		string IDocumentIndentEngine.CurrentIndent {
-			get {
+		string IDocumentIndentEngine.CurrentIndent
+		{
+			get
+			{
 				return "";
 			}
 		}
 
-		bool IDocumentIndentEngine.NeedsReindent {
-			get {
+		bool IDocumentIndentEngine.NeedsReindent
+		{
+			get
+			{
 				return false;
 			}
 		}
 
-		int IDocumentIndentEngine.Offset {
-			get {
+		int IDocumentIndentEngine.Offset
+		{
+			get
+			{
 				return offset;
 			}
 		}
-		TextLocation IDocumentIndentEngine.Location {
-			get {
+
+		TextLocation IDocumentIndentEngine.Location
+		{
+			get
+			{
 				return TextLocation.Empty;
 			}
 		}
@@ -202,14 +248,15 @@ namespace ICSharpCode.NRefactory.CSharp
 			set { }
 		}
 
-		#endregion
+		#endregion IDocumentIndentEngine implementation
 
 		#region ICloneable implementation
+
 		object ICloneable.Clone()
 		{
 			return Clone();
 		}
-		#endregion
+
+		#endregion ICloneable implementation
 	}
 }
-

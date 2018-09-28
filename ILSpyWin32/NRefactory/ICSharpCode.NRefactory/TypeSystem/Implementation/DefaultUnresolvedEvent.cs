@@ -1,14 +1,14 @@
 ﻿// Copyright (c) 2010-2013 AlphaSierraPapa for the SharpDevelop Team
-// 
+//
 // Permission is hereby granted, free of charge, to any person obtaining a copy of this
 // software and associated documentation files (the "Software"), to deal in the Software
 // without restriction, including without limitation the rights to use, copy, modify, merge,
 // publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons
 // to whom the Software is furnished to do so, subject to the following conditions:
-// 
+//
 // The above copyright notice and this permission notice shall be included in all copies or
 // substantial portions of the Software.
-// 
+//
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
 // INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
 // PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
@@ -26,8 +26,8 @@ namespace ICSharpCode.NRefactory.TypeSystem.Implementation
 	[Serializable]
 	public class DefaultUnresolvedEvent : AbstractUnresolvedMember, IUnresolvedEvent
 	{
-		IUnresolvedMethod addAccessor, removeAccessor, invokeAccessor;
-		
+		private IUnresolvedMethod addAccessor, removeAccessor, invokeAccessor;
+
 		protected override void FreezeInternal()
 		{
 			base.FreezeInternal();
@@ -35,12 +35,12 @@ namespace ICSharpCode.NRefactory.TypeSystem.Implementation
 			FreezableHelper.Freeze(removeAccessor);
 			FreezableHelper.Freeze(invokeAccessor);
 		}
-		
+
 		public DefaultUnresolvedEvent()
 		{
 			this.SymbolKind = SymbolKind.Event;
 		}
-		
+
 		public DefaultUnresolvedEvent(IUnresolvedTypeDefinition declaringType, string name)
 		{
 			this.SymbolKind = SymbolKind.Event;
@@ -49,48 +49,57 @@ namespace ICSharpCode.NRefactory.TypeSystem.Implementation
 			if (declaringType != null)
 				this.UnresolvedFile = declaringType.UnresolvedFile;
 		}
-		
-		public bool CanAdd {
+
+		public bool CanAdd
+		{
 			get { return addAccessor != null; }
 		}
-		
-		public bool CanRemove {
+
+		public bool CanRemove
+		{
 			get { return removeAccessor != null; }
 		}
-		
-		public bool CanInvoke {
+
+		public bool CanInvoke
+		{
 			get { return invokeAccessor != null; }
 		}
-		
-		public IUnresolvedMethod AddAccessor {
+
+		public IUnresolvedMethod AddAccessor
+		{
 			get { return addAccessor; }
-			set {
+			set
+			{
 				ThrowIfFrozen();
 				addAccessor = value;
 			}
 		}
-		
-		public IUnresolvedMethod RemoveAccessor {
+
+		public IUnresolvedMethod RemoveAccessor
+		{
 			get { return removeAccessor; }
-			set {
+			set
+			{
 				ThrowIfFrozen();
 				removeAccessor = value;
 			}
 		}
-		
-		public IUnresolvedMethod InvokeAccessor {
+
+		public IUnresolvedMethod InvokeAccessor
+		{
 			get { return invokeAccessor; }
-			set {
+			set
+			{
 				ThrowIfFrozen();
 				invokeAccessor = value;
 			}
 		}
-		
+
 		public override IMember CreateResolved(ITypeResolveContext context)
 		{
 			return new DefaultResolvedEvent(this, context);
 		}
-		
+
 		IEvent IUnresolvedEvent.Resolve(ITypeResolveContext context)
 		{
 			return (IEvent)Resolve(context);

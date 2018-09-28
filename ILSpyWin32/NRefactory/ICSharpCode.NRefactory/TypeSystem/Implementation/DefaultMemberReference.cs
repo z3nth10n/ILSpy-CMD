@@ -1,14 +1,14 @@
 ﻿// Copyright (c) 2010-2013 AlphaSierraPapa for the SharpDevelop Team
-// 
+//
 // Permission is hereby granted, free of charge, to any person obtaining a copy of this
 // software and associated documentation files (the "Software"), to deal in the Software
 // without restriction, including without limitation the rights to use, copy, modify, merge,
 // publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons
 // to whom the Software is furnished to do so, subject to the following conditions:
-// 
+//
 // The above copyright notice and this permission notice shall be included in all copies or
 // substantial portions of the Software.
-// 
+//
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
 // INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
 // PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
@@ -18,7 +18,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace ICSharpCode.NRefactory.TypeSystem.Implementation
 {
@@ -33,12 +32,12 @@ namespace ICSharpCode.NRefactory.TypeSystem.Implementation
 	[Serializable]
 	public sealed class DefaultMemberReference : IMemberReference, ISupportsInterning
 	{
-		readonly SymbolKind symbolKind;
-		readonly ITypeReference typeReference;
-		readonly string name;
-		readonly int typeParameterCount;
-		readonly IList<ITypeReference> parameterTypes;
-		
+		private readonly SymbolKind symbolKind;
+		private readonly ITypeReference typeReference;
+		private readonly string name;
+		private readonly int typeParameterCount;
+		private readonly IList<ITypeReference> parameterTypes;
+
 		public DefaultMemberReference(SymbolKind symbolKind, ITypeReference typeReference, string name, int typeParameterCount = 0, IList<ITypeReference> parameterTypes = null)
 		{
 			if (typeReference == null)
@@ -53,41 +52,53 @@ namespace ICSharpCode.NRefactory.TypeSystem.Implementation
 			this.typeParameterCount = typeParameterCount;
 			this.parameterTypes = parameterTypes ?? EmptyList<ITypeReference>.Instance;
 		}
-		
-		public ITypeReference DeclaringTypeReference {
+
+		public ITypeReference DeclaringTypeReference
+		{
 			get { return typeReference; }
 		}
-		
+
 		public IMember Resolve(ITypeResolveContext context)
 		{
 			IType type = typeReference.Resolve(context);
 			IEnumerable<IMember> members;
-			if (symbolKind == SymbolKind.Accessor) {
+			if (symbolKind == SymbolKind.Accessor)
+			{
 				members = type.GetAccessors(
 					m => m.Name == name && !m.IsExplicitInterfaceImplementation,
 					GetMemberOptions.IgnoreInheritedMembers);
-			} else if (symbolKind == SymbolKind.Method) {
+			}
+			else if (symbolKind == SymbolKind.Method)
+			{
 				members = type.GetMethods(
 					m => m.Name == name && m.SymbolKind == SymbolKind.Method
 					&& m.TypeParameters.Count == typeParameterCount && !m.IsExplicitInterfaceImplementation,
 					GetMemberOptions.IgnoreInheritedMembers);
-			} else {
+			}
+			else
+			{
 				members = type.GetMembers(
 					m => m.Name == name && m.SymbolKind == symbolKind && !m.IsExplicitInterfaceImplementation,
 					GetMemberOptions.IgnoreInheritedMembers);
 			}
 			var resolvedParameterTypes = parameterTypes.Resolve(context);
-			foreach (IMember member in members) {
+			foreach (IMember member in members)
+			{
 				IParameterizedMember parameterizedMember = member as IParameterizedMember;
-				if (parameterizedMember == null) {
+				if (parameterizedMember == null)
+				{
 					if (parameterTypes.Count == 0)
 						return member;
-				} else if (parameterTypes.Count == parameterizedMember.Parameters.Count) {
+				}
+				else if (parameterTypes.Count == parameterizedMember.Parameters.Count)
+				{
 					bool signatureMatches = true;
-					for (int i = 0; i < parameterTypes.Count; i++) {
+					for (int i = 0; i < parameterTypes.Count; i++)
+					{
 						IType type1 = DummyTypeParameter.NormalizeAllTypeParameters(resolvedParameterTypes[i]);
 						IType type2 = DummyTypeParameter.NormalizeAllTypeParameters(parameterizedMember.Parameters[i].Type);
-						if (!type1.Equals(type2)) {
+						if (!type1.Equals(type2))
+						{
 							signatureMatches = false;
 							break;
 						}
@@ -98,17 +109,17 @@ namespace ICSharpCode.NRefactory.TypeSystem.Implementation
 			}
 			return null;
 		}
-		
+
 		ISymbol ISymbolReference.Resolve(ITypeResolveContext context)
 		{
 			return ((IMemberReference)this).Resolve(context);
 		}
-		
+
 		int ISupportsInterning.GetHashCodeForInterning()
 		{
 			return (int)symbolKind ^ typeReference.GetHashCode() ^ name.GetHashCode() ^ parameterTypes.GetHashCode();
 		}
-		
+
 		bool ISupportsInterning.EqualsForInterning(ISupportsInterning other)
 		{
 			DefaultMemberReference o = other as DefaultMemberReference;

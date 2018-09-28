@@ -28,7 +28,7 @@ namespace ICSharpCode.NRefactory.Utils
 {
 	public class FormatItem : FormatStringSegmentBase
 	{
-		public FormatItem (int index, int? alignment = null, string formatString = null)
+		public FormatItem(int index, int? alignment = null, string formatString = null)
 		{
 			Index = index;
 			Alignment = alignment;
@@ -42,26 +42,27 @@ namespace ICSharpCode.NRefactory.Utils
 		public string FormatString { get; private set; }
 
 		#region Equality
-		public override bool Equals (object obj)
+
+		public override bool Equals(object obj)
 		{
 			if (obj == null)
 				return false;
-			if (obj.GetType () != typeof(FormatItem))
+			if (obj.GetType() != typeof(FormatItem))
 				return false;
 			var other = (FormatItem)obj;
-				
-			return FieldsEquals (other);
+
+			return FieldsEquals(other);
 		}
-			
-		public bool Equals (FormatItem other)
+
+		public bool Equals(FormatItem other)
 		{
 			if (other == null)
 				return false;
-				
-			return FieldsEquals (other);
+
+			return FieldsEquals(other);
 		}
 
-		bool FieldsEquals (FormatItem other)
+		private bool FieldsEquals(FormatItem other)
 		{
 			return Index == other.Index &&
 				Alignment == other.Alignment &&
@@ -69,25 +70,26 @@ namespace ICSharpCode.NRefactory.Utils
 				StartLocation == other.StartLocation &&
 				EndLocation == other.EndLocation;
 		}
-			
-		public override int GetHashCode ()
+
+		public override int GetHashCode()
 		{
-			unchecked {
+			unchecked
+			{
 				int hash = 23;
-				hash = hash * 37 + Index.GetHashCode ();
-				hash = hash * 37 + Alignment.GetHashCode ();
-				hash = hash * 37 + FormatString.GetHashCode ();
-				hash = hash * 37 + StartLocation.GetHashCode ();
-				hash = hash * 37 + EndLocation.GetHashCode ();
+				hash = hash * 37 + Index.GetHashCode();
+				hash = hash * 37 + Alignment.GetHashCode();
+				hash = hash * 37 + FormatString.GetHashCode();
+				hash = hash * 37 + StartLocation.GetHashCode();
+				hash = hash * 37 + EndLocation.GetHashCode();
 				return hash;
 			}
 		}
-		#endregion
 
-		public override string ToString ()
+		#endregion Equality
+
+		public override string ToString()
 		{
-			return string.Format ("[FormatItem: Index={0}, Alignment={1}, FormatString={2}, StartLocation={3}, EndLocation={4}]", Index, Alignment, FormatString, StartLocation, EndLocation);
+			return string.Format("[FormatItem: Index={0}, Alignment={1}, FormatString={2}, StartLocation={3}, EndLocation={4}]", Index, Alignment, FormatString, StartLocation, EndLocation);
 		}
 	}
-
 }

@@ -1,14 +1,14 @@
 ﻿// Copyright (c) 2010-2013 AlphaSierraPapa for the SharpDevelop Team
-// 
+//
 // Permission is hereby granted, free of charge, to any person obtaining a copy of this
 // software and associated documentation files (the "Software"), to deal in the Software
 // without restriction, including without limitation the rights to use, copy, modify, merge,
 // publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons
 // to whom the Software is furnished to do so, subject to the following conditions:
-// 
+//
 // The above copyright notice and this permission notice shall be included in all copies or
 // substantial portions of the Software.
-// 
+//
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
 // INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
 // PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
@@ -16,49 +16,51 @@
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
 
-using System;
-using System.Collections.Generic;
-using ICSharpCode.NRefactory.Utils;
-
 namespace ICSharpCode.NRefactory.TypeSystem.Implementation
 {
 	public class DefaultResolvedEvent : AbstractResolvedMember, IEvent
 	{
 		protected new readonly IUnresolvedEvent unresolved;
-		IMethod addAccessor;
-		IMethod removeAccessor;
-		IMethod invokeAccessor;
-		
+		private IMethod addAccessor;
+		private IMethod removeAccessor;
+		private IMethod invokeAccessor;
+
 		public DefaultResolvedEvent(IUnresolvedEvent unresolved, ITypeResolveContext parentContext)
 			: base(unresolved, parentContext)
 		{
 			this.unresolved = unresolved;
 		}
-		
-		public bool CanAdd {
+
+		public bool CanAdd
+		{
 			get { return unresolved.CanAdd; }
 		}
-		
-		public bool CanRemove {
+
+		public bool CanRemove
+		{
 			get { return unresolved.CanRemove; }
 		}
-		
-		public bool CanInvoke {
+
+		public bool CanInvoke
+		{
 			get { return unresolved.CanInvoke; }
 		}
-		
-		public IMethod AddAccessor {
+
+		public IMethod AddAccessor
+		{
 			get { return GetAccessor(ref addAccessor, unresolved.AddAccessor); }
 		}
-		
-		public IMethod RemoveAccessor {
+
+		public IMethod RemoveAccessor
+		{
 			get { return GetAccessor(ref removeAccessor, unresolved.RemoveAccessor); }
 		}
-		
-		public IMethod InvokeAccessor {
+
+		public IMethod InvokeAccessor
+		{
 			get { return GetAccessor(ref invokeAccessor, unresolved.InvokeAccessor); }
 		}
-		
+
 		public override IMember Specialize(TypeParameterSubstitution substitution)
 		{
 			if (TypeParameterSubstitution.Identity.Equals(substitution))

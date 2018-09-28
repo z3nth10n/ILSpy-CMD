@@ -23,16 +23,16 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
+using ICSharpCode.NRefactory.Documentation;
+using ICSharpCode.NRefactory.TypeSystem.Implementation;
 using System;
 using System.Reflection;
 using System.Threading;
-using ICSharpCode.NRefactory.Documentation;
-using ICSharpCode.NRefactory.TypeSystem;
-using ICSharpCode.NRefactory.TypeSystem.Implementation;
 
 namespace ICSharpCode.NRefactory.TypeSystem
 {
-	public enum AssemblyLoaderBackend {
+	public enum AssemblyLoaderBackend
+	{
 		Auto,
 		Cecil,
 		IKVM
@@ -40,21 +40,24 @@ namespace ICSharpCode.NRefactory.TypeSystem
 
 	public abstract class AssemblyLoader
 	{
-		public static AssemblyLoader Create ()
+		public static AssemblyLoader Create()
 		{
-			return Create (AssemblyLoaderBackend.Auto);
+			return Create(AssemblyLoaderBackend.Auto);
 		}
-		
-		public static AssemblyLoader Create (AssemblyLoaderBackend backend)
+
+		public static AssemblyLoader Create(AssemblyLoaderBackend backend)
 		{
-			switch (backend) {
+			switch (backend)
+			{
 				case AssemblyLoaderBackend.Auto:
 				case AssemblyLoaderBackend.Cecil:
-					return (AssemblyLoader)Assembly.Load ("ICSharpCode.NRefactory.Cecil").CreateInstance ("ICSharpCode.NRefactory.TypeSystem.CecilLoader");
+					return (AssemblyLoader)Assembly.Load("ICSharpCode.NRefactory.Cecil").CreateInstance("ICSharpCode.NRefactory.TypeSystem.CecilLoader");
+
 				case AssemblyLoaderBackend.IKVM:
-					return (AssemblyLoader)Assembly.Load ("ICSharpCode.NRefactory.IKVM").CreateInstance ("ICSharpCode.NRefactory.TypeSystem.IkvmLoader");
+					return (AssemblyLoader)Assembly.Load("ICSharpCode.NRefactory.IKVM").CreateInstance("ICSharpCode.NRefactory.TypeSystem.IkvmLoader");
+
 				default:
-					throw new ArgumentOutOfRangeException ();
+					throw new ArgumentOutOfRangeException();
 			}
 		}
 
@@ -62,12 +65,12 @@ namespace ICSharpCode.NRefactory.TypeSystem
 		/// Specifies whether to include internal members. The default is false.
 		/// </summary>
 		public bool IncludeInternalMembers { get; set; }
-		
+
 		/// <summary>
 		/// Gets/Sets the cancellation token used by the assembly loader.
 		/// </summary>
 		public CancellationToken CancellationToken { get; set; }
-		
+
 		/// <summary>
 		/// Gets/Sets the documentation provider that is used to retrieve the XML documentation for all members.
 		/// </summary>
@@ -79,16 +82,17 @@ namespace ICSharpCode.NRefactory.TypeSystem
 		/// <summary>
 		/// Gets/Sets the interning provider.
 		/// </summary>
-		public InterningProvider InterningProvider {
+		public InterningProvider InterningProvider
+		{
 			get { return interningProvider; }
-			set {
+			set
+			{
 				if (value == null)
 					throw new ArgumentNullException();
 				interningProvider = value;
 			}
 		}
-		
+
 		public abstract IUnresolvedAssembly LoadAssemblyFile(string fileName);
 	}
 }
-

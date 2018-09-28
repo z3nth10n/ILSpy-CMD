@@ -24,8 +24,6 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-using System;
-
 namespace ICSharpCode.NRefactory.PatternMatching
 {
 	/// <summary>
@@ -34,9 +32,10 @@ namespace ICSharpCode.NRefactory.PatternMatching
 	/// <remarks>Does not match null nodes.</remarks>
 	public class AnyNodeOrNull : Pattern
 	{
-		readonly string groupName;
+		private readonly string groupName;
 
-		public string GroupName {
+		public string GroupName
+		{
 			get { return groupName; }
 		}
 
@@ -47,9 +46,12 @@ namespace ICSharpCode.NRefactory.PatternMatching
 
 		public override bool DoMatch(INode other, Match match)
 		{
-			if (other == null) {
+			if (other == null)
+			{
 				match.AddNull(this.groupName);
-			} else {
+			}
+			else
+			{
 				match.Add(this.groupName, other);
 			}
 			return true;

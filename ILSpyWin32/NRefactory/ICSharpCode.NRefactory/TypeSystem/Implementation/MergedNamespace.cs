@@ -1,14 +1,14 @@
 ﻿// Copyright (c) 2010-2013 AlphaSierraPapa for the SharpDevelop Team
-// 
+//
 // Permission is hereby granted, free of charge, to any person obtaining a copy of this
 // software and associated documentation files (the "Software"), to deal in the Software
 // without restriction, including without limitation the rights to use, copy, modify, merge,
 // publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons
 // to whom the Software is furnished to do so, subject to the following conditions:
-// 
+//
 // The above copyright notice and this permission notice shall be included in all copies or
 // substantial portions of the Software.
-// 
+//
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
 // INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
 // PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
@@ -16,11 +16,11 @@
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
 
+using ICSharpCode.NRefactory.Utils;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using ICSharpCode.NRefactory.Utils;
 
 namespace ICSharpCode.NRefactory.TypeSystem.Implementation
 {
@@ -29,12 +29,12 @@ namespace ICSharpCode.NRefactory.TypeSystem.Implementation
 	/// </summary>
 	public sealed class MergedNamespace : INamespace
 	{
-		readonly string externAlias;
-		readonly ICompilation compilation;
-		readonly INamespace parentNamespace;
-		readonly INamespace[] namespaces;
-		Dictionary<string, INamespace> childNamespaces;
-		
+		private readonly string externAlias;
+		private readonly ICompilation compilation;
+		private readonly INamespace parentNamespace;
+		private readonly INamespace[] namespaces;
+		private Dictionary<string, INamespace> childNamespaces;
+
 		/// <summary>
 		/// Creates a new merged root namespace.
 		/// </summary>
@@ -51,7 +51,7 @@ namespace ICSharpCode.NRefactory.TypeSystem.Implementation
 			this.namespaces = namespaces;
 			this.externAlias = externAlias;
 		}
-		
+
 		/// <summary>
 		/// Creates a new merged child namespace.
 		/// </summary>
@@ -68,45 +68,55 @@ namespace ICSharpCode.NRefactory.TypeSystem.Implementation
 			this.compilation = parentNamespace.Compilation;
 			this.externAlias = parentNamespace.ExternAlias;
 		}
-		
-		public string ExternAlias {
+
+		public string ExternAlias
+		{
 			get { return externAlias; }
 		}
-		
-		public string FullName {
+
+		public string FullName
+		{
 			get { return namespaces[0].FullName; }
 		}
-		
-		public string Name {
+
+		public string Name
+		{
 			get { return namespaces[0].Name; }
 		}
-		
-		public INamespace ParentNamespace {
+
+		public INamespace ParentNamespace
+		{
 			get { return parentNamespace; }
 		}
-		
-		public IEnumerable<ITypeDefinition> Types {
-			get {
+
+		public IEnumerable<ITypeDefinition> Types
+		{
+			get
+			{
 				return namespaces.SelectMany(ns => ns.Types);
 			}
 		}
-		
-		public SymbolKind SymbolKind {
+
+		public SymbolKind SymbolKind
+		{
 			get { return SymbolKind.Namespace; }
 		}
-		
-		public ICompilation Compilation {
+
+		public ICompilation Compilation
+		{
 			get { return compilation; }
 		}
-		
-		public IEnumerable<IAssembly> ContributingAssemblies {
+
+		public IEnumerable<IAssembly> ContributingAssemblies
+		{
 			get { return namespaces.SelectMany(ns => ns.ContributingAssemblies); }
 		}
-		
-		public IEnumerable<INamespace> ChildNamespaces {
+
+		public IEnumerable<INamespace> ChildNamespaces
+		{
 			get { return GetChildNamespaces().Values; }
 		}
-		
+
 		public INamespace GetChildNamespace(string name)
 		{
 			INamespace ns;
@@ -115,28 +125,35 @@ namespace ICSharpCode.NRefactory.TypeSystem.Implementation
 			else
 				return null;
 		}
-		
-		Dictionary<string, INamespace> GetChildNamespaces()
+
+		private Dictionary<string, INamespace> GetChildNamespaces()
 		{
 			var result = LazyInit.VolatileRead(ref this.childNamespaces);
-			if (result != null) {
+			if (result != null)
+			{
 				return result;
-			} else {
+			}
+			else
+			{
 				result = new Dictionary<string, INamespace>(compilation.NameComparer);
-				foreach (var g in namespaces.SelectMany(ns => ns.ChildNamespaces).GroupBy(ns => ns.Name, compilation.NameComparer)) {
+				foreach (var g in namespaces.SelectMany(ns => ns.ChildNamespaces).GroupBy(ns => ns.Name, compilation.NameComparer))
+				{
 					result.Add(g.Key, new MergedNamespace(this, g.ToArray()));
 				}
 				return LazyInit.GetOrSet(ref this.childNamespaces, result);
 			}
 		}
-		
+
 		public ITypeDefinition GetTypeDefinition(string name, int typeParameterCount)
 		{
 			ITypeDefinition anyTypeDef = null;
-			foreach (var ns in namespaces) {
+			foreach (var ns in namespaces)
+			{
 				ITypeDefinition typeDef = ns.GetTypeDefinition(name, typeParameterCount);
-				if (typeDef != null) {
-					if (typeDef.IsPublic) {
+				if (typeDef != null)
+				{
+					if (typeDef.IsPublic)
+					{
 						// Prefer accessible types over non-accessible types.
 						return typeDef;
 						// || (typeDef.IsInternal && typeDef.ParentAssembly.InternalsVisibleTo(...))
@@ -149,11 +166,11 @@ namespace ICSharpCode.NRefactory.TypeSystem.Implementation
 			}
 			return anyTypeDef;
 		}
-		
+
 		public override string ToString()
 		{
 			return string.Format(CultureInfo.InvariantCulture, "[MergedNamespace {0}{1} (from {2} assemblies)]",
-			                     externAlias != null ? externAlias + "::" : null, this.FullName, this.namespaces.Length);
+								 externAlias != null ? externAlias + "::" : null, this.FullName, this.namespaces.Length);
 		}
 
 		public ISymbolReference ToReference()

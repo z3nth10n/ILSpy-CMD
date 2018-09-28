@@ -69,7 +69,7 @@ namespace ICSharpCode.NRefactory.CSharp
 		TextLocation Location { get; }
 
 		/// <summary>
-		///     If this is true, the engine should try to adjust its indent 
+		///     If this is true, the engine should try to adjust its indent
 		///     levels to manual user's corrections, even if they are wrong.
 		/// </summary>
 		bool EnableCustomIndentLevels { get; set; }

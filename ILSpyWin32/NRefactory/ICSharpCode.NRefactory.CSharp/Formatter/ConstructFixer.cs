@@ -23,43 +23,44 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
-using System;
 using ICSharpCode.NRefactory.Editor;
-using System.Text;
-using System.Reflection;
 using System.Linq;
+using System.Text;
 
 namespace ICSharpCode.NRefactory.CSharp
 {
-	abstract class ConstructCompleter
+	internal abstract class ConstructCompleter
 	{
-		public abstract bool TryFix (ConstructFixer fixer, SyntaxTree syntaxTree, IDocument document, TextLocation location, ref int newOffset);
+		public abstract bool TryFix(ConstructFixer fixer, SyntaxTree syntaxTree, IDocument document, TextLocation location, ref int newOffset);
 
-		protected AstNode GetLastNonErrorChild (AstNode node)
+		protected AstNode GetLastNonErrorChild(AstNode node)
 		{
 			var lastNode = node.LastChild;
 
-			while (lastNode is ErrorNode) {
+			while (lastNode is ErrorNode)
+			{
 				lastNode = lastNode.GetPrevNode(FormattingVisitor.NoWhitespacePredicate);
 			}
 			return lastNode;
 		}
 	}
 
-	class TypeDeclarationCompleter : ConstructCompleter
+	internal class TypeDeclarationCompleter : ConstructCompleter
 	{
 		public override bool TryFix(ConstructFixer fixer, SyntaxTree syntaxTree, IDocument document, TextLocation location, ref int newOffset)
 		{
-			var typeDeclaration = syntaxTree.GetNodeAt<TypeDeclaration>(location); 
-			if (typeDeclaration != null) {
-				if (typeDeclaration.LBraceToken.IsNull && typeDeclaration.RBraceToken.IsNull) {
+			var typeDeclaration = syntaxTree.GetNodeAt<TypeDeclaration>(location);
+			if (typeDeclaration != null)
+			{
+				if (typeDeclaration.LBraceToken.IsNull && typeDeclaration.RBraceToken.IsNull)
+				{
 					if (typeDeclaration.Members.Any())
 						return false;
-					var lastNode = GetLastNonErrorChild (typeDeclaration);
+					var lastNode = GetLastNonErrorChild(typeDeclaration);
 					if (lastNode == null)
 						return false;
 					var insertionOffset = document.GetOffset(lastNode.EndLocation);
-					document.Insert(insertionOffset, fixer.GenerateBody (typeDeclaration, fixer.Options.ClassBraceStyle, false, ref newOffset));
+					document.Insert(insertionOffset, fixer.GenerateBody(typeDeclaration, fixer.Options.ClassBraceStyle, false, ref newOffset));
 					return true;
 				}
 			}
@@ -67,14 +68,16 @@ namespace ICSharpCode.NRefactory.CSharp
 		}
 	}
 
-	class DelegateDeclarationCompleter : ConstructCompleter
+	internal class DelegateDeclarationCompleter : ConstructCompleter
 	{
 		public override bool TryFix(ConstructFixer fixer, SyntaxTree syntaxTree, IDocument document, TextLocation location, ref int newOffset)
 		{
-			var typeDeclaration = syntaxTree.GetNodeAt<DelegateDeclaration>(location); 
-			if (typeDeclaration != null) {
-				if (typeDeclaration.RParToken.IsNull) {
-					var lastNode = GetLastNonErrorChild (typeDeclaration);
+			var typeDeclaration = syntaxTree.GetNodeAt<DelegateDeclaration>(location);
+			if (typeDeclaration != null)
+			{
+				if (typeDeclaration.RParToken.IsNull)
+				{
+					var lastNode = GetLastNonErrorChild(typeDeclaration);
 					if (lastNode == null)
 						return false;
 					var insertionOffset = document.GetOffset(lastNode.EndLocation);
@@ -87,14 +90,16 @@ namespace ICSharpCode.NRefactory.CSharp
 		}
 	}
 
-	class MethodDeclarationCompleter : ConstructCompleter
+	internal class MethodDeclarationCompleter : ConstructCompleter
 	{
 		public override bool TryFix(ConstructFixer fixer, SyntaxTree syntaxTree, IDocument document, TextLocation location, ref int newOffset)
 		{
-			var methodDeclaration = syntaxTree.GetNodeAt<MethodDeclaration>(location); 
-			if (methodDeclaration != null) {
-				if (!methodDeclaration.LParToken.IsNull && methodDeclaration.RParToken.IsNull) {
-					var lastNode = GetLastNonErrorChild (methodDeclaration);
+			var methodDeclaration = syntaxTree.GetNodeAt<MethodDeclaration>(location);
+			if (methodDeclaration != null)
+			{
+				if (!methodDeclaration.LParToken.IsNull && methodDeclaration.RParToken.IsNull)
+				{
+					var lastNode = GetLastNonErrorChild(methodDeclaration);
 					if (lastNode == null)
 						return false;
 
@@ -108,19 +113,21 @@ namespace ICSharpCode.NRefactory.CSharp
 		}
 	}
 
-	class IfStatementCompleter : ConstructCompleter
+	internal class IfStatementCompleter : ConstructCompleter
 	{
 		public override bool TryFix(ConstructFixer fixer, SyntaxTree syntaxTree, IDocument document, TextLocation location, ref int newOffset)
 		{
-			var ifStatement = syntaxTree.GetNodeAt<IfElseStatement>(location); 
-			if (ifStatement != null) {
-				if (!ifStatement.LParToken.IsNull && ifStatement.RParToken.IsNull) {
-					var lastNode = GetLastNonErrorChild (ifStatement);
+			var ifStatement = syntaxTree.GetNodeAt<IfElseStatement>(location);
+			if (ifStatement != null)
+			{
+				if (!ifStatement.LParToken.IsNull && ifStatement.RParToken.IsNull)
+				{
+					var lastNode = GetLastNonErrorChild(ifStatement);
 					if (lastNode == null)
 						return false;
 
 					var insertionOffset = document.GetOffset(lastNode.EndLocation);
-					document.Insert(insertionOffset, fixer.GenerateBody (ifStatement, fixer.Options.StatementBraceStyle, true, ref newOffset));
+					document.Insert(insertionOffset, fixer.GenerateBody(ifStatement, fixer.Options.StatementBraceStyle, true, ref newOffset));
 					return true;
 				}
 			}
@@ -128,19 +135,21 @@ namespace ICSharpCode.NRefactory.CSharp
 		}
 	}
 
-	class ForeachStatementCompleter : ConstructCompleter
+	internal class ForeachStatementCompleter : ConstructCompleter
 	{
 		public override bool TryFix(ConstructFixer fixer, SyntaxTree syntaxTree, IDocument document, TextLocation location, ref int newOffset)
 		{
-			var ifStatement = syntaxTree.GetNodeAt<ForeachStatement>(location); 
-			if (ifStatement != null) {
-				if (!ifStatement.LParToken.IsNull && ifStatement.RParToken.IsNull) {
-					var lastNode = GetLastNonErrorChild (ifStatement);
+			var ifStatement = syntaxTree.GetNodeAt<ForeachStatement>(location);
+			if (ifStatement != null)
+			{
+				if (!ifStatement.LParToken.IsNull && ifStatement.RParToken.IsNull)
+				{
+					var lastNode = GetLastNonErrorChild(ifStatement);
 					if (lastNode == null)
 						return false;
 
 					var insertionOffset = document.GetOffset(lastNode.EndLocation);
-					document.Insert(insertionOffset, fixer.GenerateBody (ifStatement, fixer.Options.StatementBraceStyle, true, ref newOffset));
+					document.Insert(insertionOffset, fixer.GenerateBody(ifStatement, fixer.Options.StatementBraceStyle, true, ref newOffset));
 					return true;
 				}
 			}
@@ -148,19 +157,21 @@ namespace ICSharpCode.NRefactory.CSharp
 		}
 	}
 
-	class WhileStatementCompleter : ConstructCompleter
+	internal class WhileStatementCompleter : ConstructCompleter
 	{
 		public override bool TryFix(ConstructFixer fixer, SyntaxTree syntaxTree, IDocument document, TextLocation location, ref int newOffset)
 		{
-			var ifStatement = syntaxTree.GetNodeAt<WhileStatement>(location); 
-			if (ifStatement != null) {
-				if (!ifStatement.LParToken.IsNull && ifStatement.RParToken.IsNull) {
-					var lastNode = GetLastNonErrorChild (ifStatement);
+			var ifStatement = syntaxTree.GetNodeAt<WhileStatement>(location);
+			if (ifStatement != null)
+			{
+				if (!ifStatement.LParToken.IsNull && ifStatement.RParToken.IsNull)
+				{
+					var lastNode = GetLastNonErrorChild(ifStatement);
 					if (lastNode == null)
 						return false;
 
 					var insertionOffset = document.GetOffset(lastNode.EndLocation);
-					document.Insert(insertionOffset, fixer.GenerateBody (ifStatement, fixer.Options.StatementBraceStyle, true, ref newOffset));
+					document.Insert(insertionOffset, fixer.GenerateBody(ifStatement, fixer.Options.StatementBraceStyle, true, ref newOffset));
 					return true;
 				}
 			}
@@ -168,14 +179,16 @@ namespace ICSharpCode.NRefactory.CSharp
 		}
 	}
 
-	class DoWhileStatementCompleter : ConstructCompleter
+	internal class DoWhileStatementCompleter : ConstructCompleter
 	{
 		public override bool TryFix(ConstructFixer fixer, SyntaxTree syntaxTree, IDocument document, TextLocation location, ref int newOffset)
 		{
-			var stmt = syntaxTree.GetNodeAt<DoWhileStatement>(location); 
-			if (stmt != null) {
-				if (!stmt.LParToken.IsNull && stmt.RParToken.IsNull) {
-					var lastNode = GetLastNonErrorChild (stmt);
+			var stmt = syntaxTree.GetNodeAt<DoWhileStatement>(location);
+			if (stmt != null)
+			{
+				if (!stmt.LParToken.IsNull && stmt.RParToken.IsNull)
+				{
+					var lastNode = GetLastNonErrorChild(stmt);
 					if (lastNode == null)
 						return false;
 
@@ -189,19 +202,21 @@ namespace ICSharpCode.NRefactory.CSharp
 		}
 	}
 
-	class FixedStatementCompleter : ConstructCompleter
+	internal class FixedStatementCompleter : ConstructCompleter
 	{
 		public override bool TryFix(ConstructFixer fixer, SyntaxTree syntaxTree, IDocument document, TextLocation location, ref int newOffset)
 		{
-			var stmt = syntaxTree.GetNodeAt<FixedStatement>(location); 
-			if (stmt != null) {
-				if (!stmt.LParToken.IsNull && stmt.RParToken.IsNull) {
-					var lastNode = GetLastNonErrorChild (stmt);
+			var stmt = syntaxTree.GetNodeAt<FixedStatement>(location);
+			if (stmt != null)
+			{
+				if (!stmt.LParToken.IsNull && stmt.RParToken.IsNull)
+				{
+					var lastNode = GetLastNonErrorChild(stmt);
 					if (lastNode == null)
 						return false;
 
 					var insertionOffset = document.GetOffset(lastNode.EndLocation);
-					document.Insert(insertionOffset, fixer.GenerateBody (stmt, fixer.Options.StatementBraceStyle, true, ref newOffset));
+					document.Insert(insertionOffset, fixer.GenerateBody(stmt, fixer.Options.StatementBraceStyle, true, ref newOffset));
 					return true;
 				}
 			}
@@ -209,19 +224,21 @@ namespace ICSharpCode.NRefactory.CSharp
 		}
 	}
 
-	class SwitchStatementCompleter : ConstructCompleter
+	internal class SwitchStatementCompleter : ConstructCompleter
 	{
 		public override bool TryFix(ConstructFixer fixer, SyntaxTree syntaxTree, IDocument document, TextLocation location, ref int newOffset)
 		{
-			var switchStatement = syntaxTree.GetNodeAt<SwitchStatement>(location); 
-			if (switchStatement != null) {
-				if (!switchStatement.LParToken.IsNull && switchStatement.RParToken.IsNull) {
-					var lastNode = GetLastNonErrorChild (switchStatement);
+			var switchStatement = syntaxTree.GetNodeAt<SwitchStatement>(location);
+			if (switchStatement != null)
+			{
+				if (!switchStatement.LParToken.IsNull && switchStatement.RParToken.IsNull)
+				{
+					var lastNode = GetLastNonErrorChild(switchStatement);
 					if (lastNode == null)
 						return false;
 
 					var insertionOffset = document.GetOffset(lastNode.EndLocation);
-					document.Insert(insertionOffset, fixer.GenerateBody (switchStatement, fixer.Options.StatementBraceStyle, true, ref newOffset));
+					document.Insert(insertionOffset, fixer.GenerateBody(switchStatement, fixer.Options.StatementBraceStyle, true, ref newOffset));
 					return true;
 				}
 			}
@@ -229,15 +246,17 @@ namespace ICSharpCode.NRefactory.CSharp
 		}
 	}
 
-	class InvocationCompleter : ConstructCompleter
+	internal class InvocationCompleter : ConstructCompleter
 	{
 		public override bool TryFix(ConstructFixer fixer, SyntaxTree syntaxTree, IDocument document, TextLocation location, ref int newOffset)
 		{
-			var invocationExpression = syntaxTree.GetNodeAt<InvocationExpression>(location); 
+			var invocationExpression = syntaxTree.GetNodeAt<InvocationExpression>(location);
 
-			if (invocationExpression != null) {
-				if (!invocationExpression.LParToken.IsNull && invocationExpression.RParToken.IsNull) {
-					var lastNode = GetLastNonErrorChild (invocationExpression);
+			if (invocationExpression != null)
+			{
+				if (!invocationExpression.LParToken.IsNull && invocationExpression.RParToken.IsNull)
+				{
+					var lastNode = GetLastNonErrorChild(invocationExpression);
 					if (lastNode == null)
 						return false;
 
@@ -245,33 +264,32 @@ namespace ICSharpCode.NRefactory.CSharp
 
 					newOffset = insertionOffset;
 
-
 					var text = ")";
 					newOffset++;
 					var expressionStatement = invocationExpression.Parent as ExpressionStatement;
-					if (expressionStatement != null) {
+					if (expressionStatement != null)
+					{
 						if (expressionStatement.SemicolonToken.IsNull)
 							text = ");";
-						newOffset ++;
+						newOffset++;
 					}
 					document.Insert(insertionOffset, text);
 
-
 					return true;
 				}
-
 			}
 			return false;
 		}
 	}
 
-	class BreakStatementCompleter : ConstructCompleter
+	internal class BreakStatementCompleter : ConstructCompleter
 	{
 		public override bool TryFix(ConstructFixer fixer, SyntaxTree syntaxTree, IDocument document, TextLocation location, ref int newOffset)
 		{
-			var stmt = syntaxTree.GetNodeAt<BreakStatement>(location); 
+			var stmt = syntaxTree.GetNodeAt<BreakStatement>(location);
 
-			if (stmt != null && stmt.SemicolonToken.IsNull) {
+			if (stmt != null && stmt.SemicolonToken.IsNull)
+			{
 				// TODO !!!!
 				return true;
 			}
@@ -279,45 +297,49 @@ namespace ICSharpCode.NRefactory.CSharp
 		}
 	}
 
-	class CheckedStatementCompleter : ConstructCompleter
+	internal class CheckedStatementCompleter : ConstructCompleter
 	{
 		public override bool TryFix(ConstructFixer fixer, SyntaxTree syntaxTree, IDocument document, TextLocation location, ref int newOffset)
 		{
-			var stmt = syntaxTree.GetNodeAt<CheckedExpression>(location); 
+			var stmt = syntaxTree.GetNodeAt<CheckedExpression>(location);
 
-			if (stmt != null && stmt.Parent is ExpressionStatement) {
+			if (stmt != null && stmt.Parent is ExpressionStatement)
+			{
 				var insertionOffset = document.GetOffset(stmt.EndLocation);
-				document.Insert(insertionOffset, fixer.GenerateBody (stmt, fixer.Options.StatementBraceStyle, false, ref newOffset));
+				document.Insert(insertionOffset, fixer.GenerateBody(stmt, fixer.Options.StatementBraceStyle, false, ref newOffset));
 				return true;
 			}
 			return false;
 		}
 	}
 
-	class UncheckedStatementCompleter : ConstructCompleter
+	internal class UncheckedStatementCompleter : ConstructCompleter
 	{
 		public override bool TryFix(ConstructFixer fixer, SyntaxTree syntaxTree, IDocument document, TextLocation location, ref int newOffset)
 		{
-			var stmt = syntaxTree.GetNodeAt<UncheckedExpression>(location); 
+			var stmt = syntaxTree.GetNodeAt<UncheckedExpression>(location);
 
-			if (stmt != null && stmt.Parent is ExpressionStatement) {
+			if (stmt != null && stmt.Parent is ExpressionStatement)
+			{
 				var insertionOffset = document.GetOffset(stmt.EndLocation);
-				document.Insert(insertionOffset, fixer.GenerateBody (stmt, fixer.Options.StatementBraceStyle, false, ref newOffset));
+				document.Insert(insertionOffset, fixer.GenerateBody(stmt, fixer.Options.StatementBraceStyle, false, ref newOffset));
 				return true;
 			}
 			return false;
 		}
 	}
 
-	class ExpressionStatementCompleter : ConstructCompleter
+	internal class ExpressionStatementCompleter : ConstructCompleter
 	{
 		public override bool TryFix(ConstructFixer fixer, SyntaxTree syntaxTree, IDocument document, TextLocation location, ref int newOffset)
 		{
-			var expressionStatement = syntaxTree.GetNodeAt<ExpressionStatement>(location); 
+			var expressionStatement = syntaxTree.GetNodeAt<ExpressionStatement>(location);
 
-			if (expressionStatement != null) {
+			if (expressionStatement != null)
+			{
 				int offset = document.GetOffset(expressionStatement.Expression.EndLocation);
-				if (expressionStatement.SemicolonToken.IsNull) {
+				if (expressionStatement.SemicolonToken.IsNull)
+				{
 					document.Insert(offset, ";");
 					newOffset = offset + 1;
 				}
@@ -327,19 +349,21 @@ namespace ICSharpCode.NRefactory.CSharp
 		}
 	}
 
-	class LockStatementCompleter : ConstructCompleter
+	internal class LockStatementCompleter : ConstructCompleter
 	{
 		public override bool TryFix(ConstructFixer fixer, SyntaxTree syntaxTree, IDocument document, TextLocation location, ref int newOffset)
 		{
-			var stmt = syntaxTree.GetNodeAt<LockStatement>(location); 
-			if (stmt != null) {
-				if (!stmt.LParToken.IsNull && stmt.RParToken.IsNull) {
-					var lastNode = GetLastNonErrorChild (stmt);
+			var stmt = syntaxTree.GetNodeAt<LockStatement>(location);
+			if (stmt != null)
+			{
+				if (!stmt.LParToken.IsNull && stmt.RParToken.IsNull)
+				{
+					var lastNode = GetLastNonErrorChild(stmt);
 					if (lastNode == null)
 						return false;
 
 					var insertionOffset = document.GetOffset(lastNode.EndLocation);
-					document.Insert(insertionOffset, fixer.GenerateBody (stmt, fixer.Options.StatementBraceStyle, true, ref newOffset));
+					document.Insert(insertionOffset, fixer.GenerateBody(stmt, fixer.Options.StatementBraceStyle, true, ref newOffset));
 					return true;
 				}
 			}
@@ -347,13 +371,14 @@ namespace ICSharpCode.NRefactory.CSharp
 		}
 	}
 
-	class ReturnStatementCompleter : ConstructCompleter
+	internal class ReturnStatementCompleter : ConstructCompleter
 	{
 		public override bool TryFix(ConstructFixer fixer, SyntaxTree syntaxTree, IDocument document, TextLocation location, ref int newOffset)
 		{
-			var stmt = syntaxTree.GetNodeAt<ReturnStatement>(location); 
+			var stmt = syntaxTree.GetNodeAt<ReturnStatement>(location);
 
-			if (stmt != null && stmt.SemicolonToken.IsNull) {
+			if (stmt != null && stmt.SemicolonToken.IsNull)
+			{
 				var insertionOffset = document.GetOffset(stmt.EndLocation);
 				document.Insert(insertionOffset, ";");
 				newOffset = insertionOffset + 1;
@@ -363,13 +388,14 @@ namespace ICSharpCode.NRefactory.CSharp
 		}
 	}
 
-	class YieldReturnStatementCompleter : ConstructCompleter
+	internal class YieldReturnStatementCompleter : ConstructCompleter
 	{
 		public override bool TryFix(ConstructFixer fixer, SyntaxTree syntaxTree, IDocument document, TextLocation location, ref int newOffset)
 		{
-			var stmt = syntaxTree.GetNodeAt<YieldReturnStatement>(location); 
+			var stmt = syntaxTree.GetNodeAt<YieldReturnStatement>(location);
 
-			if (stmt != null && stmt.SemicolonToken.IsNull) {
+			if (stmt != null && stmt.SemicolonToken.IsNull)
+			{
 				var insertionOffset = document.GetOffset(stmt.EndLocation);
 				document.Insert(insertionOffset, ";");
 				newOffset = insertionOffset + 1;
@@ -379,13 +405,14 @@ namespace ICSharpCode.NRefactory.CSharp
 		}
 	}
 
-	class ThrowStatementCompleter : ConstructCompleter
+	internal class ThrowStatementCompleter : ConstructCompleter
 	{
 		public override bool TryFix(ConstructFixer fixer, SyntaxTree syntaxTree, IDocument document, TextLocation location, ref int newOffset)
 		{
-			var stmt = syntaxTree.GetNodeAt<ThrowStatement>(location); 
+			var stmt = syntaxTree.GetNodeAt<ThrowStatement>(location);
 
-			if (stmt != null && stmt.SemicolonToken.IsNull) {
+			if (stmt != null && stmt.SemicolonToken.IsNull)
+			{
 				var insertionOffset = document.GetOffset(stmt.EndLocation);
 				document.Insert(insertionOffset, ";");
 				newOffset = insertionOffset + 1;
@@ -394,11 +421,10 @@ namespace ICSharpCode.NRefactory.CSharp
 			return false;
 		}
 	}
-
 
 	public class ConstructFixer
 	{
-		static readonly ConstructCompleter[] completer = {
+		private static readonly ConstructCompleter[] completer = {
 			new TypeDeclarationCompleter(),
 			new DelegateDeclarationCompleter (),
 			new MethodDeclarationCompleter (),
@@ -420,11 +446,13 @@ namespace ICSharpCode.NRefactory.CSharp
 			new ExpressionStatementCompleter ()
 		};
 
-		readonly CSharpFormattingOptions options;
-		readonly TextEditorOptions textEditorOptions;
+		private readonly CSharpFormattingOptions options;
+		private readonly TextEditorOptions textEditorOptions;
 
-		public CSharpFormattingOptions Options {
-			get {
+		public CSharpFormattingOptions Options
+		{
+			get
+			{
 				return options;
 			}
 		}
@@ -434,9 +462,8 @@ namespace ICSharpCode.NRefactory.CSharp
 			this.options = options;
 			this.textEditorOptions = textEditorOptions;
 		}
-		
 
-		string GetIndent(AstNode node)
+		private string GetIndent(AstNode node)
 		{
 			if (node == null || node is SyntaxTree)
 				return "";
@@ -451,7 +478,8 @@ namespace ICSharpCode.NRefactory.CSharp
 			if (addClosingBracket)
 				result.Append(")");
 			var nodeIndent = GetIndent(node.Parent);
-			switch (braceStyle) {
+			switch (braceStyle)
+			{
 				case BraceStyle.DoNotChange:
 				case BraceStyle.BannerStyle:
 				case BraceStyle.EndOfLine:
@@ -460,11 +488,13 @@ namespace ICSharpCode.NRefactory.CSharp
 					result.Append(textEditorOptions.EolMarker);
 					result.Append(nodeIndent + "\t");
 					break;
+
 				case BraceStyle.EndOfLineWithoutSpace:
 					result.Append("{");
 					result.Append(textEditorOptions.EolMarker);
 					result.Append(nodeIndent + "\t");
 					break;
+
 				case BraceStyle.NextLine:
 					result.Append(textEditorOptions.EolMarker);
 					result.Append(nodeIndent);
@@ -472,6 +502,7 @@ namespace ICSharpCode.NRefactory.CSharp
 					result.Append(textEditorOptions.EolMarker);
 					result.Append(nodeIndent + "\t");
 					break;
+
 				case BraceStyle.NextLineShifted:
 					result.Append(textEditorOptions.EolMarker);
 					result.Append(nodeIndent + "\t");
@@ -479,6 +510,7 @@ namespace ICSharpCode.NRefactory.CSharp
 					result.Append(textEditorOptions.EolMarker);
 					result.Append(nodeIndent + "\t");
 					break;
+
 				case BraceStyle.NextLineShifted2:
 					result.Append(textEditorOptions.EolMarker);
 					result.Append(nodeIndent + "\t");
@@ -496,14 +528,16 @@ namespace ICSharpCode.NRefactory.CSharp
 			return result.ToString();
 		}
 
-		public bool TryFix (IDocument document, int offset, out int newOffset)
+		public bool TryFix(IDocument document, int offset, out int newOffset)
 		{
 			newOffset = offset;
 
-			var syntaxTree = SyntaxTree.Parse(document, "a.cs"); 
+			var syntaxTree = SyntaxTree.Parse(document, "a.cs");
 			var location = document.GetLocation(offset - 1);
-			foreach (var c in completer) {
-				if (c.TryFix(this, syntaxTree, document, location, ref newOffset)) {
+			foreach (var c in completer)
+			{
+				if (c.TryFix(this, syntaxTree, document, location, ref newOffset))
+				{
 					return true;
 				}
 			}
@@ -511,4 +545,3 @@ namespace ICSharpCode.NRefactory.CSharp
 		}
 	}
 }
-

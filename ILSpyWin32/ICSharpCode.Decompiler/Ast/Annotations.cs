@@ -1,9 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using ICSharpCode.Decompiler.ILAst;
+﻿using ICSharpCode.Decompiler.ILAst;
 using ICSharpCode.NRefactory.CSharp;
 using Mono.Cecil;
+using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace ICSharpCode.Decompiler.Ast
 {
@@ -11,27 +10,28 @@ namespace ICSharpCode.Decompiler.Ast
 	{
 		public readonly TypeReference InferredType;
 		public readonly TypeReference ExpectedType;
-		
+
 		public TypeInformation(TypeReference inferredType, TypeReference expectedType)
 		{
 			this.InferredType = inferredType;
 			this.ExpectedType = expectedType;
 		}
 	}
-	
-	public class LdTokenAnnotation {}
-	
+
+	public class LdTokenAnnotation { }
+
 	/// <summary>
 	/// Annotation that is applied to the body expression of an Expression.Lambda() call.
 	/// </summary>
 	public class ParameterDeclarationAnnotation
 	{
 		public readonly List<ParameterDeclaration> Parameters = new List<ParameterDeclaration>();
-		
+
 		public ParameterDeclarationAnnotation(ILExpression expr)
 		{
 			Debug.Assert(expr.Code == ILCode.ExpressionTreeParameterDeclarations);
-			for (int i = 0; i < expr.Arguments.Count - 1; i++) {
+			for (int i = 0; i < expr.Arguments.Count - 1; i++)
+			{
 				ILExpression p = expr.Arguments[i];
 				// p looks like this:
 				//   stloc(v, call(Expression::Parameter, call(Type::GetTypeFromHandle, ldtoken(...)), ldstr(...)))
@@ -42,7 +42,7 @@ namespace ICSharpCode.Decompiler.Ast
 			}
 		}
 	}
-	
+
 	/// <summary>
 	/// Annotation that is applied to a LambdaExpression that was produced by an expression tree.
 	/// </summary>

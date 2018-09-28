@@ -1,12 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using ICSharpCode.NRefactory.CSharp;
 using System.Linq;
-using System.Text;
-using ICSharpCode.NRefactory.CSharp;
 
 namespace ICSharpCode.Decompiler.Ast.Transforms
 {
-	class FlattenSwitchBlocks : IAstTransform
+	internal class FlattenSwitchBlocks : IAstTransform
 	{
 		public void Run(AstNode compilationUnit)
 		{

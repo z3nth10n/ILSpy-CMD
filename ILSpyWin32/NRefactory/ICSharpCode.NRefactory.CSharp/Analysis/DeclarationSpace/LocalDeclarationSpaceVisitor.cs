@@ -30,14 +30,15 @@ namespace ICSharpCode.NRefactory.CSharp.Analysis
 {
 	public class LocalDeclarationSpaceVisitor : DepthFirstAstVisitor
 	{
-		LocalDeclarationSpace currentDeclarationSpace;
-		Dictionary<AstNode, LocalDeclarationSpace> nodeDeclarationSpaces = new Dictionary<AstNode, LocalDeclarationSpace>();
-		
+		private LocalDeclarationSpace currentDeclarationSpace;
+		private Dictionary<AstNode, LocalDeclarationSpace> nodeDeclarationSpaces = new Dictionary<AstNode, LocalDeclarationSpace>();
+
 		public LocalDeclarationSpace GetDeclarationSpace(AstNode node)
 		{
 			if (node == null)
 				throw new ArgumentNullException("node");
-			while (node != null) {
+			while (node != null)
+			{
 				LocalDeclarationSpace declarationSpace;
 				if (nodeDeclarationSpaces.TryGetValue(node, out declarationSpace))
 					return declarationSpace;
@@ -48,7 +49,7 @@ namespace ICSharpCode.NRefactory.CSharp.Analysis
 
 		#region Visitor
 
-		void AddDeclaration(string name, AstNode node)
+		private void AddDeclaration(string name, AstNode node)
 		{
 			if (currentDeclarationSpace != null)
 				currentDeclarationSpace.AddDeclaration(name, node);
@@ -66,7 +67,7 @@ namespace ICSharpCode.NRefactory.CSharp.Analysis
 			base.VisitParameterDeclaration(parameterDeclaration);
 		}
 
-		void VisitNewDeclarationSpace(AstNode node)
+		private void VisitNewDeclarationSpace(AstNode node)
 		{
 			var oldDeclarationSpace = currentDeclarationSpace;
 			currentDeclarationSpace = new LocalDeclarationSpace();
@@ -80,7 +81,7 @@ namespace ICSharpCode.NRefactory.CSharp.Analysis
 		}
 
 		#region Declaration space creating nodes
-		
+
 		public override void VisitMethodDeclaration(MethodDeclaration methodDeclaration)
 		{
 			VisitNewDeclarationSpace(methodDeclaration);
@@ -101,7 +102,7 @@ namespace ICSharpCode.NRefactory.CSharp.Analysis
 			AddDeclaration(foreachStatement.VariableName, foreachStatement);
 			VisitNewDeclarationSpace(foreachStatement);
 		}
-		
+
 		public override void VisitForStatement(ForStatement forStatement)
 		{
 			VisitNewDeclarationSpace(forStatement);
@@ -132,7 +133,8 @@ namespace ICSharpCode.NRefactory.CSharp.Analysis
 			VisitNewDeclarationSpace(eventDeclaration);
 		}
 
-		#endregion
-		#endregion
+		#endregion Declaration space creating nodes
+
+		#endregion Visitor
 	}
 }

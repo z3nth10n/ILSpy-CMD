@@ -1,14 +1,14 @@
 ﻿// Copyright (c) 2011 AlphaSierraPapa for the SharpDevelop Team
-// 
+//
 // Permission is hereby granted, free of charge, to any person obtaining a copy of this
 // software and associated documentation files (the "Software"), to deal in the Software
 // without restriction, including without limitation the rights to use, copy, modify, merge,
 // publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons
 // to whom the Software is furnished to do so, subject to the following conditions:
-// 
+//
 // The above copyright notice and this permission notice shall be included in all copies or
 // substantial portions of the Software.
-// 
+//
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
 // INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
 // PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
@@ -16,16 +16,14 @@
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
 
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Threading;
-using ICSharpCode.Decompiler;
 using ICSharpCode.Decompiler.ILAst;
 using ICSharpCode.NRefactory.CSharp;
 using ICSharpCode.NRefactory.PatternMatching;
 using Mono.Cecil;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
 
 namespace ICSharpCode.Decompiler.Ast.Transforms
 {
@@ -42,63 +40,73 @@ namespace ICSharpCode.Decompiler.Ast.Transforms
 			/// ldftn or ldvirtftn?
 			/// </summary>
 			public readonly bool IsVirtual;
-			
+
 			public Annotation(bool isVirtual)
 			{
 				this.IsVirtual = isVirtual;
 			}
 		}
-		
+
 		internal sealed class CapturedVariableAnnotation
 		{
 		}
-		
-		List<string> currentlyUsedVariableNames = new List<string>();
-		
+
+		private List<string> currentlyUsedVariableNames = new List<string>();
+
 		public DelegateConstruction(DecompilerContext context) : base(context)
 		{
 		}
-		
+
 		public override object VisitObjectCreateExpression(ObjectCreateExpression objectCreateExpression, object data)
 		{
-        //     Console.WriteLine(objectCreateExpression.ToString());
-			if (objectCreateExpression.Arguments.Count == 2) {
+			//     Console.WriteLine(objectCreateExpression.ToString());
+			if (objectCreateExpression.Arguments.Count == 2)
+			{
 				Expression obj = objectCreateExpression.Arguments.First();
 				Expression func = objectCreateExpression.Arguments.Last();
 				Annotation annotation = func.Annotation<Annotation>();
-				if (annotation != null) {
+				if (annotation != null)
+				{
 					IdentifierExpression methodIdent = (IdentifierExpression)((InvocationExpression)func).Arguments.Single();
 					MethodReference method = methodIdent.Annotation<MethodReference>();
-					if (method != null) {
-                       
-						if (HandleAnonymousMethod (objectCreateExpression, obj, method)) {
-                          //  Console.WriteLine("is HandleAnonymousMethod");
-                            return null;
+					if (method != null)
+					{
+						if (HandleAnonymousMethod(objectCreateExpression, obj, method))
+						{
+							//  Console.WriteLine("is HandleAnonymousMethod");
+							return null;
 						}
 						// Perform the transformation to "new Action(obj.func)".
 						obj.Remove();
 						methodIdent.Remove();
-						if (!annotation.IsVirtual && obj is ThisReferenceExpression) {
+						if (!annotation.IsVirtual && obj is ThisReferenceExpression)
+						{
 							// maybe it's getting the pointer of a base method?
-							if (method.DeclaringType.GetElementType() != context.CurrentType) {
+							if (method.DeclaringType.GetElementType() != context.CurrentType)
+							{
 								obj = new BaseReferenceExpression();
 							}
 						}
-						if (!annotation.IsVirtual && obj is NullReferenceExpression && !method.HasThis) {
+						if (!annotation.IsVirtual && obj is NullReferenceExpression && !method.HasThis)
+						{
 							// We're loading a static method.
 							// However it is possible to load extension methods with an instance, so we compare the number of arguments:
 							bool isExtensionMethod = false;
 							TypeReference delegateType = objectCreateExpression.Type.Annotation<TypeReference>();
-							if (delegateType != null) {
+							if (delegateType != null)
+							{
 								TypeDefinition delegateTypeDef = delegateType.Resolve();
-								if (delegateTypeDef != null) {
+								if (delegateTypeDef != null)
+								{
 									MethodDefinition invokeMethod = delegateTypeDef.Methods.FirstOrDefault(m => m.Name == "Invoke");
-									if (invokeMethod != null) {
+									if (invokeMethod != null)
+									{
 										isExtensionMethod = (invokeMethod.Parameters.Count + 1 == method.Parameters.Count);
 									}
 								}
 							}
-							if (!isExtensionMethod) {
+							if (!isExtensionMethod)
+							{
 								obj = new TypeReferenceExpression { Type = AstBuilder.ConvertType(method.DeclaringType) };
 							}
 						}
@@ -116,7 +124,7 @@ namespace ICSharpCode.Decompiler.Ast.Transforms
 			}
 			return base.VisitObjectCreateExpression(objectCreateExpression, data);
 		}
-		
+
 		internal static bool IsAnonymousMethod(DecompilerContext context, MethodDefinition method)
 		{
 			if (method == null || !(method.HasGeneratedName() || method.Name.Contains("$")))
@@ -125,19 +133,19 @@ namespace ICSharpCode.Decompiler.Ast.Transforms
 				return false;
 			return true;
 		}
-		
-		bool HandleAnonymousMethod(ObjectCreateExpression objectCreateExpression, Expression target, MethodReference methodRef)
+
+		private bool HandleAnonymousMethod(ObjectCreateExpression objectCreateExpression, Expression target, MethodReference methodRef)
 		{
 			if (!context.Settings.AnonymousMethods)
 				return false; // anonymous method decompilation is disabled
 			if (target != null && !(target is IdentifierExpression || target is ThisReferenceExpression || target is NullReferenceExpression))
 				return false; // don't copy arbitrary expressions, deal with identifiers only
-			
+
 			// Anonymous methods are defined in the same assembly
 			MethodDefinition method = methodRef.ResolveWithinSameModule();
 			if (!IsAnonymousMethod(context, method))
 				return false;
-			
+
 			// Create AnonymousMethodExpression and prepare parameters
 			AnonymousMethodExpression ame = new AnonymousMethodExpression();
 			ame.CopyAnnotationsFrom(objectCreateExpression); // copy ILRanges etc.
@@ -145,50 +153,55 @@ namespace ICSharpCode.Decompiler.Ast.Transforms
 			ame.AddAnnotation(method); // add reference to anonymous method
 			ame.Parameters.AddRange(AstBuilder.MakeParameters(method, isLambda: true));
 			ame.HasParameterList = true;
-			
+
 			// rename variables so that they don't conflict with the parameters:
-			foreach (ParameterDeclaration pd in ame.Parameters) {
+			foreach (ParameterDeclaration pd in ame.Parameters)
+			{
 				EnsureVariableNameIsAvailable(objectCreateExpression, pd.Name);
 			}
-			
+
 			// Decompile the anonymous method:
-			
+
 			DecompilerContext subContext = context.Clone();
 			subContext.CurrentMethod = method;
 			subContext.CurrentMethodIsAsync = false;
 			subContext.ReservedVariableNames.AddRange(currentlyUsedVariableNames);
 			BlockStatement body = AstMethodBodyBuilder.CreateMethodBody(method, subContext, ame.Parameters);
-			TransformationPipeline.RunTransformationsUntil(body, 
-				v => v is DelegateConstruction, 
+			TransformationPipeline.RunTransformationsUntil(body,
+				v => v is DelegateConstruction,
 				subContext);
 			body.AcceptVisitor(this, null);
-			
-			
+
 			bool isLambda = false;
-			if (ame.Parameters.All(p => p.ParameterModifier == ParameterModifier.None)) {
+			if (ame.Parameters.All(p => p.ParameterModifier == ParameterModifier.None))
+			{
 				isLambda = (body.Statements.Count == 1 && body.Statements.Single() is ReturnStatement);
 			}
 			// Remove the parameter list from an AnonymousMethodExpression if the original method had no names,
 			// and the parameters are not used in the method body
-			if (!isLambda && method.Parameters.All(p => string.IsNullOrEmpty(p.Name))) {
+			if (!isLambda && method.Parameters.All(p => string.IsNullOrEmpty(p.Name)))
+			{
 				var parameterReferencingIdentifiers =
 					from ident in body.Descendants.OfType<IdentifierExpression>()
 					let v = ident.Annotation<ILVariable>()
 					where v != null && v.IsParameter && method.Parameters.Contains(v.OriginalParameter)
 					select ident;
-				if (!parameterReferencingIdentifiers.Any()) {
+				if (!parameterReferencingIdentifiers.Any())
+				{
 					ame.Parameters.Clear();
 					ame.HasParameterList = false;
 				}
 			}
-			
+
 			// Replace all occurrences of 'this' in the method body with the delegate's target:
-			foreach (AstNode node in body.Descendants) {
+			foreach (AstNode node in body.Descendants)
+			{
 				if (node is ThisReferenceExpression)
 					node.ReplaceWith(target.Clone());
 			}
 			Expression replacement;
-			if (isLambda) {
+			if (isLambda)
+			{
 				LambdaExpression lambda = new LambdaExpression();
 				lambda.CopyAnnotationsFrom(ame);
 				ame.Parameters.MoveTo(lambda.Parameters);
@@ -196,12 +209,15 @@ namespace ICSharpCode.Decompiler.Ast.Transforms
 				returnExpr.Remove();
 				lambda.Body = returnExpr;
 				replacement = lambda;
-			} else {
+			}
+			else
+			{
 				ame.Body = body;
 				replacement = ame;
 			}
 			var expectedType = objectCreateExpression.Annotation<TypeInformation>().ExpectedType.Resolve();
-			if (expectedType != null && !expectedType.IsDelegate()) {
+			if (expectedType != null && !expectedType.IsDelegate())
+			{
 				var simplifiedDelegateCreation = (ObjectCreateExpression)objectCreateExpression.Clone();
 				simplifiedDelegateCreation.Arguments.Clear();
 				simplifiedDelegateCreation.Arguments.Add(replacement);
@@ -210,117 +226,138 @@ namespace ICSharpCode.Decompiler.Ast.Transforms
 			objectCreateExpression.ReplaceWith(replacement);
 			return true;
 		}
-		
+
 		internal static bool IsPotentialClosure(DecompilerContext context, TypeDefinition potentialDisplayClass)
 		{
 			if (potentialDisplayClass == null || !potentialDisplayClass.IsCompilerGeneratedOrIsInCompilerGeneratedClass())
 				return false;
 			// check that methodContainingType is within containingType
-			while (potentialDisplayClass != context.CurrentType) {
+			while (potentialDisplayClass != context.CurrentType)
+			{
 				potentialDisplayClass = potentialDisplayClass.DeclaringType;
 				if (potentialDisplayClass == null)
 					return false;
 			}
 			return true;
 		}
-		
+
 		public override object VisitInvocationExpression(InvocationExpression invocationExpression, object data)
 		{
-			if (context.Settings.ExpressionTrees && ExpressionTreeConverter.CouldBeExpressionTree(invocationExpression)) {
+			if (context.Settings.ExpressionTrees && ExpressionTreeConverter.CouldBeExpressionTree(invocationExpression))
+			{
 				Expression converted = ExpressionTreeConverter.TryConvert(context, invocationExpression);
-				if (converted != null) {
+				if (converted != null)
+				{
 					invocationExpression.ReplaceWith(converted);
 					return converted.AcceptVisitor(this, data);
 				}
 			}
 			return base.VisitInvocationExpression(invocationExpression, data);
 		}
-		
+
 		#region Track current variables
+
 		public override object VisitMethodDeclaration(MethodDeclaration methodDeclaration, object data)
 		{
 			Debug.Assert(currentlyUsedVariableNames.Count == 0);
-			try {
+			try
+			{
 				currentlyUsedVariableNames.AddRange(methodDeclaration.Parameters.Select(p => p.Name));
 				return base.VisitMethodDeclaration(methodDeclaration, data);
-			} finally {
+			}
+			finally
+			{
 				currentlyUsedVariableNames.Clear();
 			}
 		}
-		
+
 		public override object VisitOperatorDeclaration(OperatorDeclaration operatorDeclaration, object data)
 		{
 			Debug.Assert(currentlyUsedVariableNames.Count == 0);
-			try {
+			try
+			{
 				currentlyUsedVariableNames.AddRange(operatorDeclaration.Parameters.Select(p => p.Name));
 				return base.VisitOperatorDeclaration(operatorDeclaration, data);
-			} finally {
+			}
+			finally
+			{
 				currentlyUsedVariableNames.Clear();
 			}
 		}
-		
+
 		public override object VisitConstructorDeclaration(ConstructorDeclaration constructorDeclaration, object data)
 		{
 			Debug.Assert(currentlyUsedVariableNames.Count == 0);
-			try {
+			try
+			{
 				currentlyUsedVariableNames.AddRange(constructorDeclaration.Parameters.Select(p => p.Name));
 				return base.VisitConstructorDeclaration(constructorDeclaration, data);
-			} finally {
+			}
+			finally
+			{
 				currentlyUsedVariableNames.Clear();
 			}
 		}
-		
+
 		public override object VisitIndexerDeclaration(IndexerDeclaration indexerDeclaration, object data)
 		{
 			Debug.Assert(currentlyUsedVariableNames.Count == 0);
-			try {
+			try
+			{
 				currentlyUsedVariableNames.AddRange(indexerDeclaration.Parameters.Select(p => p.Name));
 				return base.VisitIndexerDeclaration(indexerDeclaration, data);
-			} finally {
+			}
+			finally
+			{
 				currentlyUsedVariableNames.Clear();
 			}
 		}
-		
+
 		public override object VisitAccessor(Accessor accessor, object data)
 		{
-			try {
+			try
+			{
 				currentlyUsedVariableNames.Add("value");
 				return base.VisitAccessor(accessor, data);
-			} finally {
+			}
+			finally
+			{
 				currentlyUsedVariableNames.RemoveAt(currentlyUsedVariableNames.Count - 1);
 			}
 		}
-		
+
 		public override object VisitVariableDeclarationStatement(VariableDeclarationStatement variableDeclarationStatement, object data)
 		{
 			foreach (VariableInitializer v in variableDeclarationStatement.Variables)
 				currentlyUsedVariableNames.Add(v.Name);
 			return base.VisitVariableDeclarationStatement(variableDeclarationStatement, data);
 		}
-		
+
 		public override object VisitFixedStatement(FixedStatement fixedStatement, object data)
 		{
 			foreach (VariableInitializer v in fixedStatement.Variables)
 				currentlyUsedVariableNames.Add(v.Name);
 			return base.VisitFixedStatement(fixedStatement, data);
 		}
-		#endregion
-		
-		static readonly ExpressionStatement displayClassAssignmentPattern =
+
+		#endregion Track current variables
+
+		private static readonly ExpressionStatement displayClassAssignmentPattern =
 			new ExpressionStatement(new AssignmentExpression(
 				new NamedNode("variable", new IdentifierExpression(Pattern.AnyString)),
 				new ObjectCreateExpression { Type = new AnyNode("type") }
 			));
-		
+
 		public override object VisitBlockStatement(BlockStatement blockStatement, object data)
 		{
 			int numberOfVariablesOutsideBlock = currentlyUsedVariableNames.Count;
 			base.VisitBlockStatement(blockStatement, data);
-			foreach (ExpressionStatement stmt in blockStatement.Statements.OfType<ExpressionStatement>().ToArray()) {
+			foreach (ExpressionStatement stmt in blockStatement.Statements.OfType<ExpressionStatement>().ToArray())
+			{
 				Match displayClassAssignmentMatch = displayClassAssignmentPattern.Match(stmt);
 				if (!displayClassAssignmentMatch.Success)
 					continue;
-				
+
 				ILVariable variable = displayClassAssignmentMatch.Get<AstNode>("variable").Single().Annotation<ILVariable>();
 				if (variable == null)
 					continue;
@@ -329,125 +366,139 @@ namespace ICSharpCode.Decompiler.Ast.Transforms
 					continue;
 				if (displayClassAssignmentMatch.Get<AstType>("type").Single().Annotation<TypeReference>().ResolveWithinSameModule() != type)
 					continue;
-				
+
 				// Looks like we found a display class creation. Now let's verify that the variable is used only for field accesses:
 				bool ok = true;
-				foreach (var identExpr in blockStatement.Descendants.OfType<IdentifierExpression>()) {
-					if (identExpr.Identifier == variable.Name && identExpr != displayClassAssignmentMatch.Get("variable").Single()) {
+				foreach (var identExpr in blockStatement.Descendants.OfType<IdentifierExpression>())
+				{
+					if (identExpr.Identifier == variable.Name && identExpr != displayClassAssignmentMatch.Get("variable").Single())
+					{
+						//check if it a cross reference to another generated delegate class's member
+						if (identExpr.Parent is AssignmentExpression)
+						{
+							if ((identExpr.Parent as AssignmentExpression).Left is MemberReferenceExpression
+							  )
+							{
+								MemberReferenceExpression tleft = (MemberReferenceExpression)(identExpr.Parent as AssignmentExpression).Left;
+								ILVariable v = tleft.Target.Annotation<ILVariable>();
+								if (v != null)
+								{
+									TypeDefinition vtype = v.Type.ResolveWithinSameModule();
 
-                        //check if it a cross reference to another generated delegate class's member 
-                        if( identExpr.Parent is AssignmentExpression)
-                        {
-                        
-                            if((identExpr.Parent as AssignmentExpression ).Left is MemberReferenceExpression         
-                              )
-                            {
-                                MemberReferenceExpression tleft = (MemberReferenceExpression) (identExpr.Parent as AssignmentExpression).Left;
-                                ILVariable v = tleft.Target.Annotation<ILVariable>();
-                                if(v!=null )
-                                {
-                                    TypeDefinition vtype = v.Type.ResolveWithinSameModule();
-
-                                   
-                                    if(vtype.IsNested &&IsPotentialClosure(context, vtype))
-                                    {
-                                            Console.WriteLine(identExpr.Parent.ToString()+ " cross reference by delegate  should be ok");
-                                            continue;
-                                    }
-                                    
-
-                                }
-                            }
-                        }
-                        if (!(identExpr.Parent is MemberReferenceExpression && identExpr.Parent.Annotation<FieldReference>() != null))
-                        {
-                            ok = false;
-                            break;
-                        }
+									if (vtype.IsNested && IsPotentialClosure(context, vtype))
+									{
+										Console.WriteLine(identExpr.Parent.ToString() + " cross reference by delegate  should be ok");
+										continue;
+									}
+								}
+							}
+						}
+						if (!(identExpr.Parent is MemberReferenceExpression && identExpr.Parent.Annotation<FieldReference>() != null))
+						{
+							ok = false;
+							break;
+						}
 					}
 				}
 				if (!ok)
 					continue;
 				Dictionary<FieldReference, AstNode> dict = new Dictionary<FieldReference, AstNode>();
-				
+
 				// Delete the variable declaration statement:
 				VariableDeclarationStatement displayClassVarDecl = PatternStatementTransform.FindVariableDeclaration(stmt, variable.Name);
 				if (displayClassVarDecl != null)
 					displayClassVarDecl.Remove();
-				
+
 				// Delete the assignment statement:
 				AstNode cur = stmt.NextSibling;
 				stmt.Remove();
-				
+
 				// Delete any following statements as long as they assign parameters to the display class
 				BlockStatement rootBlock = blockStatement.Ancestors.OfType<BlockStatement>().LastOrDefault() ?? blockStatement;
 				List<ILVariable> parameterOccurrances = rootBlock.Descendants.OfType<IdentifierExpression>()
 					.Select(n => n.Annotation<ILVariable>()).Where(p => p != null && p.IsParameter).ToList();
 				AstNode next;
-				for (; cur != null; cur = next) {
+				for (; cur != null; cur = next)
+				{
 					next = cur.NextSibling;
-					
+
 					// Test for the pattern:
 					// "variableName.MemberName = right;"
 					ExpressionStatement closureFieldAssignmentPattern = new ExpressionStatement(
 						new AssignmentExpression(
-							new NamedNode("left", new MemberReferenceExpression { 
-							              	Target = new IdentifierExpression(variable.Name),
-							              	MemberName = Pattern.AnyString
-							              }),
+							new NamedNode("left", new MemberReferenceExpression
+							{
+								Target = new IdentifierExpression(variable.Name),
+								MemberName = Pattern.AnyString
+							}),
 							new AnyNode("right")
 						)
 					);
 					Match m = closureFieldAssignmentPattern.Match(cur);
-					if (m.Success) {
+					if (m.Success)
+					{
 						FieldDefinition fieldDef = m.Get<MemberReferenceExpression>("left").Single().Annotation<FieldReference>().ResolveWithinSameModule();
 						AstNode right = m.Get<AstNode>("right").Single();
 						bool isParameter = false;
 						bool isDisplayClassParentPointerAssignment = false;
-						if (right is ThisReferenceExpression) {
+						if (right is ThisReferenceExpression)
+						{
 							isParameter = true;
-						} else if (right is IdentifierExpression) {
+						}
+						else if (right is IdentifierExpression)
+						{
 							// handle parameters only if the whole method contains no other occurrence except for 'right'
 							ILVariable v = right.Annotation<ILVariable>();
 							isParameter = v.IsParameter && parameterOccurrances.Count(c => c == v) == 1;
-							if (!isParameter && IsPotentialClosure(context, v.Type.ResolveWithinSameModule())) {
+							if (!isParameter && IsPotentialClosure(context, v.Type.ResolveWithinSameModule()))
+							{
 								// parent display class within the same method
 								// (closure2.localsX = closure1;)
 								isDisplayClassParentPointerAssignment = true;
 							}
-						} else if (right is MemberReferenceExpression) {
+						}
+						else if (right is MemberReferenceExpression)
+						{
 							// copy of parent display class reference from an outer lambda
 							// closure2.localsX = this.localsY
 							MemberReferenceExpression mre = m.Get<MemberReferenceExpression>("right").Single();
-							do {
+							do
+							{
 								// descend into the targets of the mre as long as the field types are closures
 								FieldDefinition fieldDef2 = mre.Annotation<FieldReference>().ResolveWithinSameModule();
-								if (fieldDef2 == null || !IsPotentialClosure(context, fieldDef2.FieldType.ResolveWithinSameModule())) {
+								if (fieldDef2 == null || !IsPotentialClosure(context, fieldDef2.FieldType.ResolveWithinSameModule()))
+								{
 									break;
 								}
 								// if we finally get to a this reference, it's copying a display class parent pointer
-								if (mre.Target is ThisReferenceExpression) {
+								if (mre.Target is ThisReferenceExpression)
+								{
 									isDisplayClassParentPointerAssignment = true;
 								}
 								mre = mre.Target as MemberReferenceExpression;
 							} while (mre != null);
 						}
-						if (isParameter || isDisplayClassParentPointerAssignment) {
+						if (isParameter || isDisplayClassParentPointerAssignment)
+						{
 							dict[fieldDef] = right;
 							cur.Remove();
-						} else {
+						}
+						else
+						{
 							break;
 						}
 					}
-                    else {
-                        //why need to break? continue to match should be ok
+					else
+					{
+						//why need to break? continue to match should be ok
 						//break;
 					}
 				}
-				
+
 				// Now create variables for all fields of the display class (except for those that we already handled as parameters)
 				List<Tuple<AstType, ILVariable>> variablesToDeclare = new List<Tuple<AstType, ILVariable>>();
-				foreach (FieldDefinition field in type.Fields) {
+				foreach (FieldDefinition field in type.Fields)
+				{
 					if (field.IsStatic)
 						continue; // skip static fields
 					if (dict.ContainsKey(field)) // skip field if it already was handled as parameter
@@ -466,25 +517,29 @@ namespace ICSharpCode.Decompiler.Ast.Transforms
 					variablesToDeclare.Add(Tuple.Create(AstBuilder.ConvertType(field.FieldType, field), ilVar));
 					dict[field] = new IdentifierExpression(capturedVariableName).WithAnnotation(ilVar);
 				}
-				
+
 				// Now figure out where the closure was accessed and use the simpler replacement expression there:
-				foreach (var identExpr in blockStatement.Descendants.OfType<IdentifierExpression>()) {
-					if (identExpr.Identifier == variable.Name) {
-                        if (!(identExpr.Parent is MemberReferenceExpression))
-                        {
-                            //will delete by the next round of the cross reference delegate class
-                            continue;
-                        }
+				foreach (var identExpr in blockStatement.Descendants.OfType<IdentifierExpression>())
+				{
+					if (identExpr.Identifier == variable.Name)
+					{
+						if (!(identExpr.Parent is MemberReferenceExpression))
+						{
+							//will delete by the next round of the cross reference delegate class
+							continue;
+						}
 						MemberReferenceExpression mre = (MemberReferenceExpression)identExpr.Parent;
 						AstNode replacement;
-						if (dict.TryGetValue(mre.Annotation<FieldReference>().ResolveWithinSameModule(), out replacement)) {
+						if (dict.TryGetValue(mre.Annotation<FieldReference>().ResolveWithinSameModule(), out replacement))
+						{
 							mre.ReplaceWith(replacement.Clone());
 						}
 					}
 				}
 				// Now insert the variable declarations (we can do this after the replacements only so that the scope detection works):
 				Statement insertionPoint = blockStatement.Statements.FirstOrDefault();
-				foreach (var tuple in variablesToDeclare) {
+				foreach (var tuple in variablesToDeclare)
+				{
 					var newVarDecl = new VariableDeclarationStatement(tuple.Item1, tuple.Item2.Name);
 					newVarDecl.Variables.Single().AddAnnotation(new CapturedVariableAnnotation());
 					newVarDecl.Variables.Single().AddAnnotation(tuple.Item2);
@@ -495,10 +550,11 @@ namespace ICSharpCode.Decompiler.Ast.Transforms
 			return null;
 		}
 
-		void EnsureVariableNameIsAvailable(AstNode currentNode, string name)
+		private void EnsureVariableNameIsAvailable(AstNode currentNode, string name)
 		{
 			int pos = currentlyUsedVariableNames.IndexOf(name);
-			if (pos < 0) {
+			if (pos < 0)
+			{
 				// name is still available
 				return;
 			}
@@ -513,16 +569,18 @@ namespace ICSharpCode.Decompiler.Ast.Transforms
 			// parameters in child lambdas
 			foreach (ParameterDeclaration pd in currentNode.Descendants.OfType<ParameterDeclaration>())
 				nv.AddExistingName(pd.Name);
-			
+
 			string newName = nv.GetAlternativeName(name);
 			currentlyUsedVariableNames[pos] = newName;
-			
+
 			// find top-most block
 			AstNode topMostBlock = currentNode.Ancestors.OfType<BlockStatement>().LastOrDefault() ?? currentNode;
-			
+
 			// rename identifiers
-			foreach (IdentifierExpression ident in topMostBlock.Descendants.OfType<IdentifierExpression>()) {
-				if (ident.Identifier == name) {
+			foreach (IdentifierExpression ident in topMostBlock.Descendants.OfType<IdentifierExpression>())
+			{
+				if (ident.Identifier == name)
+				{
 					ident.Identifier = newName;
 					ILVariable v = ident.Annotation<ILVariable>();
 					if (v != null)
@@ -530,8 +588,10 @@ namespace ICSharpCode.Decompiler.Ast.Transforms
 				}
 			}
 			// rename variable declarations
-			foreach (VariableInitializer vi in topMostBlock.Descendants.OfType<VariableInitializer>()) {
-				if (vi.Name == name) {
+			foreach (VariableInitializer vi in topMostBlock.Descendants.OfType<VariableInitializer>())
+			{
+				if (vi.Name == name)
+				{
 					vi.Name = newName;
 					ILVariable v = vi.Annotation<ILVariable>();
 					if (v != null)

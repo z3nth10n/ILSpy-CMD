@@ -1,14 +1,14 @@
 ﻿// Copyright (c) 2013 AlphaSierraPapa for the SharpDevelop Team
-// 
+//
 // Permission is hereby granted, free of charge, to any person obtaining a copy of this
 // software and associated documentation files (the "Software"), to deal in the Software
 // without restriction, including without limitation the rights to use, copy, modify, merge,
 // publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons
 // to whom the Software is furnished to do so, subject to the following conditions:
-// 
+//
 // The above copyright notice and this permission notice shall be included in all copies or
 // substantial portions of the Software.
-// 
+//
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
 // INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
 // PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
@@ -16,9 +16,9 @@
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
 
+using ICSharpCode.NRefactory.TypeSystem;
 using System;
 using System.Collections.Generic;
-using ICSharpCode.NRefactory.TypeSystem;
 
 namespace ICSharpCode.NRefactory.Analysis
 {
@@ -27,8 +27,8 @@ namespace ICSharpCode.NRefactory.Analysis
 	/// </summary>
 	public class TypeGraph
 	{
-		Dictionary<AssemblyQualifiedTypeName, TypeGraphNode> dict;
-		
+		private Dictionary<AssemblyQualifiedTypeName, TypeGraphNode> dict;
+
 		/// <summary>
 		/// Builds a graph of all type definitions in the specified set of assemblies.
 		/// </summary>
@@ -39,21 +39,28 @@ namespace ICSharpCode.NRefactory.Analysis
 			if (assemblies == null)
 				throw new ArgumentNullException("assemblies");
 			dict = new Dictionary<AssemblyQualifiedTypeName, TypeGraphNode>();
-			foreach (IAssembly assembly in assemblies) {
-				foreach (ITypeDefinition typeDef in assembly.GetAllTypeDefinitions()) {
+			foreach (IAssembly assembly in assemblies)
+			{
+				foreach (ITypeDefinition typeDef in assembly.GetAllTypeDefinitions())
+				{
 					// Overwrite previous entry - duplicates can occur if there are multiple versions of the
 					// same project loaded in the solution (e.g. separate .csprojs for separate target frameworks)
 					dict[new AssemblyQualifiedTypeName(typeDef)] = new TypeGraphNode(typeDef);
 				}
 			}
-			foreach (IAssembly assembly in assemblies) {
-				foreach (ITypeDefinition typeDef in assembly.GetAllTypeDefinitions()) {
+			foreach (IAssembly assembly in assemblies)
+			{
+				foreach (ITypeDefinition typeDef in assembly.GetAllTypeDefinitions())
+				{
 					TypeGraphNode typeNode = dict[new AssemblyQualifiedTypeName(typeDef)];
-					foreach (IType baseType in typeDef.DirectBaseTypes) {
+					foreach (IType baseType in typeDef.DirectBaseTypes)
+					{
 						ITypeDefinition baseTypeDef = baseType.GetDefinition();
-						if (baseTypeDef != null) {
+						if (baseTypeDef != null)
+						{
 							TypeGraphNode baseTypeNode;
-							if (dict.TryGetValue(new AssemblyQualifiedTypeName(baseTypeDef), out baseTypeNode)) {
+							if (dict.TryGetValue(new AssemblyQualifiedTypeName(baseTypeDef), out baseTypeNode))
+							{
 								typeNode.BaseTypes.Add(baseTypeNode);
 								baseTypeNode.DerivedTypes.Add(typeNode);
 							}
@@ -62,14 +69,14 @@ namespace ICSharpCode.NRefactory.Analysis
 				}
 			}
 		}
-		
+
 		public TypeGraphNode GetNode(ITypeDefinition typeDefinition)
 		{
 			if (typeDefinition == null)
 				return null;
 			return GetNode(new AssemblyQualifiedTypeName(typeDefinition));
 		}
-		
+
 		public TypeGraphNode GetNode(AssemblyQualifiedTypeName typeName)
 		{
 			TypeGraphNode node;

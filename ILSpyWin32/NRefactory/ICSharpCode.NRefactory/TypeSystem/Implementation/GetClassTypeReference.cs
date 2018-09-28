@@ -1,14 +1,14 @@
 ﻿// Copyright (c) 2010-2013 AlphaSierraPapa for the SharpDevelop Team
-// 
+//
 // Permission is hereby granted, free of charge, to any person obtaining a copy of this
 // software and associated documentation files (the "Software"), to deal in the Software
 // without restriction, including without limitation the rights to use, copy, modify, merge,
 // publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons
 // to whom the Software is furnished to do so, subject to the following conditions:
-// 
+//
 // The above copyright notice and this permission notice shall be included in all copies or
 // substantial portions of the Software.
-// 
+//
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
 // INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
 // PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
@@ -17,8 +17,6 @@
 // DEALINGS IN THE SOFTWARE.
 
 using System;
-using System.Linq;
-using System.Threading;
 
 namespace ICSharpCode.NRefactory.TypeSystem.Implementation
 {
@@ -28,9 +26,9 @@ namespace ICSharpCode.NRefactory.TypeSystem.Implementation
 	[Serializable]
 	public sealed class GetClassTypeReference : ITypeReference, ISymbolReference, ISupportsInterning
 	{
-		readonly IAssemblyReference assembly;
-		readonly FullTypeName fullTypeName;
-		
+		private readonly IAssemblyReference assembly;
+		private readonly FullTypeName fullTypeName;
+
 		/// <summary>
 		/// Creates a new GetClassTypeReference that searches a type definition.
 		/// </summary>
@@ -44,7 +42,7 @@ namespace ICSharpCode.NRefactory.TypeSystem.Implementation
 			this.fullTypeName = fullTypeName;
 			this.assembly = assembly;
 		}
-		
+
 		/// <summary>
 		/// Creates a new GetClassTypeReference that searches a top-level type in all assemblies.
 		/// </summary>
@@ -55,7 +53,7 @@ namespace ICSharpCode.NRefactory.TypeSystem.Implementation
 		{
 			this.fullTypeName = new TopLevelTypeName(namespaceName, name, typeParameterCount);
 		}
-		
+
 		/// <summary>
 		/// Creates a new GetClassTypeReference that searches a top-level type in the specified assembly.
 		/// </summary>
@@ -69,30 +67,33 @@ namespace ICSharpCode.NRefactory.TypeSystem.Implementation
 			this.assembly = assembly;
 			this.fullTypeName = new TopLevelTypeName(namespaceName, name, typeParameterCount);
 		}
-		
+
 		/// <summary>
 		/// Gets the assembly reference.
 		/// This property returns null if the GetClassTypeReference is searching in all assemblies
 		/// of the compilation.
 		/// </summary>
 		public IAssemblyReference Assembly { get { return assembly; } }
-		
+
 		/// <summary>
 		/// Gets the full name of the type this reference is searching for.
 		/// </summary>
 		public FullTypeName FullTypeName { get { return fullTypeName; } }
-		
+
 		[Obsolete("Use the FullTypeName property instead. GetClassTypeReference now supports nested types, where the Namespace/Name/TPC tripel isn't sufficient for identifying the type.")]
 		public string Namespace { get { return fullTypeName.TopLevelTypeName.Namespace; } }
+
 		[Obsolete("Use the FullTypeName property instead. GetClassTypeReference now supports nested types, where the Namespace/Name/TPC tripel isn't sufficient for identifying the type.")]
 		public string Name { get { return fullTypeName.Name; } }
+
 		[Obsolete("Use the FullTypeName property instead. GetClassTypeReference now supports nested types, where the Namespace/Name/TPC tripel isn't sufficient for identifying the type.")]
 		public int TypeParameterCount { get { return fullTypeName.TypeParameterCount; } }
 
-		IType ResolveInAllAssemblies(ITypeResolveContext context)
+		private IType ResolveInAllAssemblies(ITypeResolveContext context)
 		{
 			var compilation = context.Compilation;
-			foreach (var asm in compilation.Assemblies) {
+			foreach (var asm in compilation.Assemblies)
+			{
 				IType type = asm.GetTypeDefinition(fullTypeName);
 				if (type != null)
 					return type;
@@ -104,31 +105,39 @@ namespace ICSharpCode.NRefactory.TypeSystem.Implementation
 		{
 			if (context == null)
 				throw new ArgumentNullException("context");
-			
+
 			IType type = null;
-			if (assembly == null) {
+			if (assembly == null)
+			{
 				// No assembly specified: look in all assemblies, but prefer the current assembly
-				if (context.CurrentAssembly != null) {
+				if (context.CurrentAssembly != null)
+				{
 					type = context.CurrentAssembly.GetTypeDefinition(fullTypeName);
 				}
-				if (type == null) {
+				if (type == null)
+				{
 					type = ResolveInAllAssemblies(context);
 				}
-			} else {
+			}
+			else
+			{
 				// Assembly specified: only look in the specified assembly.
 				// But if that's not loaded in the compilation, allow fall back to other assemblies.
 				// (the non-loaded assembly might be a facade containing type forwarders -
 				//  for example, when referencing a portable library from a non-portable project)
 				IAssembly asm = assembly.Resolve(context);
-				if (asm != null) {
+				if (asm != null)
+				{
 					type = asm.GetTypeDefinition(fullTypeName);
-				} else {
+				}
+				else
+				{
 					type = ResolveInAllAssemblies(context);
 				}
 			}
 			return type ?? new UnknownType(fullTypeName);
 		}
-		
+
 		ISymbol ISymbolReference.Resolve(ITypeResolveContext context)
 		{
 			var type = Resolve(context);
@@ -136,19 +145,20 @@ namespace ICSharpCode.NRefactory.TypeSystem.Implementation
 				return (ISymbol)type;
 			return null;
 		}
-		
+
 		public override string ToString()
 		{
 			return fullTypeName.ToString() + (assembly != null ? ", " + assembly.ToString() : null);
 		}
-		
+
 		int ISupportsInterning.GetHashCodeForInterning()
 		{
-			unchecked {
+			unchecked
+			{
 				return 33 * assembly.GetHashCode() + fullTypeName.GetHashCode();
 			}
 		}
-		
+
 		bool ISupportsInterning.EqualsForInterning(ISupportsInterning other)
 		{
 			GetClassTypeReference o = other as GetClassTypeReference;

@@ -26,7 +26,6 @@
 using ICSharpCode.NRefactory.Editor;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 
 namespace ICSharpCode.NRefactory.CSharp
@@ -37,7 +36,7 @@ namespace ICSharpCode.NRefactory.CSharp
 	/// </summary>
 	/// <remarks>
 	///     Represents the context for transitions between <see cref="IndentState"/>.
-	///     Delegates the responsibility for pushing a new char to the current 
+	///     Delegates the responsibility for pushing a new char to the current
 	///     state and changes between states depending on the pushed chars.
 	/// </remarks>
 	public class CSharpIndentEngine : IStateMachineIndentEngine
@@ -81,10 +80,10 @@ namespace ICSharpCode.NRefactory.CSharp
 		internal HashSet<string> customConditionalSymbols;
 
 		/// <summary>
-		///     Stores the results of evaluations of the preprocessor if/elif directives 
+		///     Stores the results of evaluations of the preprocessor if/elif directives
 		///     in the current block (between #if and #endif).
 		/// </summary>
-		internal CloneableStack<bool> ifDirectiveEvalResults = new CloneableStack<bool> ();
+		internal CloneableStack<bool> ifDirectiveEvalResults = new CloneableStack<bool>();
 
 		/// <summary>
 		///     Stores the indentation levels of the if directives in the current block.
@@ -103,7 +102,7 @@ namespace ICSharpCode.NRefactory.CSharp
 		/// </summary>
 		internal string previousKeyword;
 
-		#endregion
+		#endregion Properties
 
 		#region IDocumentIndentEngine
 
@@ -120,10 +119,10 @@ namespace ICSharpCode.NRefactory.CSharp
 			{
 				// OPTION: IndentBlankLines
 				// remove the indentation of this line if isLineStart is true
-//				if (!textEditorOptions.IndentBlankLines && isLineStart)
-//				{
-//					return string.Empty;
-//				}
+				//				if (!textEditorOptions.IndentBlankLines && isLineStart)
+				//				{
+				//					return string.Empty;
+				//				}
 
 				return currentState.ThisLineIndent.IndentString;
 			}
@@ -200,7 +199,7 @@ namespace ICSharpCode.NRefactory.CSharp
 			set;
 		}
 
-		#endregion
+		#endregion IDocumentIndentEngine
 
 		#region Fields
 
@@ -264,7 +263,7 @@ namespace ICSharpCode.NRefactory.CSharp
 		/// </summary>
 		internal bool lineBeganInsideMultiLineComment = false;
 
-		#endregion
+		#endregion Fields
 
 		#region Constructors
 
@@ -332,7 +331,7 @@ namespace ICSharpCode.NRefactory.CSharp
 			this.EnableCustomIndentLevels = prototype.EnableCustomIndentLevels;
 		}
 
-		#endregion
+		#endregion Constructors
 
 		#region IClonable
 
@@ -352,7 +351,7 @@ namespace ICSharpCode.NRefactory.CSharp
 			return new CSharpIndentEngine(this);
 		}
 
-		#endregion
+		#endregion IClonable
 
 		#region Methods
 
@@ -374,7 +373,8 @@ namespace ICSharpCode.NRefactory.CSharp
 			}
 
 			var isNewLine = NewLine.IsNewLine(ch);
-			if (!isNewLine) {
+			if (!isNewLine)
+			{
 				currentState.Push(currentChar = ch);
 				offset++;
 				previousNewline = '\0';
@@ -400,8 +400,11 @@ namespace ICSharpCode.NRefactory.CSharp
 				{
 					column++;
 				}
-			} else {
-				if (ch == NewLine.LF && previousNewline == NewLine.CR) {
+			}
+			else
+			{
+				if (ch == NewLine.LF && previousNewline == NewLine.CR)
+				{
 					offset++;
 					return;
 				}
@@ -478,7 +481,8 @@ namespace ICSharpCode.NRefactory.CSharp
 			if (customConditionalSymbols.Contains(undefineSymbol))
 				customConditionalSymbols.Remove(undefineSymbol);
 		}
-		#endregion
+
+		#endregion Methods
 
 		#region IStateMachineIndentEngine
 
@@ -552,6 +556,6 @@ namespace ICSharpCode.NRefactory.CSharp
 			get { return lineBeganInsideMultiLineComment; }
 		}
 
-		#endregion
+		#endregion IStateMachineIndentEngine
 	}
 }

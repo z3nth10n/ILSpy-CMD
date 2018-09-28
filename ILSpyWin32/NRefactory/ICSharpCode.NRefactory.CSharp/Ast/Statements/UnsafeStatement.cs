@@ -1,21 +1,21 @@
-﻿// 
+﻿//
 // UnsafeStatement.cs
 //
 // Author:
 //       Mike Krüger <mkrueger@novell.com>
-// 
+//
 // Copyright (c) 2009 Novell, Inc (http://www.novell.com)
-// 
+//
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
 // in the Software without restriction, including without limitation the rights
 // to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
-// 
+//
 // The above copyright notice and this permission notice shall be included in
 // all copies or substantial portions of the Software.
-// 
+//
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 // FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -31,32 +31,34 @@ namespace ICSharpCode.NRefactory.CSharp
 	/// </summary>
 	public class UnsafeStatement : Statement
 	{
-		public static readonly TokenRole UnsafeKeywordRole = new TokenRole ("unsafe");
-		
-		public CSharpTokenNode UnsafeToken {
-			get { return GetChildByRole (UnsafeKeywordRole); }
-		}
-		
-		public BlockStatement Body {
-			get { return GetChildByRole (Roles.Body); }
-			set { SetChildByRole (Roles.Body, value); }
-		}
-		
-		public override void AcceptVisitor (IAstVisitor visitor)
+		public static readonly TokenRole UnsafeKeywordRole = new TokenRole("unsafe");
+
+		public CSharpTokenNode UnsafeToken
 		{
-			visitor.VisitUnsafeStatement (this);
+			get { return GetChildByRole(UnsafeKeywordRole); }
 		}
-			
-		public override T AcceptVisitor<T> (IAstVisitor<T> visitor)
+
+		public BlockStatement Body
 		{
-			return visitor.VisitUnsafeStatement (this);
+			get { return GetChildByRole(Roles.Body); }
+			set { SetChildByRole(Roles.Body, value); }
 		}
-		
-		public override S AcceptVisitor<T, S> (IAstVisitor<T, S> visitor, T data)
+
+		public override void AcceptVisitor(IAstVisitor visitor)
 		{
-			return visitor.VisitUnsafeStatement (this, data);
+			visitor.VisitUnsafeStatement(this);
 		}
-		
+
+		public override T AcceptVisitor<T>(IAstVisitor<T> visitor)
+		{
+			return visitor.VisitUnsafeStatement(this);
+		}
+
+		public override S AcceptVisitor<T, S>(IAstVisitor<T, S> visitor, T data)
+		{
+			return visitor.VisitUnsafeStatement(this, data);
+		}
+
 		protected internal override bool DoMatch(AstNode other, PatternMatching.Match match)
 		{
 			UnsafeStatement o = other as UnsafeStatement;

@@ -23,14 +23,13 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
-using System;
 using System.Linq;
 
 namespace ICSharpCode.NRefactory.CSharp
 {
 	partial class FormattingVisitor
 	{
-		int GetUpdatedStartLocation(QueryExpression queryExpression)
+		private int GetUpdatedStartLocation(QueryExpression queryExpression)
 		{
 			//TODO
 			return queryExpression.StartLocation.Column;
@@ -43,7 +42,8 @@ namespace ICSharpCode.NRefactory.CSharp
 			var column = GetUpdatedStartLocation(queryExpression);
 
 			int extraSpaces = column - 1 - (curIndent.CurIndent / options.TabSize);
-			if (extraSpaces < 0) {
+			if (extraSpaces < 0)
+			{
 				//This check should probably be removed in the future, when GetUpdatedStartLocation is implemented
 				extraSpaces = 0;
 			}
@@ -94,25 +94,31 @@ namespace ICSharpCode.NRefactory.CSharp
 			FixClauseIndentation(queryWhereClause, queryWhereClause.WhereKeyword);
 		}
 
-		void FixClauseIndentation(QueryClause clause, AstNode keyword) {
+		private void FixClauseIndentation(QueryClause clause, AstNode keyword)
+		{
 			var parentExpression = clause.GetParent<QueryExpression>();
 			bool isFirstClause = parentExpression.Clauses.First() == clause;
-			if (!isFirstClause) {
+			if (!isFirstClause)
+			{
 				PlaceOnNewLine(policy.NewLineBeforeNewQueryClause, keyword);
 			}
 
 			int extraSpaces = options.IndentSize;
 			curIndent.ExtraSpaces += extraSpaces;
-			foreach (var child in clause.Children) {
+			foreach (var child in clause.Children)
+			{
 				var expression = child as Expression;
-				if (expression != null) {
+				if (expression != null)
+				{
 					FixIndentation(child);
 					child.AcceptVisitor(this);
 				}
 
 				var tokenNode = child as CSharpTokenNode;
-				if (tokenNode != null) {
-					if (tokenNode.GetNextSibling(NoWhitespacePredicate).StartLocation.Line != tokenNode.EndLocation.Line) {
+				if (tokenNode != null)
+				{
+					if (tokenNode.GetNextSibling(NoWhitespacePredicate).StartLocation.Line != tokenNode.EndLocation.Line)
+					{
 						ForceSpacesAfter(tokenNode, false);
 					}
 				}
@@ -121,4 +127,3 @@ namespace ICSharpCode.NRefactory.CSharp
 		}
 	}
 }
-

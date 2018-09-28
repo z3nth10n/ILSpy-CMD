@@ -1,14 +1,14 @@
 ﻿// Copyright (c) 2010-2013 AlphaSierraPapa for the SharpDevelop Team
-// 
+//
 // Permission is hereby granted, free of charge, to any person obtaining a copy of this
 // software and associated documentation files (the "Software"), to deal in the Software
 // without restriction, including without limitation the rights to use, copy, modify, merge,
 // publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons
 // to whom the Software is furnished to do so, subject to the following conditions:
-// 
+//
 // The above copyright notice and this permission notice shall be included in all copies or
 // substantial portions of the Software.
-// 
+//
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
 // INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
 // PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
@@ -16,7 +16,6 @@
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
 
-using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -31,10 +30,10 @@ namespace ICSharpCode.NRefactory.TypeSystem
 		/// The identity function.
 		/// </summary>
 		public static readonly TypeParameterSubstitution Identity = new TypeParameterSubstitution(null, null);
-		
-		readonly IList<IType> classTypeArguments;
-		readonly IList<IType> methodTypeArguments;
-		
+
+		private readonly IList<IType> classTypeArguments;
+		private readonly IList<IType> methodTypeArguments;
+
 		/// <summary>
 		/// Creates a new type parameter substitution.
 		/// </summary>
@@ -51,24 +50,27 @@ namespace ICSharpCode.NRefactory.TypeSystem
 			this.classTypeArguments = classTypeArguments;
 			this.methodTypeArguments = methodTypeArguments;
 		}
-		
+
 		/// <summary>
 		/// Gets the list of class type arguments.
 		/// Returns <c>null</c> if this substitution keeps class type parameters unmodified.
 		/// </summary>
-		public IList<IType> ClassTypeArguments {
+		public IList<IType> ClassTypeArguments
+		{
 			get { return classTypeArguments; }
 		}
-		
+
 		/// <summary>
 		/// Gets the list of method type arguments.
 		/// Returns <c>null</c> if this substitution keeps method type parameters unmodified.
 		/// </summary>
-		public IList<IType> MethodTypeArguments {
+		public IList<IType> MethodTypeArguments
+		{
 			get { return methodTypeArguments; }
 		}
-		
+
 		#region Compose
+
 		/// <summary>
 		/// Computes a single TypeParameterSubstitution so that for all types <c>t</c>:
 		/// <c>t.AcceptVisitor(Compose(g, f)) equals t.AcceptVisitor(f).AcceptVisitor(g)</c>
@@ -87,18 +89,21 @@ namespace ICSharpCode.NRefactory.TypeSystem
 			var methodTypeArguments = f.methodTypeArguments != null ? GetComposedTypeArguments(f.methodTypeArguments, g) : g.methodTypeArguments;
 			return new TypeParameterSubstitution(classTypeArguments, methodTypeArguments);
 		}
-		
-		static IList<IType> GetComposedTypeArguments(IList<IType> input, TypeParameterSubstitution substitution)
+
+		private static IList<IType> GetComposedTypeArguments(IList<IType> input, TypeParameterSubstitution substitution)
 		{
 			IType[] result = new IType[input.Count];
-			for (int i = 0; i < result.Length; i++) {
+			for (int i = 0; i < result.Length; i++)
+			{
 				result[i] = input[i].AcceptVisitor(substitution);
 			}
 			return result;
 		}
-		#endregion
-		
+
+		#endregion Compose
+
 		#region Equals and GetHashCode implementation
+
 		public override bool Equals(object obj)
 		{
 			TypeParameterSubstitution other = obj as TypeParameterSubstitution;
@@ -107,15 +112,16 @@ namespace ICSharpCode.NRefactory.TypeSystem
 			return TypeListEquals(classTypeArguments, other.classTypeArguments)
 				&& TypeListEquals(methodTypeArguments, other.methodTypeArguments);
 		}
-		
+
 		public override int GetHashCode()
 		{
-			unchecked {
+			unchecked
+			{
 				return 1124131 * TypeListHashCode(classTypeArguments) + 1821779 * TypeListHashCode(methodTypeArguments);
 			}
 		}
-		
-		static bool TypeListEquals(IList<IType> a, IList<IType> b)
+
+		private static bool TypeListEquals(IList<IType> a, IList<IType> b)
 		{
 			if (a == b)
 				return true;
@@ -123,53 +129,64 @@ namespace ICSharpCode.NRefactory.TypeSystem
 				return false;
 			if (a.Count != b.Count)
 				return false;
-			for (int i = 0; i < a.Count; i++) {
+			for (int i = 0; i < a.Count; i++)
+			{
 				if (!a[i].Equals(b[i]))
 					return false;
 			}
 			return true;
 		}
-		
-		static int TypeListHashCode(IList<IType> obj)
+
+		private static int TypeListHashCode(IList<IType> obj)
 		{
 			if (obj == null)
 				return 0;
-			unchecked {
+			unchecked
+			{
 				int hashCode = 1;
-				foreach (var element in obj) {
+				foreach (var element in obj)
+				{
 					hashCode *= 27;
 					hashCode += element.GetHashCode();
 				}
 				return hashCode;
 			}
 		}
-		#endregion
-		
+
+		#endregion Equals and GetHashCode implementation
+
 		public override IType VisitTypeParameter(ITypeParameter type)
 		{
 			int index = type.Index;
-			if (classTypeArguments != null && type.OwnerType == SymbolKind.TypeDefinition) {
+			if (classTypeArguments != null && type.OwnerType == SymbolKind.TypeDefinition)
+			{
 				if (index >= 0 && index < classTypeArguments.Count)
 					return classTypeArguments[index];
 				else
 					return SpecialType.UnknownType;
-			} else if (methodTypeArguments != null && type.OwnerType == SymbolKind.Method) {
+			}
+			else if (methodTypeArguments != null && type.OwnerType == SymbolKind.Method)
+			{
 				if (index >= 0 && index < methodTypeArguments.Count)
 					return methodTypeArguments[index];
 				else
 					return SpecialType.UnknownType;
-			} else {
+			}
+			else
+			{
 				return base.VisitTypeParameter(type);
 			}
 		}
-		
+
 		public override string ToString()
 		{
 			StringBuilder b = new StringBuilder();
 			b.Append('[');
 			bool first = true;
-			if (classTypeArguments != null) {
-				for (int i = 0; i < classTypeArguments.Count; i++) {
+			if (classTypeArguments != null)
+			{
+				for (int i = 0; i < classTypeArguments.Count; i++)
+				{
 					if (first) first = false; else b.Append(", ");
 					b.Append('`');
 					b.Append(i);
@@ -177,8 +194,10 @@ namespace ICSharpCode.NRefactory.TypeSystem
 					b.Append(classTypeArguments[i].ReflectionName);
 				}
 			}
-			if (methodTypeArguments != null) {
-				for (int i = 0; i < methodTypeArguments.Count; i++) {
+			if (methodTypeArguments != null)
+			{
+				for (int i = 0; i < methodTypeArguments.Count; i++)
+				{
 					if (first) first = false; else b.Append(", ");
 					b.Append("``");
 					b.Append(i);

@@ -34,33 +34,38 @@ namespace ICSharpCode.NRefactory.Utils
 	/// <remarks>
 	/// Implements a complete parser for valid strings as well as
 	/// error reporting and best-effort parsing for invalid strings.
-	/// </remarks>		
+	/// </remarks>
 	public abstract class FormatStringSegmentBase : IFormatStringSegment
 	{
-		public FormatStringSegmentBase ()
+		public FormatStringSegmentBase()
 		{
-			Errors = new List<IFormatStringError> ();
+			Errors = new List<IFormatStringError>();
 		}
 
 		#region IFormatStringSegment implementation
+
 		public int StartLocation { get; set; }
 
 		public int EndLocation { get; set; }
 
-		public bool HasErrors {
-			get {
-				return Errors.Any ();
+		public bool HasErrors
+		{
+			get
+			{
+				return Errors.Any();
 			}
 		}
 
 		public IList<IFormatStringError> Errors { get; set; }
 
-		IEnumerable<IFormatStringError> IFormatStringSegment.Errors {
-			get {
+		IEnumerable<IFormatStringError> IFormatStringSegment.Errors
+		{
+			get
+			{
 				return Errors;
 			}
 		}
-		#endregion
-	}
 
+		#endregion IFormatStringSegment implementation
+	}
 }

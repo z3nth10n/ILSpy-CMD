@@ -1,14 +1,14 @@
 ﻿// Copyright (c) 2010-2013 AlphaSierraPapa for the SharpDevelop Team
-// 
+//
 // Permission is hereby granted, free of charge, to any person obtaining a copy of this
 // software and associated documentation files (the "Software"), to deal in the Software
 // without restriction, including without limitation the rights to use, copy, modify, merge,
 // publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons
 // to whom the Software is furnished to do so, subject to the following conditions:
-// 
+//
 // The above copyright notice and this permission notice shall be included in all copies or
 // substantial portions of the Software.
-// 
+//
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
 // INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
 // PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
@@ -50,13 +50,13 @@ namespace ICSharpCode.NRefactory.Editor
 		/// </summary>
 		/// <exception cref="InvalidOperationException">Thrown when trying to get the Offset from a deleted anchor.</exception>
 		TextLocation Location { get; }
-		
+
 		/// <summary>
 		/// Gets the offset of the text anchor.
 		/// </summary>
 		/// <exception cref="InvalidOperationException">Thrown when trying to get the Offset from a deleted anchor.</exception>
 		int Offset { get; }
-		
+
 		/// <summary>
 		/// Controls how the anchor moves.
 		/// </summary>
@@ -65,7 +65,7 @@ namespace ICSharpCode.NRefactory.Editor
 		/// The property <see cref="MovementType"/> will be used to determine which of these two options the anchor will choose.
 		/// The default value is <see cref="AnchorMovementType.Default"/>.</remarks>
 		AnchorMovementType MovementType { get; set; }
-		
+
 		/// <summary>
 		/// <para>
 		/// Specifies whether the anchor survives deletion of the text containing it.
@@ -76,7 +76,7 @@ namespace ICSharpCode.NRefactory.Editor
 		/// </summary>
 		/// <remarks><inheritdoc cref="IsDeleted" /></remarks>
 		bool SurviveDeletion { get; set; }
-		
+
 		/// <summary>
 		/// Gets whether the anchor was deleted.
 		/// </summary>
@@ -89,7 +89,7 @@ namespace ICSharpCode.NRefactory.Editor
 		/// but in other cases you want to still be able to use the anchor. For those cases, set <c><see cref="SurviveDeletion"/> = true</c>.</para>
 		/// </remarks>
 		bool IsDeleted { get; }
-		
+
 		/// <summary>
 		/// Occurs after the anchor was deleted.
 		/// </summary>
@@ -100,20 +100,20 @@ namespace ICSharpCode.NRefactory.Editor
 		/// </para>
 		/// </remarks>
 		event EventHandler Deleted;
-		
+
 		/// <summary>
 		/// Gets the line number of the anchor.
 		/// </summary>
 		/// <exception cref="InvalidOperationException">Thrown when trying to get the Offset from a deleted anchor.</exception>
 		int Line { get; }
-		
+
 		/// <summary>
 		/// Gets the column number of this anchor.
 		/// </summary>
 		/// <exception cref="InvalidOperationException">Thrown when trying to get the Offset from a deleted anchor.</exception>
 		int Column { get; }
 	}
-	
+
 	/// <summary>
 	/// Defines how a text anchor moves.
 	/// </summary>
@@ -125,11 +125,13 @@ namespace ICSharpCode.NRefactory.Editor
 		/// after the inserted text.
 		/// </summary>
 		Default,
+
 		/// <summary>
 		/// Behaves like a start marker - when text is inserted at the anchor position, the anchor will stay
 		/// before the inserted text.
 		/// </summary>
 		BeforeInsertion,
+
 		/// <summary>
 		/// Behave like an end marker - when text is insered at the anchor position, the anchor will move
 		/// after the inserted text.

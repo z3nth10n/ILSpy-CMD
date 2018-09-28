@@ -1,14 +1,14 @@
 ﻿// Copyright (c) 2010-2013 AlphaSierraPapa for the SharpDevelop Team
-// 
+//
 // Permission is hereby granted, free of charge, to any person obtaining a copy of this
 // software and associated documentation files (the "Software"), to deal in the Software
 // without restriction, including without limitation the rights to use, copy, modify, merge,
 // publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons
 // to whom the Software is furnished to do so, subject to the following conditions:
-// 
+//
 // The above copyright notice and this permission notice shall be included in all copies or
 // substantial portions of the Software.
-// 
+//
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
 // INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
 // PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
@@ -16,12 +16,11 @@
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
 
-using System;
-using System.Linq;
-using System.Collections.Generic;
-using System.Text;
 using ICSharpCode.NRefactory.TypeSystem;
 using ICSharpCode.NRefactory.TypeSystem.Implementation;
+using System;
+using System.Collections.Generic;
+using System.Text;
 
 namespace ICSharpCode.NRefactory.Documentation
 {
@@ -32,27 +31,33 @@ namespace ICSharpCode.NRefactory.Documentation
 	public static class IdStringProvider
 	{
 		#region GetIdString
+
 		/// <summary>
 		/// Gets the ID string (C# 4.0 spec, §A.3.1) for the specified entity.
 		/// </summary>
 		public static string GetIdString(this IEntity entity)
 		{
 			StringBuilder b = new StringBuilder();
-			switch (entity.SymbolKind) {
+			switch (entity.SymbolKind)
+			{
 				case SymbolKind.TypeDefinition:
 					b.Append("T:");
 					AppendTypeName(b, (ITypeDefinition)entity, false);
 					return b.ToString();
+
 				case SymbolKind.Field:
 					b.Append("F:");
 					break;
+
 				case SymbolKind.Property:
 				case SymbolKind.Indexer:
 					b.Append("P:");
 					break;
+
 				case SymbolKind.Event:
 					b.Append("E:");
 					break;
+
 				default:
 					b.Append("M:");
 					break;
@@ -60,35 +65,42 @@ namespace ICSharpCode.NRefactory.Documentation
 			IMember member = (IMember)entity;
 			AppendTypeName(b, member.DeclaringType, false);
 			b.Append('.');
-			if (member.IsExplicitInterfaceImplementation && member.Name.IndexOf('.') < 0 && member.ImplementedInterfaceMembers.Count == 1) {
+			if (member.IsExplicitInterfaceImplementation && member.Name.IndexOf('.') < 0 && member.ImplementedInterfaceMembers.Count == 1)
+			{
 				AppendTypeName(b, member.ImplementedInterfaceMembers[0].DeclaringType, true);
 				b.Append('#');
 			}
 			b.Append(member.Name.Replace('.', '#'));
 			IMethod method = member as IMethod;
-			if (method != null && method.TypeParameters.Count > 0) {
+			if (method != null && method.TypeParameters.Count > 0)
+			{
 				b.Append("``");
 				b.Append(method.TypeParameters.Count);
 			}
 			IParameterizedMember parameterizedMember = member as IParameterizedMember;
-			if (parameterizedMember != null && parameterizedMember.Parameters.Count > 0) {
+			if (parameterizedMember != null && parameterizedMember.Parameters.Count > 0)
+			{
 				b.Append('(');
 				var parameters = parameterizedMember.Parameters;
-				for (int i = 0; i < parameters.Count; i++) {
+				for (int i = 0; i < parameters.Count; i++)
+				{
 					if (i > 0) b.Append(',');
 					AppendTypeName(b, parameters[i].Type, false);
 				}
 				b.Append(')');
 			}
-			if (member.SymbolKind == SymbolKind.Operator && (member.Name == "op_Implicit" || member.Name == "op_Explicit")) {
+			if (member.SymbolKind == SymbolKind.Operator && (member.Name == "op_Implicit" || member.Name == "op_Explicit"))
+			{
 				b.Append('~');
 				AppendTypeName(b, member.ReturnType, false);
 			}
 			return b.ToString();
 		}
-		#endregion
-		
+
+		#endregion GetIdString
+
 		#region GetTypeName
+
 		public static string GetTypeName(IType type)
 		{
 			if (type == null)
@@ -97,30 +109,38 @@ namespace ICSharpCode.NRefactory.Documentation
 			AppendTypeName(b, type, false);
 			return b.ToString();
 		}
-		
-		static void AppendTypeName(StringBuilder b, IType type, bool explicitInterfaceImpl)
+
+		private static void AppendTypeName(StringBuilder b, IType type, bool explicitInterfaceImpl)
 		{
-			switch (type.Kind) {
+			switch (type.Kind)
+			{
 				case TypeKind.Dynamic:
 					b.Append(explicitInterfaceImpl ? "System#Object" : "System.Object");
 					break;
+
 				case TypeKind.TypeParameter:
 					ITypeParameter tp = (ITypeParameter)type;
-					if (explicitInterfaceImpl) {
+					if (explicitInterfaceImpl)
+					{
 						b.Append(tp.Name);
-					} else {
+					}
+					else
+					{
 						b.Append('`');
 						if (tp.OwnerType == SymbolKind.Method)
 							b.Append('`');
 						b.Append(tp.Index);
 					}
 					break;
+
 				case TypeKind.Array:
 					ArrayType array = (ArrayType)type;
 					AppendTypeName(b, array.ElementType, explicitInterfaceImpl);
 					b.Append('[');
-					if (array.Dimensions > 1) {
-						for (int i = 0; i < array.Dimensions; i++) {
+					if (array.Dimensions > 1)
+					{
+						for (int i = 0; i < array.Dimensions; i++)
+						{
 							if (i > 0)
 								b.Append(explicitInterfaceImpl ? '@' : ',');
 							if (!explicitInterfaceImpl)
@@ -129,22 +149,28 @@ namespace ICSharpCode.NRefactory.Documentation
 					}
 					b.Append(']');
 					break;
+
 				case TypeKind.Pointer:
 					AppendTypeName(b, ((PointerType)type).ElementType, explicitInterfaceImpl);
 					b.Append('*');
 					break;
+
 				case TypeKind.ByReference:
 					AppendTypeName(b, ((ByReferenceType)type).ElementType, explicitInterfaceImpl);
 					b.Append('@');
 					break;
+
 				default:
 					IType declType = type.DeclaringType;
-					if (declType != null) {
+					if (declType != null)
+					{
 						AppendTypeName(b, declType, explicitInterfaceImpl);
 						b.Append(explicitInterfaceImpl ? '#' : '.');
 						b.Append(type.Name);
 						AppendTypeParameters(b, type, declType.TypeParameterCount, explicitInterfaceImpl);
-					} else {
+					}
+					else
+					{
 						if (explicitInterfaceImpl)
 							b.Append(type.FullName.Replace('.', '#'));
 						else
@@ -154,30 +180,37 @@ namespace ICSharpCode.NRefactory.Documentation
 					break;
 			}
 		}
-		
-		static void AppendTypeParameters(StringBuilder b, IType type, int outerTypeParameterCount, bool explicitInterfaceImpl)
+
+		private static void AppendTypeParameters(StringBuilder b, IType type, int outerTypeParameterCount, bool explicitInterfaceImpl)
 		{
 			int tpc = type.TypeParameterCount - outerTypeParameterCount;
-			if (tpc > 0) {
+			if (tpc > 0)
+			{
 				ParameterizedType pt = type as ParameterizedType;
-				if (pt != null) {
+				if (pt != null)
+				{
 					b.Append('{');
 					var ta = pt.TypeArguments;
-					for (int i = outerTypeParameterCount; i < ta.Count; i++) {
+					for (int i = outerTypeParameterCount; i < ta.Count; i++)
+					{
 						if (i > outerTypeParameterCount)
 							b.Append(explicitInterfaceImpl ? '@' : ',');
 						AppendTypeName(b, ta[i], explicitInterfaceImpl);
 					}
 					b.Append('}');
-				} else {
+				}
+				else
+				{
 					b.Append('`');
 					b.Append(tpc);
 				}
 			}
 		}
-		#endregion
-		
+
+		#endregion GetTypeName
+
 		#region ParseMemberName
+
 		/// <summary>
 		/// Parse the ID string into a member reference.
 		/// </summary>
@@ -209,16 +242,18 @@ namespace ICSharpCode.NRefactory.Documentation
 			ITypeReference typeReference = ParseTypeName(typeName, ref pos);
 			if (pos != typeName.Length)
 				throw new ReflectionNameParseException(pos, "Expected end of type name");
-//			string memberName = memberIDString.Substring(dotPos + 1, parenPos - (dotPos + 1));
-//			pos = memberName.LastIndexOf("``");
-//			if (pos > 0)
-//				memberName = memberName.Substring(0, pos);
-//			memberName = memberName.Replace('#', '.');
+			//			string memberName = memberIDString.Substring(dotPos + 1, parenPos - (dotPos + 1));
+			//			pos = memberName.LastIndexOf("``");
+			//			if (pos > 0)
+			//				memberName = memberName.Substring(0, pos);
+			//			memberName = memberName.Replace('#', '.');
 			return new IdStringMemberReference(typeReference, typeChar, memberIdString);
 		}
-		#endregion
-		
+
+		#endregion ParseMemberName
+
 		#region ParseTypeName
+
 		/// <summary>
 		/// Parse the ID string type name into a type reference.
 		/// </summary>
@@ -249,10 +284,11 @@ namespace ICSharpCode.NRefactory.Documentation
 				throw new ReflectionNameParseException(pos, "Expected end of type name");
 			return r;
 		}
-		
-		static bool IsIDStringSpecialCharacter(char c)
+
+		private static bool IsIDStringSpecialCharacter(char c)
 		{
-			switch (c) {
+			switch (c)
+			{
 				case ':':
 				case '{':
 				case '}':
@@ -265,52 +301,64 @@ namespace ICSharpCode.NRefactory.Documentation
 				case '@':
 				case ',':
 					return true;
+
 				default:
 					return false;
 			}
 		}
-		
-		static ITypeReference ParseTypeName(string typeName, ref int pos)
+
+		private static ITypeReference ParseTypeName(string typeName, ref int pos)
 		{
 			string reflectionTypeName = typeName;
 			if (pos == typeName.Length)
 				throw new ReflectionNameParseException(pos, "Unexpected end");
 			ITypeReference result;
-			if (reflectionTypeName[pos] == '`') {
+			if (reflectionTypeName[pos] == '`')
+			{
 				// type parameter reference
 				pos++;
 				if (pos == reflectionTypeName.Length)
 					throw new ReflectionNameParseException(pos, "Unexpected end");
-				if (reflectionTypeName[pos] == '`') {
+				if (reflectionTypeName[pos] == '`')
+				{
 					// method type parameter reference
 					pos++;
 					int index = ReflectionHelper.ReadTypeParameterCount(reflectionTypeName, ref pos);
 					result = TypeParameterReference.Create(SymbolKind.Method, index);
-				} else {
+				}
+				else
+				{
 					// class type parameter reference
 					int index = ReflectionHelper.ReadTypeParameterCount(reflectionTypeName, ref pos);
 					result = TypeParameterReference.Create(SymbolKind.TypeDefinition, index);
 				}
-			} else {
+			}
+			else
+			{
 				// not a type parameter reference: read the actual type name
 				List<ITypeReference> typeArguments = new List<ITypeReference>();
 				int typeParameterCount;
 				string typeNameWithoutSuffix = ReadTypeName(typeName, ref pos, true, out typeParameterCount, typeArguments);
 				result = new GetPotentiallyNestedClassTypeReference(typeNameWithoutSuffix, typeParameterCount);
-				while (pos < typeName.Length && typeName[pos] == '.') {
+				while (pos < typeName.Length && typeName[pos] == '.')
+				{
 					pos++;
 					string nestedTypeName = ReadTypeName(typeName, ref pos, false, out typeParameterCount, typeArguments);
 					result = new NestedTypeReference(result, nestedTypeName, typeParameterCount);
 				}
-				if (typeArguments.Count > 0) {
+				if (typeArguments.Count > 0)
+				{
 					result = new ParameterizedTypeReference(result, typeArguments);
 				}
 			}
-			while (pos < typeName.Length) {
-				switch (typeName[pos]) {
+			while (pos < typeName.Length)
+			{
+				switch (typeName[pos])
+				{
 					case '[':
 						int dimensions = 1;
-						do {
+						do
+						{
 							pos++;
 							if (pos == typeName.Length)
 								throw new ReflectionNameParseException(pos, "Unexpected end");
@@ -319,12 +367,15 @@ namespace ICSharpCode.NRefactory.Documentation
 						} while (typeName[pos] != ']');
 						result = new ArrayTypeReference(result, dimensions);
 						break;
+
 					case '*':
 						result = new PointerTypeReference(result);
 						break;
+
 					case '@':
 						result = new ByReferenceTypeReference(result);
 						break;
+
 					default:
 						return result;
 				}
@@ -332,8 +383,8 @@ namespace ICSharpCode.NRefactory.Documentation
 			}
 			return result;
 		}
-		
-		static string ReadTypeName(string typeName, ref int pos, bool allowDottedName, out int typeParameterCount, List<ITypeReference> typeArguments)
+
+		private static string ReadTypeName(string typeName, ref int pos, bool allowDottedName, out int typeParameterCount, List<ITypeReference> typeArguments)
 		{
 			int startPos = pos;
 			// skip the simple name portion:
@@ -344,14 +395,18 @@ namespace ICSharpCode.NRefactory.Documentation
 			string shortTypeName = typeName.Substring(startPos, pos - startPos);
 			// read type arguments:
 			typeParameterCount = 0;
-			if (pos < typeName.Length && typeName[pos] == '`') {
+			if (pos < typeName.Length && typeName[pos] == '`')
+			{
 				// unbound generic type
 				pos++;
 				typeParameterCount = ReflectionHelper.ReadTypeParameterCount(typeName, ref pos);
-			} else if (pos < typeName.Length && typeName[pos] == '{') {
+			}
+			else if (pos < typeName.Length && typeName[pos] == '{')
+			{
 				// bound generic type
 				typeArguments = new List<ITypeReference>();
-				do {
+				do
+				{
 					pos++;
 					typeArguments.Add(ParseTypeName(typeName, ref pos));
 					typeParameterCount++;
@@ -364,9 +419,11 @@ namespace ICSharpCode.NRefactory.Documentation
 			}
 			return shortTypeName;
 		}
-		#endregion
-		
+
+		#endregion ParseTypeName
+
 		#region FindEntity
+
 		/// <summary>
 		/// Finds the entity in the given type resolve context.
 		/// </summary>
@@ -380,12 +437,16 @@ namespace ICSharpCode.NRefactory.Documentation
 				throw new ArgumentNullException("idString");
 			if (context == null)
 				throw new ArgumentNullException("context");
-			if (idString.StartsWith("T:", StringComparison.Ordinal)) {
+			if (idString.StartsWith("T:", StringComparison.Ordinal))
+			{
 				return ParseTypeName(idString.Substring(2)).Resolve(context).GetDefinition();
-			} else {
+			}
+			else
+			{
 				return ParseMemberIdString(idString).Resolve(context);
 			}
 		}
-		#endregion
+
+		#endregion FindEntity
 	}
 }

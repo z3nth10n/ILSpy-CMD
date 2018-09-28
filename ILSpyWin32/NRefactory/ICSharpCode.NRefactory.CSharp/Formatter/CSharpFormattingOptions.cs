@@ -1,21 +1,21 @@
-﻿// 
+﻿//
 // CSharpFormattingOptions.cs
-//  
+//
 // Author:
 //       Mike Krüger <mkrueger@novell.com>
-//  
+//
 // Copyright (c) 2009 Novell, Inc (http://www.novell.com)
-// 
+//
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
 // in the Software without restriction, including without limitation the rights
 // to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
-// 
+//
 // The above copyright notice and this permission notice shall be included in
 // all copies or substantial portions of the Software.
-// 
+//
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 // FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -23,10 +23,6 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
-
-using System;
-using System.Reflection;
-using System.Linq;
 
 namespace ICSharpCode.NRefactory.CSharp
 {
@@ -48,25 +44,29 @@ namespace ICSharpCode.NRefactory.CSharp
 		ForceNewLine
 	}
 
-	public enum Wrapping {
+	public enum Wrapping
+	{
 		DoNotChange,
 		DoNotWrap,
 		WrapAlways,
 		WrapIfTooLong
 	}
 
-	public enum NewLinePlacement {
+	public enum NewLinePlacement
+	{
 		DoNotCare,
 		NewLine,
 		SameLine
 	}
 
-	public enum UsingPlacement {
+	public enum UsingPlacement
+	{
 		TopOfFile,
 		InsideNamespace
 	}
 
-	public enum EmptyLineFormatting {
+	public enum EmptyLineFormatting
+	{
 		DoNotChange,
 		Indent,
 		DoNotIndent
@@ -74,884 +74,1066 @@ namespace ICSharpCode.NRefactory.CSharp
 
 	public class CSharpFormattingOptions
 	{
-		public string Name {
-			get;
-			set;
-		}
-
-		public bool IsBuiltIn {
-			get;
-			set;
-		}
-
-		public CSharpFormattingOptions Clone ()
+		public string Name
 		{
-			return (CSharpFormattingOptions)MemberwiseClone ();
+			get;
+			set;
+		}
+
+		public bool IsBuiltIn
+		{
+			get;
+			set;
+		}
+
+		public CSharpFormattingOptions Clone()
+		{
+			return (CSharpFormattingOptions)MemberwiseClone();
 		}
 
 		#region Indentation
-		public bool IndentNamespaceBody { // tested
+
+		public bool IndentNamespaceBody
+		{ // tested
 			get;
 			set;
 		}
 
-		public bool IndentClassBody { // tested
+		public bool IndentClassBody
+		{ // tested
 			get;
 			set;
 		}
 
-		public bool IndentInterfaceBody { // tested
+		public bool IndentInterfaceBody
+		{ // tested
 			get;
 			set;
 		}
 
-		public bool IndentStructBody { // tested
+		public bool IndentStructBody
+		{ // tested
 			get;
 			set;
 		}
 
-		public bool IndentEnumBody { // tested
+		public bool IndentEnumBody
+		{ // tested
 			get;
 			set;
 		}
 
-		public bool IndentMethodBody { // tested
+		public bool IndentMethodBody
+		{ // tested
 			get;
 			set;
 		}
 
-		public bool IndentPropertyBody { // tested
+		public bool IndentPropertyBody
+		{ // tested
 			get;
 			set;
 		}
 
-		public bool IndentEventBody { // tested
+		public bool IndentEventBody
+		{ // tested
 			get;
 			set;
 		}
 
-		public bool IndentBlocks { // tested
+		public bool IndentBlocks
+		{ // tested
 			get;
 			set;
 		}
 
-		public bool IndentSwitchBody { // tested
+		public bool IndentSwitchBody
+		{ // tested
 			get;
 			set;
 		}
 
-		public bool IndentCaseBody { // tested
+		public bool IndentCaseBody
+		{ // tested
 			get;
 			set;
 		}
 
-		public bool IndentBreakStatements { // tested
+		public bool IndentBreakStatements
+		{ // tested
 			get;
 			set;
 		}
 
-		public bool AlignEmbeddedStatements { // tested
+		public bool AlignEmbeddedStatements
+		{ // tested
 			get;
 			set;
 		}
 
-		public bool AlignElseInIfStatements {
+		public bool AlignElseInIfStatements
+		{
 			get;
 			set;
 		}
 
-
-
-		public PropertyFormatting AutoPropertyFormatting { // tested
+		public PropertyFormatting AutoPropertyFormatting
+		{ // tested
 			get;
 			set;
 		}
 
-		public PropertyFormatting SimplePropertyFormatting { // tested
+		public PropertyFormatting SimplePropertyFormatting
+		{ // tested
 			get;
 			set;
 		}
 
-		public EmptyLineFormatting EmptyLineFormatting {
+		public EmptyLineFormatting EmptyLineFormatting
+		{
 			get;
 			set;
 		}
 
-		public bool IndentPreprocessorDirectives { // tested
+		public bool IndentPreprocessorDirectives
+		{ // tested
 			get;
 			set;
 		}
 
-		public bool AlignToMemberReferenceDot { // TODO!
+		public bool AlignToMemberReferenceDot
+		{ // TODO!
 			get;
 			set;
 		}
 
-		public bool IndentBlocksInsideExpressions {
+		public bool IndentBlocksInsideExpressions
+		{
 			get;
 			set;
 		}
-		#endregion
-		
+
+		#endregion Indentation
+
 		#region Braces
-		public BraceStyle NamespaceBraceStyle { // tested
+
+		public BraceStyle NamespaceBraceStyle
+		{ // tested
 			get;
 			set;
 		}
 
-		public BraceStyle ClassBraceStyle { // tested
+		public BraceStyle ClassBraceStyle
+		{ // tested
 			get;
 			set;
 		}
 
-		public BraceStyle InterfaceBraceStyle { // tested
+		public BraceStyle InterfaceBraceStyle
+		{ // tested
 			get;
 			set;
 		}
 
-		public BraceStyle StructBraceStyle { // tested
+		public BraceStyle StructBraceStyle
+		{ // tested
 			get;
 			set;
 		}
 
-		public BraceStyle EnumBraceStyle { // tested
+		public BraceStyle EnumBraceStyle
+		{ // tested
 			get;
 			set;
 		}
 
-		public BraceStyle MethodBraceStyle { // tested
+		public BraceStyle MethodBraceStyle
+		{ // tested
 			get;
 			set;
 		}
 
-		public BraceStyle AnonymousMethodBraceStyle {
+		public BraceStyle AnonymousMethodBraceStyle
+		{
 			get;
 			set;
 		}
 
-		public BraceStyle ConstructorBraceStyle {  // tested
+		public BraceStyle ConstructorBraceStyle
+		{  // tested
 			get;
 			set;
 		}
 
-		public BraceStyle DestructorBraceStyle { // tested
+		public BraceStyle DestructorBraceStyle
+		{ // tested
 			get;
 			set;
 		}
 
-		public BraceStyle PropertyBraceStyle { // tested
+		public BraceStyle PropertyBraceStyle
+		{ // tested
 			get;
 			set;
 		}
 
-		public BraceStyle PropertyGetBraceStyle { // tested
+		public BraceStyle PropertyGetBraceStyle
+		{ // tested
 			get;
 			set;
 		}
 
-		public BraceStyle PropertySetBraceStyle { // tested
+		public BraceStyle PropertySetBraceStyle
+		{ // tested
 			get;
 			set;
 		}
 
-		public PropertyFormatting SimpleGetBlockFormatting { // tested
+		public PropertyFormatting SimpleGetBlockFormatting
+		{ // tested
 			get;
 			set;
 		}
 
-		public PropertyFormatting SimpleSetBlockFormatting { // tested
+		public PropertyFormatting SimpleSetBlockFormatting
+		{ // tested
 			get;
 			set;
 		}
 
-		public BraceStyle EventBraceStyle { // tested
+		public BraceStyle EventBraceStyle
+		{ // tested
 			get;
 			set;
 		}
 
-		public BraceStyle EventAddBraceStyle { // tested
+		public BraceStyle EventAddBraceStyle
+		{ // tested
 			get;
 			set;
 		}
 
-		public BraceStyle EventRemoveBraceStyle { // tested
+		public BraceStyle EventRemoveBraceStyle
+		{ // tested
 			get;
 			set;
 		}
 
-		public bool AllowEventAddBlockInline { // tested
+		public bool AllowEventAddBlockInline
+		{ // tested
 			get;
 			set;
 		}
 
-		public bool AllowEventRemoveBlockInline { // tested
+		public bool AllowEventRemoveBlockInline
+		{ // tested
 			get;
 			set;
 		}
 
-		public BraceStyle StatementBraceStyle { // tested
+		public BraceStyle StatementBraceStyle
+		{ // tested
 			get;
 			set;
 		}
 
-		public bool AllowIfBlockInline {
+		public bool AllowIfBlockInline
+		{
 			get;
 			set;
 		}
 
-		bool allowOneLinedArrayInitialziers = true;
-		public bool AllowOneLinedArrayInitialziers {
-			get {
+		private bool allowOneLinedArrayInitialziers = true;
+
+		public bool AllowOneLinedArrayInitialziers
+		{
+			get
+			{
 				return allowOneLinedArrayInitialziers;
 			}
-			set {
+			set
+			{
 				allowOneLinedArrayInitialziers = value;
 			}
 		}
-		#endregion
+
+		#endregion Braces
 
 		#region NewLines
-		public NewLinePlacement ElseNewLinePlacement { // tested
+
+		public NewLinePlacement ElseNewLinePlacement
+		{ // tested
 			get;
 			set;
 		}
 
-		public NewLinePlacement ElseIfNewLinePlacement { // tested
+		public NewLinePlacement ElseIfNewLinePlacement
+		{ // tested
 			get;
 			set;
 		}
 
-		public NewLinePlacement CatchNewLinePlacement { // tested
+		public NewLinePlacement CatchNewLinePlacement
+		{ // tested
 			get;
 			set;
 		}
 
-		public NewLinePlacement FinallyNewLinePlacement { // tested
+		public NewLinePlacement FinallyNewLinePlacement
+		{ // tested
 			get;
 			set;
 		}
 
-		public NewLinePlacement WhileNewLinePlacement { // tested
+		public NewLinePlacement WhileNewLinePlacement
+		{ // tested
 			get;
 			set;
 		}
 
-		NewLinePlacement embeddedStatementPlacement = NewLinePlacement.NewLine;
-		public NewLinePlacement EmbeddedStatementPlacement {
-			get {
+		private NewLinePlacement embeddedStatementPlacement = NewLinePlacement.NewLine;
+
+		public NewLinePlacement EmbeddedStatementPlacement
+		{
+			get
+			{
 				return embeddedStatementPlacement;
 			}
-			set {
+			set
+			{
 				embeddedStatementPlacement = value;
 			}
 		}
-		#endregion
-		
+
+		#endregion NewLines
+
 		#region Spaces
+
 		// Methods
-		public bool SpaceBeforeMethodDeclarationParentheses { // tested
+		public bool SpaceBeforeMethodDeclarationParentheses
+		{ // tested
 			get;
 			set;
 		}
 
-		public bool SpaceBetweenEmptyMethodDeclarationParentheses {
+		public bool SpaceBetweenEmptyMethodDeclarationParentheses
+		{
 			get;
 			set;
 		}
 
-		public bool SpaceBeforeMethodDeclarationParameterComma { // tested
+		public bool SpaceBeforeMethodDeclarationParameterComma
+		{ // tested
 			get;
 			set;
 		}
 
-		public bool SpaceAfterMethodDeclarationParameterComma { // tested
+		public bool SpaceAfterMethodDeclarationParameterComma
+		{ // tested
 			get;
 			set;
 		}
 
-		public bool SpaceWithinMethodDeclarationParentheses { // tested
+		public bool SpaceWithinMethodDeclarationParentheses
+		{ // tested
 			get;
 			set;
 		}
-		
+
 		// Method calls
-		public bool SpaceBeforeMethodCallParentheses { // tested
+		public bool SpaceBeforeMethodCallParentheses
+		{ // tested
 			get;
 			set;
 		}
 
-		public bool SpaceBetweenEmptyMethodCallParentheses { // tested
+		public bool SpaceBetweenEmptyMethodCallParentheses
+		{ // tested
 			get;
 			set;
 		}
 
-		public bool SpaceBeforeMethodCallParameterComma { // tested
+		public bool SpaceBeforeMethodCallParameterComma
+		{ // tested
 			get;
 			set;
 		}
 
-		public bool SpaceAfterMethodCallParameterComma { // tested
+		public bool SpaceAfterMethodCallParameterComma
+		{ // tested
 			get;
 			set;
 		}
 
-		public bool SpaceWithinMethodCallParentheses { // tested
+		public bool SpaceWithinMethodCallParentheses
+		{ // tested
 			get;
 			set;
 		}
-		
+
 		// fields
-		
-		public bool SpaceBeforeFieldDeclarationComma { // tested
+
+		public bool SpaceBeforeFieldDeclarationComma
+		{ // tested
 			get;
 			set;
 		}
 
-		public bool SpaceAfterFieldDeclarationComma { // tested
+		public bool SpaceAfterFieldDeclarationComma
+		{ // tested
 			get;
 			set;
 		}
-		
+
 		// local variables
-		
-		public bool SpaceBeforeLocalVariableDeclarationComma { // tested
+
+		public bool SpaceBeforeLocalVariableDeclarationComma
+		{ // tested
 			get;
 			set;
 		}
 
-		public bool SpaceAfterLocalVariableDeclarationComma { // tested
+		public bool SpaceAfterLocalVariableDeclarationComma
+		{ // tested
 			get;
 			set;
 		}
-		
+
 		// constructors
-		
-		public bool SpaceBeforeConstructorDeclarationParentheses { // tested
+
+		public bool SpaceBeforeConstructorDeclarationParentheses
+		{ // tested
 			get;
 			set;
 		}
 
-		public bool SpaceBetweenEmptyConstructorDeclarationParentheses { // tested
+		public bool SpaceBetweenEmptyConstructorDeclarationParentheses
+		{ // tested
 			get;
 			set;
 		}
 
-		public bool SpaceBeforeConstructorDeclarationParameterComma { // tested
+		public bool SpaceBeforeConstructorDeclarationParameterComma
+		{ // tested
 			get;
 			set;
 		}
 
-		public bool SpaceAfterConstructorDeclarationParameterComma { // tested
+		public bool SpaceAfterConstructorDeclarationParameterComma
+		{ // tested
 			get;
 			set;
 		}
 
-		public bool SpaceWithinConstructorDeclarationParentheses { // tested
+		public bool SpaceWithinConstructorDeclarationParentheses
+		{ // tested
 			get;
 			set;
 		}
 
-		public NewLinePlacement NewLineBeforeConstructorInitializerColon {
+		public NewLinePlacement NewLineBeforeConstructorInitializerColon
+		{
 			get;
 			set;
 		}
 
-		public NewLinePlacement NewLineAfterConstructorInitializerColon {
+		public NewLinePlacement NewLineAfterConstructorInitializerColon
+		{
 			get;
 			set;
 		}
-		
+
 		// indexer
-		public bool SpaceBeforeIndexerDeclarationBracket { // tested
+		public bool SpaceBeforeIndexerDeclarationBracket
+		{ // tested
 			get;
 			set;
 		}
 
-		public bool SpaceWithinIndexerDeclarationBracket { // tested
+		public bool SpaceWithinIndexerDeclarationBracket
+		{ // tested
 			get;
 			set;
 		}
 
-		public bool SpaceBeforeIndexerDeclarationParameterComma {
+		public bool SpaceBeforeIndexerDeclarationParameterComma
+		{
 			get;
 			set;
 		}
 
-		public bool SpaceAfterIndexerDeclarationParameterComma {
+		public bool SpaceAfterIndexerDeclarationParameterComma
+		{
 			get;
 			set;
 		}
-		
+
 		// delegates
-		
-		public bool SpaceBeforeDelegateDeclarationParentheses {
+
+		public bool SpaceBeforeDelegateDeclarationParentheses
+		{
 			get;
 			set;
 		}
 
-		public bool SpaceBetweenEmptyDelegateDeclarationParentheses {
+		public bool SpaceBetweenEmptyDelegateDeclarationParentheses
+		{
 			get;
 			set;
 		}
 
-		public bool SpaceBeforeDelegateDeclarationParameterComma {
+		public bool SpaceBeforeDelegateDeclarationParameterComma
+		{
 			get;
 			set;
 		}
 
-		public bool SpaceAfterDelegateDeclarationParameterComma {
+		public bool SpaceAfterDelegateDeclarationParameterComma
+		{
 			get;
 			set;
 		}
 
-		public bool SpaceWithinDelegateDeclarationParentheses {
+		public bool SpaceWithinDelegateDeclarationParentheses
+		{
 			get;
 			set;
 		}
 
-		public bool SpaceBeforeNewParentheses { // tested
+		public bool SpaceBeforeNewParentheses
+		{ // tested
 			get;
 			set;
 		}
 
-		public bool SpaceBeforeIfParentheses { // tested
+		public bool SpaceBeforeIfParentheses
+		{ // tested
 			get;
 			set;
 		}
 
-		public bool SpaceBeforeWhileParentheses { // tested
+		public bool SpaceBeforeWhileParentheses
+		{ // tested
 			get;
 			set;
 		}
 
-		public bool SpaceBeforeForParentheses { // tested
+		public bool SpaceBeforeForParentheses
+		{ // tested
 			get;
 			set;
 		}
 
-		public bool SpaceBeforeForeachParentheses { // tested
+		public bool SpaceBeforeForeachParentheses
+		{ // tested
 			get;
 			set;
 		}
 
-		public bool SpaceBeforeCatchParentheses { // tested
+		public bool SpaceBeforeCatchParentheses
+		{ // tested
 			get;
 			set;
 		}
 
-		public bool SpaceBeforeSwitchParentheses { // tested
+		public bool SpaceBeforeSwitchParentheses
+		{ // tested
 			get;
 			set;
 		}
 
-		public bool SpaceBeforeLockParentheses { // tested
+		public bool SpaceBeforeLockParentheses
+		{ // tested
 			get;
 			set;
 		}
 
-		public bool SpaceBeforeUsingParentheses { // tested
+		public bool SpaceBeforeUsingParentheses
+		{ // tested
 			get;
 			set;
 		}
 
-		public bool SpaceAroundAssignment { // tested
+		public bool SpaceAroundAssignment
+		{ // tested
 			get;
 			set;
 		}
 
-		public bool SpaceAroundLogicalOperator { // tested
+		public bool SpaceAroundLogicalOperator
+		{ // tested
 			get;
 			set;
 		}
 
-		public bool SpaceAroundEqualityOperator { // tested
+		public bool SpaceAroundEqualityOperator
+		{ // tested
 			get;
 			set;
 		}
 
-		public bool SpaceAroundRelationalOperator { // tested
+		public bool SpaceAroundRelationalOperator
+		{ // tested
 			get;
 			set;
 		}
 
-		public bool SpaceAroundBitwiseOperator { // tested
+		public bool SpaceAroundBitwiseOperator
+		{ // tested
 			get;
 			set;
 		}
 
-		public bool SpaceAroundAdditiveOperator { // tested
+		public bool SpaceAroundAdditiveOperator
+		{ // tested
 			get;
 			set;
 		}
 
-		public bool SpaceAroundMultiplicativeOperator { // tested
+		public bool SpaceAroundMultiplicativeOperator
+		{ // tested
 			get;
 			set;
 		}
 
-		public bool SpaceAroundShiftOperator { // tested
+		public bool SpaceAroundShiftOperator
+		{ // tested
 			get;
 			set;
 		}
 
-		public bool SpaceAroundNullCoalescingOperator { // Tested
+		public bool SpaceAroundNullCoalescingOperator
+		{ // Tested
 			get;
 			set;
 		}
 
-		public bool SpaceAfterUnsafeAddressOfOperator { // Tested
+		public bool SpaceAfterUnsafeAddressOfOperator
+		{ // Tested
 			get;
 			set;
 		}
 
-		public bool SpaceAfterUnsafeAsteriskOfOperator { // Tested
+		public bool SpaceAfterUnsafeAsteriskOfOperator
+		{ // Tested
 			get;
 			set;
 		}
 
-		public bool SpaceAroundUnsafeArrowOperator { // Tested
+		public bool SpaceAroundUnsafeArrowOperator
+		{ // Tested
 			get;
 			set;
 		}
 
-		public bool SpacesWithinParentheses { // tested
+		public bool SpacesWithinParentheses
+		{ // tested
 			get;
 			set;
 		}
 
-		public bool SpacesWithinIfParentheses { // tested
+		public bool SpacesWithinIfParentheses
+		{ // tested
 			get;
 			set;
 		}
 
-		public bool SpacesWithinWhileParentheses { // tested
+		public bool SpacesWithinWhileParentheses
+		{ // tested
 			get;
 			set;
 		}
 
-		public bool SpacesWithinForParentheses { // tested
+		public bool SpacesWithinForParentheses
+		{ // tested
 			get;
 			set;
 		}
 
-		public bool SpacesWithinForeachParentheses { // tested
+		public bool SpacesWithinForeachParentheses
+		{ // tested
 			get;
 			set;
 		}
 
-		public bool SpacesWithinCatchParentheses { // tested
+		public bool SpacesWithinCatchParentheses
+		{ // tested
 			get;
 			set;
 		}
 
-		public bool SpacesWithinSwitchParentheses { // tested
+		public bool SpacesWithinSwitchParentheses
+		{ // tested
 			get;
 			set;
 		}
 
-		public bool SpacesWithinLockParentheses { // tested
+		public bool SpacesWithinLockParentheses
+		{ // tested
 			get;
 			set;
 		}
 
-		public bool SpacesWithinUsingParentheses { // tested
+		public bool SpacesWithinUsingParentheses
+		{ // tested
 			get;
 			set;
 		}
 
-		public bool SpacesWithinCastParentheses { // tested
+		public bool SpacesWithinCastParentheses
+		{ // tested
 			get;
 			set;
 		}
 
-		public bool SpacesWithinSizeOfParentheses { // tested
+		public bool SpacesWithinSizeOfParentheses
+		{ // tested
 			get;
 			set;
 		}
 
-		public bool SpaceBeforeSizeOfParentheses { // tested
+		public bool SpaceBeforeSizeOfParentheses
+		{ // tested
 			get;
 			set;
 		}
 
-		public bool SpacesWithinTypeOfParentheses { // tested
+		public bool SpacesWithinTypeOfParentheses
+		{ // tested
 			get;
 			set;
 		}
 
-		public bool SpacesWithinNewParentheses { // tested
+		public bool SpacesWithinNewParentheses
+		{ // tested
 			get;
 			set;
 		}
 
-		public bool SpacesBetweenEmptyNewParentheses { // tested
+		public bool SpacesBetweenEmptyNewParentheses
+		{ // tested
 			get;
 			set;
 		}
 
-		public bool SpaceBeforeNewParameterComma { // tested
+		public bool SpaceBeforeNewParameterComma
+		{ // tested
 			get;
 			set;
 		}
 
-		public bool SpaceAfterNewParameterComma { // tested
+		public bool SpaceAfterNewParameterComma
+		{ // tested
 			get;
 			set;
 		}
 
-		public bool SpaceBeforeTypeOfParentheses { // tested
+		public bool SpaceBeforeTypeOfParentheses
+		{ // tested
 			get;
 			set;
 		}
 
-		public bool SpacesWithinCheckedExpressionParantheses { // tested
+		public bool SpacesWithinCheckedExpressionParantheses
+		{ // tested
 			get;
 			set;
 		}
 
-		public bool SpaceBeforeConditionalOperatorCondition { // tested
+		public bool SpaceBeforeConditionalOperatorCondition
+		{ // tested
 			get;
 			set;
 		}
 
-		public bool SpaceAfterConditionalOperatorCondition { // tested
+		public bool SpaceAfterConditionalOperatorCondition
+		{ // tested
 			get;
 			set;
 		}
 
-		public bool SpaceBeforeConditionalOperatorSeparator { // tested
+		public bool SpaceBeforeConditionalOperatorSeparator
+		{ // tested
 			get;
 			set;
 		}
 
-		public bool SpaceAfterConditionalOperatorSeparator { // tested
+		public bool SpaceAfterConditionalOperatorSeparator
+		{ // tested
 			get;
 			set;
 		}
-		
+
 		// brackets
-		public bool SpacesWithinBrackets { // tested
+		public bool SpacesWithinBrackets
+		{ // tested
 			get;
 			set;
 		}
 
-		public bool SpacesBeforeBrackets { // tested
+		public bool SpacesBeforeBrackets
+		{ // tested
 			get;
 			set;
 		}
 
-		public bool SpaceBeforeBracketComma { // tested
+		public bool SpaceBeforeBracketComma
+		{ // tested
 			get;
 			set;
 		}
 
-		public bool SpaceAfterBracketComma { // tested
+		public bool SpaceAfterBracketComma
+		{ // tested
 			get;
 			set;
 		}
 
-		public bool SpaceBeforeForSemicolon { // tested
+		public bool SpaceBeforeForSemicolon
+		{ // tested
 			get;
 			set;
 		}
 
-		public bool SpaceAfterForSemicolon { // tested
+		public bool SpaceAfterForSemicolon
+		{ // tested
 			get;
 			set;
 		}
 
-		public bool SpaceAfterTypecast { // tested
+		public bool SpaceAfterTypecast
+		{ // tested
 			get;
 			set;
 		}
 
-		public bool SpaceBeforeArrayDeclarationBrackets { // tested
+		public bool SpaceBeforeArrayDeclarationBrackets
+		{ // tested
 			get;
 			set;
 		}
 
-		public bool SpaceInNamedArgumentAfterDoubleColon {
+		public bool SpaceInNamedArgumentAfterDoubleColon
+		{
 			get;
 			set;
 		}
 
-		public bool RemoveEndOfLineWhiteSpace {
+		public bool RemoveEndOfLineWhiteSpace
+		{
 			get;
 			set;
 		}
 
-		public bool SpaceBeforeSemicolon {
+		public bool SpaceBeforeSemicolon
+		{
 			get;
 			set;
 		}
-		#endregion
-		
+
+		#endregion Spaces
+
 		#region Blank Lines
-		public int MinimumBlankLinesBeforeUsings {
+
+		public int MinimumBlankLinesBeforeUsings
+		{
 			get;
 			set;
 		}
 
-		public int MinimumBlankLinesAfterUsings {
+		public int MinimumBlankLinesAfterUsings
+		{
 			get;
 			set;
 		}
 
-		public int MinimumBlankLinesBeforeFirstDeclaration {
+		public int MinimumBlankLinesBeforeFirstDeclaration
+		{
 			get;
 			set;
 		}
 
-		public int MinimumBlankLinesBetweenTypes {
+		public int MinimumBlankLinesBetweenTypes
+		{
 			get;
 			set;
 		}
 
-		public int MinimumBlankLinesBetweenFields {
+		public int MinimumBlankLinesBetweenFields
+		{
 			get;
 			set;
 		}
 
-		public int MinimumBlankLinesBetweenEventFields {
+		public int MinimumBlankLinesBetweenEventFields
+		{
 			get;
 			set;
 		}
 
-		public int MinimumBlankLinesBetweenMembers {
+		public int MinimumBlankLinesBetweenMembers
+		{
 			get;
 			set;
 		}
 
-		public int MinimumBlankLinesAroundRegion {
+		public int MinimumBlankLinesAroundRegion
+		{
 			get;
 			set;
 		}
 
-		public int MinimumBlankLinesInsideRegion {
+		public int MinimumBlankLinesInsideRegion
+		{
 			get;
 			set;
 		}
 
-		#endregion
-
+		#endregion Blank Lines
 
 		#region Keep formatting
-		public bool KeepCommentsAtFirstColumn {
+
+		public bool KeepCommentsAtFirstColumn
+		{
 			get;
 			set;
 		}
-		#endregion
+
+		#endregion Keep formatting
 
 		#region Wrapping
 
-		public Wrapping ArrayInitializerWrapping {
+		public Wrapping ArrayInitializerWrapping
+		{
 			get;
 			set;
 		}
 
-		public BraceStyle ArrayInitializerBraceStyle {
+		public BraceStyle ArrayInitializerBraceStyle
+		{
 			get;
 			set;
 		}
 
-		public Wrapping ChainedMethodCallWrapping {
+		public Wrapping ChainedMethodCallWrapping
+		{
 			get;
 			set;
 		}
 
-		public Wrapping MethodCallArgumentWrapping {
+		public Wrapping MethodCallArgumentWrapping
+		{
 			get;
 			set;
 		}
 
-		public NewLinePlacement NewLineAferMethodCallOpenParentheses {
+		public NewLinePlacement NewLineAferMethodCallOpenParentheses
+		{
 			get;
 			set;
 		}
 
-		public NewLinePlacement MethodCallClosingParenthesesOnNewLine {
+		public NewLinePlacement MethodCallClosingParenthesesOnNewLine
+		{
 			get;
 			set;
 		}
 
-		public Wrapping IndexerArgumentWrapping {
+		public Wrapping IndexerArgumentWrapping
+		{
 			get;
 			set;
 		}
 
-		public NewLinePlacement NewLineAferIndexerOpenBracket {
+		public NewLinePlacement NewLineAferIndexerOpenBracket
+		{
 			get;
 			set;
 		}
 
-		public NewLinePlacement IndexerClosingBracketOnNewLine {
+		public NewLinePlacement IndexerClosingBracketOnNewLine
+		{
 			get;
 			set;
 		}
 
-		public Wrapping MethodDeclarationParameterWrapping {
+		public Wrapping MethodDeclarationParameterWrapping
+		{
 			get;
 			set;
 		}
 
-		public NewLinePlacement NewLineAferMethodDeclarationOpenParentheses {
+		public NewLinePlacement NewLineAferMethodDeclarationOpenParentheses
+		{
 			get;
 			set;
 		}
 
-		public NewLinePlacement MethodDeclarationClosingParenthesesOnNewLine {
+		public NewLinePlacement MethodDeclarationClosingParenthesesOnNewLine
+		{
 			get;
 			set;
 		}
 
-		public Wrapping IndexerDeclarationParameterWrapping {
+		public Wrapping IndexerDeclarationParameterWrapping
+		{
 			get;
 			set;
 		}
 
-		public NewLinePlacement NewLineAferIndexerDeclarationOpenBracket {
+		public NewLinePlacement NewLineAferIndexerDeclarationOpenBracket
+		{
 			get;
 			set;
 		}
 
-		public NewLinePlacement IndexerDeclarationClosingBracketOnNewLine {
+		public NewLinePlacement IndexerDeclarationClosingBracketOnNewLine
+		{
 			get;
 			set;
 		}
 
-		public bool AlignToFirstIndexerArgument {
+		public bool AlignToFirstIndexerArgument
+		{
 			get;
 			set;
 		}
 
-		public bool AlignToFirstIndexerDeclarationParameter {
+		public bool AlignToFirstIndexerDeclarationParameter
+		{
 			get;
 			set;
 		}
 
-		public bool AlignToFirstMethodCallArgument {
+		public bool AlignToFirstMethodCallArgument
+		{
 			get;
 			set;
 		}
 
-		public bool AlignToFirstMethodDeclarationParameter {
+		public bool AlignToFirstMethodDeclarationParameter
+		{
 			get;
 			set;
 		}
 
-		public NewLinePlacement NewLineBeforeNewQueryClause {
+		public NewLinePlacement NewLineBeforeNewQueryClause
+		{
 			get;
 			set;
 		}
 
-		#endregion
+		#endregion Wrapping
 
 		#region Using Declarations
-		public UsingPlacement UsingPlacement {
+
+		public UsingPlacement UsingPlacement
+		{
 			get;
 			set;
 		}
-		#endregion
+
+		#endregion Using Declarations
 
 		internal CSharpFormattingOptions()
 		{

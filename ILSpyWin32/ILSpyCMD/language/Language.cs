@@ -1,14 +1,14 @@
 ﻿// Copyright (c) 2011 AlphaSierraPapa for the SharpDevelop Team
-// 
+//
 // Permission is hereby granted, free of charge, to any person obtaining a copy of this
 // software and associated documentation files (the "Software"), to deal in the Software
 // without restriction, including without limitation the rights to use, copy, modify, merge,
 // publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons
 // to whom the Software is furnished to do so, subject to the following conditions:
-// 
+//
 // The above copyright notice and this permission notice shall be included in all copies or
 // substantial portions of the Software.
-// 
+//
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
 // INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
 // PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
@@ -16,11 +16,10 @@
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
 
-using System;
-using System.Collections.Generic;
-
 using ICSharpCode.Decompiler;
 using Mono.Cecil;
+using System;
+using System.Collections.Generic;
 
 namespace ICSharpCode.ILSpy
 {
@@ -44,16 +43,16 @@ namespace ICSharpCode.ILSpy
 			get { return null; }
 		}
 
-//		/// <summary>
-//		/// Gets the syntax highlighting used for this language.
-//		/// </summary>
-//		public virtual ICSharpCode.AvalonEdit.Highlighting.IHighlightingDefinition SyntaxHighlighting
-//		{
-//			get
-//			{
-//				return ICSharpCode.AvalonEdit.Highlighting.HighlightingManager.Instance.GetDefinitionByExtension(this.FileExtension);
-//			}
-//		}
+		//		/// <summary>
+		//		/// Gets the syntax highlighting used for this language.
+		//		/// </summary>
+		//		public virtual ICSharpCode.AvalonEdit.Highlighting.IHighlightingDefinition SyntaxHighlighting
+		//		{
+		//			get
+		//			{
+		//				return ICSharpCode.AvalonEdit.Highlighting.HighlightingManager.Instance.GetDefinitionByExtension(this.FileExtension);
+		//			}
+		//		}
 
 		public virtual void DecompileMethod(MethodDefinition method, ITextOutput output, DecompilationOptions options)
 		{
@@ -88,14 +87,20 @@ namespace ICSharpCode.ILSpy
 		public virtual void DecompileAssembly(LoadedAssembly assembly, ITextOutput output, DecompilationOptions options)
 		{
 			WriteCommentLine(output, assembly.FileName);
-			if (assembly.AssemblyDefinition != null) {
+			if (assembly.AssemblyDefinition != null)
+			{
 				var name = assembly.AssemblyDefinition.Name;
-				if (name.IsWindowsRuntime) {
+				if (name.IsWindowsRuntime)
+				{
 					WriteCommentLine(output, name.Name + " [WinRT]");
-				} else {
+				}
+				else
+				{
 					WriteCommentLine(output, name.FullName);
 				}
-			} else {
+			}
+			else
+			{
 				WriteCommentLine(output, assembly.ModuleDefinition.Name);
 			}
 		}
@@ -134,7 +139,7 @@ namespace ICSharpCode.ILSpy
 				throw new ArgumentNullException("property");
 			return property.Name;
 		}
-		
+
 		public virtual string FormatTypeName(TypeDefinition type)
 		{
 			if (type == null)

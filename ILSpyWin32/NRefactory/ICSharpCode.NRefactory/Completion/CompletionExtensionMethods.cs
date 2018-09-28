@@ -23,8 +23,8 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
-using System;
 using ICSharpCode.NRefactory.TypeSystem;
+using System;
 using System.Linq;
 
 namespace ICSharpCode.NRefactory.Completion
@@ -43,16 +43,17 @@ namespace ICSharpCode.NRefactory.Completion
 		public static System.ComponentModel.EditorBrowsableState GetEditorBrowsableState(this IEntity entity)
 		{
 			if (entity == null)
-				throw new ArgumentNullException ("entity");
+				throw new ArgumentNullException("entity");
 
 			var browsableState = entity.Attributes.FirstOrDefault(attr => attr.AttributeType.Name == "EditorBrowsableAttribute" && attr.AttributeType.Namespace == "System.ComponentModel");
-			if (browsableState != null && browsableState.PositionalArguments.Count == 1) {
-				if (browsableState.PositionalArguments [0].ConstantValue is int)
-					return (System.ComponentModel.EditorBrowsableState)(int)browsableState.PositionalArguments [0].ConstantValue;
+			if (browsableState != null && browsableState.PositionalArguments.Count == 1)
+			{
+				if (browsableState.PositionalArguments[0].ConstantValue is int)
+					return (System.ComponentModel.EditorBrowsableState)(int)browsableState.PositionalArguments[0].ConstantValue;
 			}
 			return System.ComponentModel.EditorBrowsableState.Always;
 		}
-		
+
 		/// <summary>
 		/// Determines if an entity should be shown in the code completion window. This is the same as:
 		/// <c>GetEditorBrowsableState (entity) != System.ComponentModel.EditorBrowsableState.Never</c>
@@ -65,8 +66,7 @@ namespace ICSharpCode.NRefactory.Completion
 		/// </param>
 		public static bool IsBrowsable(this IEntity entity)
 		{
-			return GetEditorBrowsableState (entity) != System.ComponentModel.EditorBrowsableState.Never;
+			return GetEditorBrowsableState(entity) != System.ComponentModel.EditorBrowsableState.Never;
 		}
 	}
 }
-

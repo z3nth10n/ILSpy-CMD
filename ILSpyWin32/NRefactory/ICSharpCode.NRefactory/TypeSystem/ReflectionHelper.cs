@@ -1,14 +1,14 @@
 ﻿// Copyright (c) 2010-2013 AlphaSierraPapa for the SharpDevelop Team
-// 
+//
 // Permission is hereby granted, free of charge, to any person obtaining a copy of this
 // software and associated documentation files (the "Software"), to deal in the Software
 // without restriction, including without limitation the rights to use, copy, modify, merge,
 // publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons
 // to whom the Software is furnished to do so, subject to the following conditions:
-// 
+//
 // The above copyright notice and this permission notice shall be included in all copies or
 // substantial portions of the Software.
-// 
+//
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
 // INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
 // PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
@@ -16,10 +16,9 @@
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
 
+using ICSharpCode.NRefactory.TypeSystem.Implementation;
 using System;
 using System.Collections.Generic;
-using System.Text;
-using ICSharpCode.NRefactory.TypeSystem.Implementation;
 
 namespace ICSharpCode.NRefactory.TypeSystem
 {
@@ -31,19 +30,20 @@ namespace ICSharpCode.NRefactory.TypeSystem
 		/// <summary>
 		/// A reflection class used to represent <c>null</c>.
 		/// </summary>
-		public sealed class Null {}
-		
+		public sealed class Null { }
+
 		/// <summary>
 		/// A reflection class used to represent <c>dynamic</c>.
 		/// </summary>
-		public sealed class Dynamic {}
-		
+		public sealed class Dynamic { }
+
 		/// <summary>
 		/// A reflection class used to represent an unbound type argument.
 		/// </summary>
-		public sealed class UnboundTypeArgument {}
-		
+		public sealed class UnboundTypeArgument { }
+
 		#region ICompilation.FindType
+
 		/// <summary>
 		/// Retrieves the specified type in this compilation.
 		/// Returns <see cref="SpecialType.UnknownType"/> if the type cannot be found in this compilation.
@@ -56,9 +56,11 @@ namespace ICSharpCode.NRefactory.TypeSystem
 		{
 			return type.ToTypeReference().Resolve(compilation.TypeResolveContext);
 		}
-		#endregion
-		
+
+		#endregion ICompilation.FindType
+
 		#region Type.ToTypeReference()
+
 		/// <summary>
 		/// Creates a reference to the specified type.
 		/// </summary>
@@ -74,12 +76,14 @@ namespace ICSharpCode.NRefactory.TypeSystem
 		{
 			if (type == null)
 				return SpecialType.UnknownType;
-			if (type.IsGenericType && !type.IsGenericTypeDefinition) {
+			if (type.IsGenericType && !type.IsGenericTypeDefinition)
+			{
 				ITypeReference def = ToTypeReference(type.GetGenericTypeDefinition());
 				Type[] arguments = type.GetGenericArguments();
 				ITypeReference[] args = new ITypeReference[arguments.Length];
 				bool allUnbound = true;
-				for (int i = 0; i < arguments.Length; i++) {
+				for (int i = 0; i < arguments.Length; i++)
+				{
 					args[i] = ToTypeReference(arguments[i]);
 					allUnbound &= args[i].Equals(SpecialType.UnboundTypeArgument);
 				}
@@ -87,19 +91,32 @@ namespace ICSharpCode.NRefactory.TypeSystem
 					return def;
 				else
 					return new ParameterizedTypeReference(def, args);
-			} else if (type.IsArray) {
+			}
+			else if (type.IsArray)
+			{
 				return new ArrayTypeReference(ToTypeReference(type.GetElementType()), type.GetArrayRank());
-			} else if (type.IsPointer) {
+			}
+			else if (type.IsPointer)
+			{
 				return new PointerTypeReference(ToTypeReference(type.GetElementType()));
-			} else if (type.IsByRef) {
+			}
+			else if (type.IsByRef)
+			{
 				return new ByReferenceTypeReference(ToTypeReference(type.GetElementType()));
-			} else if (type.IsGenericParameter) {
-				if (type.DeclaringMethod != null) {
+			}
+			else if (type.IsGenericParameter)
+			{
+				if (type.DeclaringMethod != null)
+				{
 					return TypeParameterReference.Create(SymbolKind.Method, type.GenericParameterPosition);
-				} else {
+				}
+				else
+				{
 					return TypeParameterReference.Create(SymbolKind.TypeDefinition, type.GenericParameterPosition);
 				}
-			} else if (type.DeclaringType != null) {
+			}
+			else if (type.DeclaringType != null)
+			{
 				if (type == typeof(Dynamic))
 					return SpecialType.Dynamic;
 				else if (type == typeof(Null))
@@ -110,16 +127,20 @@ namespace ICSharpCode.NRefactory.TypeSystem
 				int typeParameterCount;
 				string name = SplitTypeParameterCountFromReflectionName(type.Name, out typeParameterCount);
 				return new NestedTypeReference(baseTypeRef, name, typeParameterCount);
-			} else {
+			}
+			else
+			{
 				IAssemblyReference assemblyReference = new DefaultAssemblyReference(type.Assembly.FullName);
 				int typeParameterCount;
 				string name = SplitTypeParameterCountFromReflectionName(type.Name, out typeParameterCount);
 				return new GetClassTypeReference(assemblyReference, type.Namespace, name, typeParameterCount);
 			}
 		}
-		#endregion
-		
+
+		#endregion Type.ToTypeReference()
+
 		#region SplitTypeParameterCountFromReflectionName
+
 		/// <summary>
 		/// Removes the ` with type parameter count from the reflection name.
 		/// </summary>
@@ -127,13 +148,16 @@ namespace ICSharpCode.NRefactory.TypeSystem
 		public static string SplitTypeParameterCountFromReflectionName(string reflectionName)
 		{
 			int pos = reflectionName.LastIndexOf('`');
-			if (pos < 0) {
+			if (pos < 0)
+			{
 				return reflectionName;
-			} else {
+			}
+			else
+			{
 				return reflectionName.Substring(0, pos);
 			}
 		}
-		
+
 		/// <summary>
 		/// Removes the ` with type parameter count from the reflection name.
 		/// </summary>
@@ -141,10 +165,13 @@ namespace ICSharpCode.NRefactory.TypeSystem
 		public static string SplitTypeParameterCountFromReflectionName(string reflectionName, out int typeParameterCount)
 		{
 			int pos = reflectionName.LastIndexOf('`');
-			if (pos < 0) {
+			if (pos < 0)
+			{
 				typeParameterCount = 0;
 				return reflectionName;
-			} else {
+			}
+			else
+			{
 				string typeCount = reflectionName.Substring(pos + 1);
 				if (int.TryParse(typeCount, out typeParameterCount))
 					return reflectionName.Substring(0, pos);
@@ -152,9 +179,11 @@ namespace ICSharpCode.NRefactory.TypeSystem
 					return reflectionName;
 			}
 		}
-		#endregion
-		
+
+		#endregion SplitTypeParameterCountFromReflectionName
+
 		#region TypeCode support
+
 		/// <summary>
 		/// Retrieves a built-in type using the specified type code.
 		/// </summary>
@@ -162,7 +191,7 @@ namespace ICSharpCode.NRefactory.TypeSystem
 		{
 			return compilation.FindType((KnownTypeCode)typeCode);
 		}
-		
+
 		/// <summary>
 		/// Creates a reference to the specified type.
 		/// </summary>
@@ -172,14 +201,15 @@ namespace ICSharpCode.NRefactory.TypeSystem
 		{
 			return KnownTypeReference.Get((KnownTypeCode)typeCode);
 		}
-		
+
 		/// <summary>
 		/// Gets the type code for the specified type, or TypeCode.Empty if none of the other type codes match.
 		/// </summary>
 		public static TypeCode GetTypeCode(IType type)
 		{
 			ITypeDefinition def = type as ITypeDefinition;
-			if (def != null) {
+			if (def != null)
+			{
 				KnownTypeCode typeCode = def.KnownTypeCode;
 				if (typeCode <= KnownTypeCode.String && typeCode != KnownTypeCode.Void)
 					return (TypeCode)typeCode;
@@ -188,9 +218,11 @@ namespace ICSharpCode.NRefactory.TypeSystem
 			}
 			return TypeCode.Empty;
 		}
-		#endregion
-		
+
+		#endregion TypeCode support
+
 		#region ParseReflectionName
+
 		/// <summary>
 		/// Parses a reflection name into a type reference.
 		/// </summary>
@@ -218,10 +250,11 @@ namespace ICSharpCode.NRefactory.TypeSystem
 				throw new ReflectionNameParseException(pos, "Expected end of type name");
 			return r;
 		}
-		
-		static bool IsReflectionNameSpecialCharacter(char c)
+
+		private static bool IsReflectionNameSpecialCharacter(char c)
 		{
-			switch (c) {
+			switch (c)
+			{
 				case '+':
 				case '`':
 				case '[':
@@ -230,32 +263,39 @@ namespace ICSharpCode.NRefactory.TypeSystem
 				case '*':
 				case '&':
 					return true;
+
 				default:
 					return false;
 			}
 		}
-		
-		static ITypeReference ParseReflectionName(string reflectionTypeName, ref int pos)
+
+		private static ITypeReference ParseReflectionName(string reflectionTypeName, ref int pos)
 		{
 			if (pos == reflectionTypeName.Length)
 				throw new ReflectionNameParseException(pos, "Unexpected end");
 			ITypeReference reference;
-			if (reflectionTypeName[pos] == '`') {
+			if (reflectionTypeName[pos] == '`')
+			{
 				// type parameter reference
 				pos++;
 				if (pos == reflectionTypeName.Length)
 					throw new ReflectionNameParseException(pos, "Unexpected end");
-				if (reflectionTypeName[pos] == '`') {
+				if (reflectionTypeName[pos] == '`')
+				{
 					// method type parameter reference
 					pos++;
 					int index = ReadTypeParameterCount(reflectionTypeName, ref pos);
 					reference = TypeParameterReference.Create(SymbolKind.Method, index);
-				} else {
+				}
+				else
+				{
 					// class type parameter reference
 					int index = ReadTypeParameterCount(reflectionTypeName, ref pos);
 					reference = TypeParameterReference.Create(SymbolKind.TypeDefinition, index);
 				}
-			} else {
+			}
+			else
+			{
 				// not a type parameter reference: read the actual type name
 				int tpc;
 				string typeName = ReadTypeName(reflectionTypeName, ref pos, out tpc);
@@ -263,24 +303,30 @@ namespace ICSharpCode.NRefactory.TypeSystem
 				reference = CreateGetClassTypeReference(assemblyName, typeName, tpc);
 			}
 			// read type suffixes
-			while (pos < reflectionTypeName.Length) {
-				switch (reflectionTypeName[pos++]) {
+			while (pos < reflectionTypeName.Length)
+			{
+				switch (reflectionTypeName[pos++])
+				{
 					case '+':
 						int tpc;
 						string typeName = ReadTypeName(reflectionTypeName, ref pos, out tpc);
 						reference = new NestedTypeReference(reference, typeName, tpc);
 						break;
+
 					case '*':
 						reference = new PointerTypeReference(reference);
 						break;
+
 					case '&':
 						reference = new ByReferenceTypeReference(reference);
 						break;
+
 					case '[':
 						// this might be an array or a generic type
 						if (pos == reflectionTypeName.Length)
 							throw new ReflectionNameParseException(pos, "Unexpected end");
-						if (reflectionTypeName[pos] == '[') {
+						if (reflectionTypeName[pos] == '[')
+						{
 							// it's a generic type
 							List<ITypeReference> typeArguments = new List<ITypeReference>();
 							pos++;
@@ -289,48 +335,60 @@ namespace ICSharpCode.NRefactory.TypeSystem
 								pos++;
 							else
 								throw new ReflectionNameParseException(pos, "Expected end of type argument");
-							
-							while (pos < reflectionTypeName.Length && reflectionTypeName[pos] == ',') {
+
+							while (pos < reflectionTypeName.Length && reflectionTypeName[pos] == ',')
+							{
 								pos++;
 								if (pos < reflectionTypeName.Length && reflectionTypeName[pos] == '[')
 									pos++;
 								else
 									throw new ReflectionNameParseException(pos, "Expected another type argument");
-								
+
 								typeArguments.Add(ParseReflectionName(reflectionTypeName, ref pos));
-								
+
 								if (pos < reflectionTypeName.Length && reflectionTypeName[pos] == ']')
 									pos++;
 								else
 									throw new ReflectionNameParseException(pos, "Expected end of type argument");
 							}
-							
-							if (pos < reflectionTypeName.Length && reflectionTypeName[pos] == ']') {
+
+							if (pos < reflectionTypeName.Length && reflectionTypeName[pos] == ']')
+							{
 								pos++;
 								reference = new ParameterizedTypeReference(reference, typeArguments);
-							} else {
+							}
+							else
+							{
 								throw new ReflectionNameParseException(pos, "Expected end of generic type");
 							}
-						} else {
+						}
+						else
+						{
 							// it's an array
 							int dimensions = 1;
-							while (pos < reflectionTypeName.Length && reflectionTypeName[pos] == ',') {
+							while (pos < reflectionTypeName.Length && reflectionTypeName[pos] == ',')
+							{
 								dimensions++;
 								pos++;
 							}
-							if (pos < reflectionTypeName.Length && reflectionTypeName[pos] == ']') {
+							if (pos < reflectionTypeName.Length && reflectionTypeName[pos] == ']')
+							{
 								pos++; // end of array
 								reference = new ArrayTypeReference(reference, dimensions);
-							} else {
+							}
+							else
+							{
 								throw new ReflectionNameParseException(pos, "Invalid array modifier");
 							}
 						}
 						break;
+
 					case ',':
 						// assembly qualified name, ignore everything up to the end/next ']'
 						while (pos < reflectionTypeName.Length && reflectionTypeName[pos] != ']')
 							pos++;
 						break;
+
 					default:
 						pos--; // reset pos to the character we couldn't read
 						if (reflectionTypeName[pos] == ']')
@@ -341,13 +399,16 @@ namespace ICSharpCode.NRefactory.TypeSystem
 			}
 			return reference;
 		}
-		
-		static ITypeReference CreateGetClassTypeReference(string assemblyName, string typeName, int tpc)
+
+		private static ITypeReference CreateGetClassTypeReference(string assemblyName, string typeName, int tpc)
 		{
 			IAssemblyReference assemblyReference;
-			if (assemblyName != null) {
+			if (assemblyName != null)
+			{
 				assemblyReference = new DefaultAssemblyReference(assemblyName);
-			} else {
+			}
+			else
+			{
 				assemblyReference = null;
 			}
 			int pos = typeName.LastIndexOf('.');
@@ -356,22 +417,27 @@ namespace ICSharpCode.NRefactory.TypeSystem
 			else
 				return new GetClassTypeReference(assemblyReference, typeName.Substring(0, pos), typeName.Substring(pos + 1), tpc);
 		}
-		
-		static string SkipAheadAndReadAssemblyName(string reflectionTypeName, int pos)
+
+		private static string SkipAheadAndReadAssemblyName(string reflectionTypeName, int pos)
 		{
 			int nestingLevel = 0;
-			while (pos < reflectionTypeName.Length) {
-				switch (reflectionTypeName[pos++]) {
+			while (pos < reflectionTypeName.Length)
+			{
+				switch (reflectionTypeName[pos++])
+				{
 					case '[':
 						nestingLevel++;
 						break;
+
 					case ']':
 						if (nestingLevel == 0)
 							return null;
 						nestingLevel--;
 						break;
+
 					case ',':
-						if (nestingLevel == 0) {
+						if (nestingLevel == 0)
+						{
 							// first skip the whitespace
 							while (pos < reflectionTypeName.Length && reflectionTypeName[pos] == ' ')
 								pos++;
@@ -386,8 +452,8 @@ namespace ICSharpCode.NRefactory.TypeSystem
 			}
 			return null;
 		}
-		
-		static string ReadTypeName(string reflectionTypeName, ref int pos, out int tpc)
+
+		private static string ReadTypeName(string reflectionTypeName, ref int pos, out int tpc)
 		{
 			int startPos = pos;
 			// skip the simple name portion:
@@ -396,19 +462,23 @@ namespace ICSharpCode.NRefactory.TypeSystem
 			if (pos == startPos)
 				throw new ReflectionNameParseException(pos, "Expected type name");
 			string typeName = reflectionTypeName.Substring(startPos, pos - startPos);
-			if (pos < reflectionTypeName.Length && reflectionTypeName[pos] == '`') {
+			if (pos < reflectionTypeName.Length && reflectionTypeName[pos] == '`')
+			{
 				pos++;
 				tpc = ReadTypeParameterCount(reflectionTypeName, ref pos);
-			} else {
+			}
+			else
+			{
 				tpc = 0;
 			}
 			return typeName;
 		}
-		
+
 		internal static int ReadTypeParameterCount(string reflectionTypeName, ref int pos)
 		{
 			int startPos = pos;
-			while (pos < reflectionTypeName.Length) {
+			while (pos < reflectionTypeName.Length)
+			{
 				char c = reflectionTypeName[pos];
 				if (c < '0' || c > '9')
 					break;
@@ -419,6 +489,7 @@ namespace ICSharpCode.NRefactory.TypeSystem
 				throw new ReflectionNameParseException(pos, "Expected type parameter count");
 			return tpc;
 		}
-		#endregion
+
+		#endregion ParseReflectionName
 	}
 }

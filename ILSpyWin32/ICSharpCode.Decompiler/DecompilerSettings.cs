@@ -1,14 +1,14 @@
 ﻿// Copyright (c) 2011 AlphaSierraPapa for the SharpDevelop Team
-// 
+//
 // Permission is hereby granted, free of charge, to any person obtaining a copy of this
 // software and associated documentation files (the "Software"), to deal in the Software
 // without restriction, including without limitation the rights to use, copy, modify, merge,
 // publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons
 // to whom the Software is furnished to do so, subject to the following conditions:
-// 
+//
 // The above copyright notice and this permission notice shall be included in all copies or
 // substantial portions of the Software.
-// 
+//
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
 // INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
 // PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
@@ -16,9 +16,9 @@
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
 
+using ICSharpCode.NRefactory.CSharp;
 using System;
 using System.ComponentModel;
-using ICSharpCode.NRefactory.CSharp;
 
 namespace ICSharpCode.Decompiler
 {
@@ -27,323 +27,391 @@ namespace ICSharpCode.Decompiler
 	/// </summary>
 	public class DecompilerSettings : INotifyPropertyChanged
 	{
-		bool anonymousMethods = true;
-		
+		private bool anonymousMethods = true;
+
 		/// <summary>
 		/// Decompile anonymous methods/lambdas.
 		/// </summary>
-		public bool AnonymousMethods {
+		public bool AnonymousMethods
+		{
 			get { return anonymousMethods; }
-			set {
-				if (anonymousMethods != value) {
+			set
+			{
+				if (anonymousMethods != value)
+				{
 					anonymousMethods = value;
 					OnPropertyChanged("AnonymousMethods");
 				}
 			}
 		}
-		
-		bool expressionTrees = true;
-		
+
+		private bool expressionTrees = true;
+
 		/// <summary>
 		/// Decompile expression trees.
 		/// </summary>
-		public bool ExpressionTrees {
+		public bool ExpressionTrees
+		{
 			get { return expressionTrees; }
-			set {
-				if (expressionTrees != value) {
+			set
+			{
+				if (expressionTrees != value)
+				{
 					expressionTrees = value;
 					OnPropertyChanged("ExpressionTrees");
 				}
 			}
 		}
-		
-		bool yieldReturn = true;
-		
+
+		private bool yieldReturn = true;
+
 		/// <summary>
 		/// Decompile enumerators.
 		/// </summary>
-		public bool YieldReturn {
+		public bool YieldReturn
+		{
 			get { return yieldReturn; }
-			set {
-				if (yieldReturn != value) {
+			set
+			{
+				if (yieldReturn != value)
+				{
 					yieldReturn = value;
 					OnPropertyChanged("YieldReturn");
 				}
 			}
 		}
-		
-		bool asyncAwait = true;
-		
+
+		private bool asyncAwait = true;
+
 		/// <summary>
 		/// Decompile async methods.
 		/// </summary>
-		public bool AsyncAwait {
+		public bool AsyncAwait
+		{
 			get { return asyncAwait; }
-			set {
-				if (asyncAwait != value) {
+			set
+			{
+				if (asyncAwait != value)
+				{
 					asyncAwait = value;
 					OnPropertyChanged("AsyncAwait");
 				}
 			}
 		}
-		
-		bool automaticProperties = true;
-		
+
+		private bool automaticProperties = true;
+
 		/// <summary>
 		/// Decompile automatic properties
 		/// </summary>
-		public bool AutomaticProperties {
+		public bool AutomaticProperties
+		{
 			get { return automaticProperties; }
-			set {
-				if (automaticProperties != value) {
+			set
+			{
+				if (automaticProperties != value)
+				{
 					automaticProperties = value;
 					OnPropertyChanged("AutomaticProperties");
 				}
 			}
 		}
-		
-		bool automaticEvents = true;
-		
+
+		private bool automaticEvents = true;
+
 		/// <summary>
 		/// Decompile automatic events
 		/// </summary>
-		public bool AutomaticEvents {
+		public bool AutomaticEvents
+		{
 			get { return automaticEvents; }
-			set {
-				if (automaticEvents != value) {
+			set
+			{
+				if (automaticEvents != value)
+				{
 					automaticEvents = value;
 					OnPropertyChanged("AutomaticEvents");
 				}
 			}
 		}
-		
-		bool usingStatement = true;
-		
+
+		private bool usingStatement = true;
+
 		/// <summary>
 		/// Decompile using statements.
 		/// </summary>
-		public bool UsingStatement {
+		public bool UsingStatement
+		{
 			get { return usingStatement; }
-			set {
-				if (usingStatement != value) {
+			set
+			{
+				if (usingStatement != value)
+				{
 					usingStatement = value;
 					OnPropertyChanged("UsingStatement");
 				}
 			}
 		}
-		
-		bool forEachStatement = true;
-		
+
+		private bool forEachStatement = true;
+
 		/// <summary>
 		/// Decompile foreach statements.
 		/// </summary>
-		public bool ForEachStatement {
+		public bool ForEachStatement
+		{
 			get { return forEachStatement; }
-			set {
-				if (forEachStatement != value) {
+			set
+			{
+				if (forEachStatement != value)
+				{
 					forEachStatement = value;
 					OnPropertyChanged("ForEachStatement");
 				}
 			}
 		}
-		
-		bool lockStatement = true;
-		
+
+		private bool lockStatement = true;
+
 		/// <summary>
 		/// Decompile lock statements.
 		/// </summary>
-		public bool LockStatement {
+		public bool LockStatement
+		{
 			get { return lockStatement; }
-			set {
-				if (lockStatement != value) {
+			set
+			{
+				if (lockStatement != value)
+				{
 					lockStatement = value;
 					OnPropertyChanged("LockStatement");
 				}
 			}
 		}
-		
-		bool switchStatementOnString = true;
-		
-		public bool SwitchStatementOnString {
+
+		private bool switchStatementOnString = true;
+
+		public bool SwitchStatementOnString
+		{
 			get { return switchStatementOnString; }
-			set {
-				if (switchStatementOnString != value) {
+			set
+			{
+				if (switchStatementOnString != value)
+				{
 					switchStatementOnString = value;
 					OnPropertyChanged("SwitchStatementOnString");
 				}
 			}
 		}
-		
-		bool usingDeclarations = true;
-		
-		public bool UsingDeclarations {
+
+		private bool usingDeclarations = true;
+
+		public bool UsingDeclarations
+		{
 			get { return usingDeclarations; }
-			set {
-				if (usingDeclarations != value) {
+			set
+			{
+				if (usingDeclarations != value)
+				{
 					usingDeclarations = value;
 					OnPropertyChanged("UsingDeclarations");
 				}
 			}
 		}
-		
-		bool queryExpressions = true;
-		
-		public bool QueryExpressions {
+
+		private bool queryExpressions = true;
+
+		public bool QueryExpressions
+		{
 			get { return queryExpressions; }
-			set {
-				if (queryExpressions != value) {
+			set
+			{
+				if (queryExpressions != value)
+				{
 					queryExpressions = value;
 					OnPropertyChanged("QueryExpressions");
 				}
 			}
 		}
-		
-		bool fullyQualifyAmbiguousTypeNames = true;
-		
-		public bool FullyQualifyAmbiguousTypeNames {
+
+		private bool fullyQualifyAmbiguousTypeNames = true;
+
+		public bool FullyQualifyAmbiguousTypeNames
+		{
 			get { return fullyQualifyAmbiguousTypeNames; }
-			set {
-				if (fullyQualifyAmbiguousTypeNames != value) {
+			set
+			{
+				if (fullyQualifyAmbiguousTypeNames != value)
+				{
 					fullyQualifyAmbiguousTypeNames = value;
 					OnPropertyChanged("FullyQualifyAmbiguousTypeNames");
 				}
 			}
 		}
-		
-		bool useDebugSymbols = true;
-		
+
+		private bool useDebugSymbols = true;
+
 		/// <summary>
 		/// Gets/Sets whether to use variable names from debug symbols, if available.
 		/// </summary>
-		public bool UseDebugSymbols {
+		public bool UseDebugSymbols
+		{
 			get { return useDebugSymbols; }
-			set {
-				if (useDebugSymbols != value) {
+			set
+			{
+				if (useDebugSymbols != value)
+				{
 					useDebugSymbols = value;
 					OnPropertyChanged("UseDebugSymbols");
 				}
 			}
 		}
-		
-		bool objectCollectionInitializers = true;
-		
+
+		private bool objectCollectionInitializers = true;
+
 		/// <summary>
 		/// Gets/Sets whether to use C# 3.0 object/collection initializers
 		/// </summary>
-		public bool ObjectOrCollectionInitializers {
+		public bool ObjectOrCollectionInitializers
+		{
 			get { return objectCollectionInitializers; }
-			set {
-				if (objectCollectionInitializers != value) {
+			set
+			{
+				if (objectCollectionInitializers != value)
+				{
 					objectCollectionInitializers = value;
 					OnPropertyChanged("ObjectCollectionInitializers");
 				}
 			}
 		}
-		
-		bool showXmlDocumentation = true;
-		
+
+		private bool showXmlDocumentation = true;
+
 		/// <summary>
 		/// Gets/Sets whether to include XML documentation comments in the decompiled code
 		/// </summary>
-		public bool ShowXmlDocumentation {
+		public bool ShowXmlDocumentation
+		{
 			get { return showXmlDocumentation; }
-			set {
-				if (showXmlDocumentation != value) {
+			set
+			{
+				if (showXmlDocumentation != value)
+				{
 					showXmlDocumentation = value;
 					OnPropertyChanged("ShowXmlDocumentation");
 				}
 			}
 		}
 
-		bool foldBraces = false;
-		
-		public bool FoldBraces {
+		private bool foldBraces = false;
+
+		public bool FoldBraces
+		{
 			get { return foldBraces; }
-			set {
-				if (foldBraces != value) {
+			set
+			{
+				if (foldBraces != value)
+				{
 					foldBraces = value;
 					OnPropertyChanged("FoldBraces");
 				}
 			}
 		}
-		
+
 		#region Options to aid VB decompilation
-		bool introduceIncrementAndDecrement = true;
-		
+
+		private bool introduceIncrementAndDecrement = true;
+
 		/// <summary>
 		/// Gets/Sets whether to use increment and decrement operators
 		/// </summary>
-		public bool IntroduceIncrementAndDecrement {
+		public bool IntroduceIncrementAndDecrement
+		{
 			get { return introduceIncrementAndDecrement; }
-			set {
-				if (introduceIncrementAndDecrement != value) {
+			set
+			{
+				if (introduceIncrementAndDecrement != value)
+				{
 					introduceIncrementAndDecrement = value;
 					OnPropertyChanged("IntroduceIncrementAndDecrement");
 				}
 			}
 		}
-		
-		bool makeAssignmentExpressions = true;
-		
+
+		private bool makeAssignmentExpressions = true;
+
 		/// <summary>
 		/// Gets/Sets whether to use assignment expressions such as in while ((count = Do()) != 0) ;
 		/// </summary>
-		public bool MakeAssignmentExpressions {
+		public bool MakeAssignmentExpressions
+		{
 			get { return makeAssignmentExpressions; }
-			set {
-				if (makeAssignmentExpressions != value) {
+			set
+			{
+				if (makeAssignmentExpressions != value)
+				{
 					makeAssignmentExpressions = value;
 					OnPropertyChanged("MakeAssignmentExpressions");
 				}
 			}
 		}
-		
-		bool alwaysGenerateExceptionVariableForCatchBlocks = false;
-		
+
+		private bool alwaysGenerateExceptionVariableForCatchBlocks = false;
+
 		/// <summary>
 		/// Gets/Sets whether to always generate exception variables in catch blocks
 		/// </summary>
-		public bool AlwaysGenerateExceptionVariableForCatchBlocks {
+		public bool AlwaysGenerateExceptionVariableForCatchBlocks
+		{
 			get { return alwaysGenerateExceptionVariableForCatchBlocks; }
-			set {
-				if (alwaysGenerateExceptionVariableForCatchBlocks != value) {
+			set
+			{
+				if (alwaysGenerateExceptionVariableForCatchBlocks != value)
+				{
 					alwaysGenerateExceptionVariableForCatchBlocks = value;
 					OnPropertyChanged("AlwaysGenerateExceptionVariableForCatchBlocks");
 				}
 			}
 		}
-		#endregion
-		
-		CSharpFormattingOptions csharpFormattingOptions;
-		
-		public CSharpFormattingOptions CSharpFormattingOptions {
-			get {
-				if (csharpFormattingOptions == null) {
+
+		#endregion Options to aid VB decompilation
+
+		private CSharpFormattingOptions csharpFormattingOptions;
+
+		public CSharpFormattingOptions CSharpFormattingOptions
+		{
+			get
+			{
+				if (csharpFormattingOptions == null)
+				{
 					csharpFormattingOptions = FormattingOptionsFactory.CreateAllman();
 					csharpFormattingOptions.IndentSwitchBody = false;
 					csharpFormattingOptions.ArrayInitializerWrapping = Wrapping.WrapAlways;
 				}
 				return csharpFormattingOptions;
 			}
-			set {
+			set
+			{
 				if (value == null)
 					throw new ArgumentNullException();
-				if (csharpFormattingOptions != value) {
+				if (csharpFormattingOptions != value)
+				{
 					csharpFormattingOptions = value;
 					OnPropertyChanged("CSharpFormattingOptions");
 				}
 			}
 		}
-		
+
 		public event PropertyChangedEventHandler PropertyChanged;
-		
+
 		protected virtual void OnPropertyChanged(string propertyName)
 		{
-			if (PropertyChanged != null) {
+			if (PropertyChanged != null)
+			{
 				PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
 			}
 		}
-		
+
 		public DecompilerSettings Clone()
 		{
 			DecompilerSettings settings = (DecompilerSettings)MemberwiseClone();

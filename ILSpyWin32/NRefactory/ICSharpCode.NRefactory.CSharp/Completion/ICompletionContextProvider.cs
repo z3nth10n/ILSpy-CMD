@@ -1,21 +1,21 @@
-﻿// 
+﻿//
 // IMemberProvider.cs
-//  
+//
 // Author:
 //       Mike Krüger <mkrueger@xamarin.com>
-// 
+//
 // Copyright (c) 2012 Xamarin Inc.
-// 
+//
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
 // in the Software without restriction, including without limitation the rights
 // to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
-// 
+//
 // The above copyright notice and this permission notice shall be included in
 // all copies or substantial portions of the Software.
-// 
+//
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 // FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -23,42 +23,45 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
+using ICSharpCode.NRefactory.CSharp.Resolver;
+using ICSharpCode.NRefactory.CSharp.TypeSystem;
+using ICSharpCode.NRefactory.Editor;
+using ICSharpCode.NRefactory.TypeSystem;
 using System;
 using System.Collections.Generic;
-using ICSharpCode.NRefactory.TypeSystem;
-using ICSharpCode.NRefactory.Editor;
-using ICSharpCode.NRefactory.CSharp.TypeSystem;
 using System.Linq;
-using ICSharpCode.NRefactory.CSharp.Resolver;
 
 namespace ICSharpCode.NRefactory.CSharp.Completion
 {
 	public interface ICompletionContextProvider
 	{
-		IList<string> ConditionalSymbols {
+		IList<string> ConditionalSymbols
+		{
 			get;
 		}
 
-		void GetCurrentMembers (int offset, out IUnresolvedTypeDefinition currentType, out IUnresolvedMember currentMember);
+		void GetCurrentMembers(int offset, out IUnresolvedTypeDefinition currentType, out IUnresolvedMember currentMember);
 
 		Tuple<string, TextLocation> GetMemberTextToCaret(int caretOffset, IUnresolvedTypeDefinition currentType, IUnresolvedMember currentMember);
 
-		CSharpAstResolver GetResolver (CSharpResolver resolver, AstNode rootNode);
+		CSharpAstResolver GetResolver(CSharpResolver resolver, AstNode rootNode);
 	}
 
 	public class DefaultCompletionContextProvider : ICompletionContextProvider
 	{
-		readonly IDocument document;
-		readonly CSharpUnresolvedFile unresolvedFile;
-		readonly List<string> symbols = new List<string> ();
+		private readonly IDocument document;
+		private readonly CSharpUnresolvedFile unresolvedFile;
+		private readonly List<string> symbols = new List<string>();
 
-		public IList<string> ConditionalSymbols {
-			get {
+		public IList<string> ConditionalSymbols
+		{
+			get
+			{
 				return symbols;
 			}
 		}
 
-		public DefaultCompletionContextProvider (IDocument document, CSharpUnresolvedFile unresolvedFile)
+		public DefaultCompletionContextProvider(IDocument document, CSharpUnresolvedFile unresolvedFile)
 		{
 			if (document == null)
 				throw new ArgumentNullException("document");
@@ -68,40 +71,46 @@ namespace ICSharpCode.NRefactory.CSharp.Completion
 			this.unresolvedFile = unresolvedFile;
 		}
 
-		public void AddSymbol (string sym)
+		public void AddSymbol(string sym)
 		{
-			symbols.Add (sym);
+			symbols.Add(sym);
 		}
+
 		public void GetCurrentMembers(int offset, out IUnresolvedTypeDefinition currentType, out IUnresolvedMember currentMember)
 		{
 			//var document = engine.document;
 			var location = document.GetLocation(offset);
-			
+
 			currentType = null;
-			
-			foreach (var type in unresolvedFile.TopLevelTypeDefinitions) {
+
+			foreach (var type in unresolvedFile.TopLevelTypeDefinitions)
+			{
 				if (type.Region.Begin < location)
 					currentType = type;
 			}
-			currentType = FindInnerType (currentType, location);
-			
+			currentType = FindInnerType(currentType, location);
+
 			// location is beyond last reported end region, now we need to check, if the end region changed
-			if (currentType != null && currentType.Region.End < location) {
-				if (!IsInsideType (currentType, location))
+			if (currentType != null && currentType.Region.End < location)
+			{
+				if (!IsInsideType(currentType, location))
 					currentType = null;
 			}
 			currentMember = null;
-			if (currentType != null) {
-				foreach (var member in currentType.Members) {
+			if (currentType != null)
+			{
+				foreach (var member in currentType.Members)
+				{
 					if (member.Region.Begin < location && (currentMember == null || currentMember.Region.Begin < member.Region.Begin))
 						currentMember = member;
 				}
 			}
-			
+
 			// location is beyond last reported end region, now we need to check, if the end region changed
 			// NOTE: Enums are a special case, there the "last" field needs to be treated as current member
-			if (currentMember != null && currentMember.Region.End < location && currentType.Kind != TypeKind.Enum) {
-				if (!IsInsideType (currentMember, location))
+			if (currentMember != null && currentMember.Region.End < location && currentType.Kind != TypeKind.Enum)
+			{
+				if (!IsInsideType(currentMember, location))
 					currentMember = null;
 			}/*
 			var stack = GetBracketStack (engine.GetMemberTextToCaret ().Item1);
@@ -109,106 +118,121 @@ namespace ICSharpCode.NRefactory.CSharp.Completion
 				currentMember = null;*/
 		}
 
-		IUnresolvedTypeDefinition FindInnerType (IUnresolvedTypeDefinition parent, TextLocation location)
+		private IUnresolvedTypeDefinition FindInnerType(IUnresolvedTypeDefinition parent, TextLocation location)
 		{
 			if (parent == null)
 				return null;
 			var currentType = parent;
-			foreach (var type in parent.NestedTypes) {
-				if (type.Region.Begin < location  && location < type.Region.End)
-					currentType = FindInnerType (type, location);
+			foreach (var type in parent.NestedTypes)
+			{
+				if (type.Region.Begin < location && location < type.Region.End)
+					currentType = FindInnerType(type, location);
 			}
-			
+
 			return currentType;
 		}
-		
-		bool IsInsideType (IUnresolvedEntity currentType, TextLocation location)
+
+		private bool IsInsideType(IUnresolvedEntity currentType, TextLocation location)
 		{
 			if (currentType.Region.IsEmpty)
 				return false;
-			int startOffset = document.GetOffset (currentType.Region.Begin);
-			int endOffset = document.GetOffset (location);
+			int startOffset = document.GetOffset(currentType.Region.Begin);
+			int endOffset = document.GetOffset(location);
 			//bool foundEndBracket = false;
-		
-			var bracketStack = new Stack<char> ();
-		
+
+			var bracketStack = new Stack<char>();
+
 			bool isInString = false, isInChar = false;
 			bool isInLineComment = false, isInBlockComment = false;
-			
-			for (int i = startOffset; i < endOffset; i++) {
-				char ch = document.GetCharAt (i);
-				switch (ch) {
+
+			for (int i = startOffset; i < endOffset; i++)
+			{
+				char ch = document.GetCharAt(i);
+				switch (ch)
+				{
 					case '(':
 					case '[':
 					case '{':
 						if (!isInString && !isInChar && !isInLineComment && !isInBlockComment)
-							bracketStack.Push (ch);
+							bracketStack.Push(ch);
 						break;
+
 					case ')':
 					case ']':
 					case '}':
 						if (!isInString && !isInChar && !isInLineComment && !isInBlockComment)
-						if (bracketStack.Count > 0)
-							bracketStack.Pop ();
+							if (bracketStack.Count > 0)
+								bracketStack.Pop();
 						break;
+
 					case '/':
-						if (isInBlockComment) {
-							if (i > 0 && document.GetCharAt (i - 1) == '*') 
+						if (isInBlockComment)
+						{
+							if (i > 0 && document.GetCharAt(i - 1) == '*')
 								isInBlockComment = false;
-						} else if (!isInString && !isInChar && i + 1 < document.TextLength) {
-							char nextChar = document.GetCharAt (i + 1);
+						}
+						else if (!isInString && !isInChar && i + 1 < document.TextLength)
+						{
+							char nextChar = document.GetCharAt(i + 1);
 							if (nextChar == '/')
 								isInLineComment = true;
 							if (!isInLineComment && nextChar == '*')
 								isInBlockComment = true;
 						}
 						break;
+
 					case '"':
-						if (!(isInChar || isInLineComment || isInBlockComment)) 
+						if (!(isInChar || isInLineComment || isInBlockComment))
 							isInString = !isInString;
 						break;
+
 					case '\'':
-						if (!(isInString || isInLineComment || isInBlockComment)) 
+						if (!(isInString || isInLineComment || isInBlockComment))
 							isInChar = !isInChar;
 						break;
-					default :			
-						if (NewLine.IsNewLine(ch)) {
+
+					default:
+						if (NewLine.IsNewLine(ch))
+						{
 							isInLineComment = false;
 						}
 						break;
-					}
 				}
-			return bracketStack.Any (t => t == '{');
+			}
+			return bracketStack.Any(t => t == '{');
 		}
-	
+
 		public Tuple<string, TextLocation> GetMemberTextToCaret(int caretOffset, IUnresolvedTypeDefinition currentType, IUnresolvedMember currentMember)
 		{
 			int startOffset;
-			if (currentMember != null && currentType != null && currentType.Kind != TypeKind.Enum) {
+			if (currentMember != null && currentType != null && currentType.Kind != TypeKind.Enum)
+			{
 				startOffset = document.GetOffset(currentMember.Region.Begin);
-			} else if (currentType != null) {
+			}
+			else if (currentType != null)
+			{
 				startOffset = document.GetOffset(currentType.Region.Begin);
-			} else {
+			}
+			else
+			{
 				startOffset = 0;
 			}
-			while (startOffset > 0) {
+			while (startOffset > 0)
+			{
 				char ch = document.GetCharAt(startOffset - 1);
-				if (ch != ' ' && ch != '\t') {
+				if (ch != ' ' && ch != '\t')
+				{
 					break;
 				}
 				--startOffset;
 			}
 
-			return Tuple.Create (document.GetText (startOffset, caretOffset - startOffset), document.GetLocation (startOffset));
+			return Tuple.Create(document.GetText(startOffset, caretOffset - startOffset), document.GetLocation(startOffset));
 		}
 
-
-		public CSharpAstResolver GetResolver (CSharpResolver resolver, AstNode rootNode)
+		public CSharpAstResolver GetResolver(CSharpResolver resolver, AstNode rootNode)
 		{
-			return new CSharpAstResolver (resolver, rootNode, unresolvedFile);
+			return new CSharpAstResolver(resolver, rootNode, unresolvedFile);
 		}
-
-
 	}
 }
-
