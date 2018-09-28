@@ -1,0 +1,11 @@
+bin/
+obj/
+
+*.suo
+*.user
+/Resharper-ILSpy-Style.xml
+_ReSharper*/
+*.ReSharper
+*.patch
+/packages
+*.ide/
