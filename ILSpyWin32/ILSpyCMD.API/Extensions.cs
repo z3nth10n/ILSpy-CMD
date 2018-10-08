@@ -45,11 +45,37 @@ namespace ILSpyCMD.API
 
 			groups.ForEach((x, i) =>
 			{
-				sb.AppendFormat("Group{0}: {1}", i, string.Join(", ", x));
+				sb.AppendFormat($"Group${i}: {0}", string.Join(", ", x));
 				sb.AppendLine();
 			});
 
 			return sb.ToString();
+		}
+
+		public static void WriteRead(string str)
+		{
+			Console.WriteLine(str);
+			Console.Read();
+		}
+
+		public static bool Main(string[] args, out string dir)
+		{
+			if (args == null || args != null && args.Length == 0)
+			{
+				WriteRead("Args are null!");
+				dir = "";
+				return false;
+			}
+
+			dir = args[0];
+
+			if (!Directory.Exists(dir))
+			{
+				WriteRead("Specified path isn't a directory!");
+				return false;
+			}
+
+			return true;
 		}
 	}
 }

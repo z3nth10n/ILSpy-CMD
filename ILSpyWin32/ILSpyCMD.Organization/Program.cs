@@ -11,25 +11,12 @@ namespace ILSpyCMD.Organization
 	{
 		private static void Main(string[] args)
 		{
-			if (args == null || args != null && args.Length == 0)
-			{
-				Console.WriteLine("Args are null!");
-				Console.Read();
-				return;
-			}
+			string dir = "";
 
-			string dir = args[0];
-			if (!Directory.Exists(dir))
-			{
-				Console.WriteLine("Specified path isn't a directory!");
-				Console.Read();
+			if (!Extensions.Main(args, out dir))
 				return;
-			}
 
 			var groups = Extensions.GetFilesByExtension(dir, ".dll").InGroupsOf(20);
-
-			//Console.WriteLine(groups.DebugGroups());
-			//Console.Read();
 
 			groups.ForEach((x, i) =>
 			{
