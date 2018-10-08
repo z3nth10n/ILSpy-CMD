@@ -3,6 +3,7 @@ using ICSharpCode.ILSpy;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Text;
 
@@ -23,9 +24,9 @@ namespace ILSpyCMD
 
 		private static void showUsage()
 		{
-			Console.WriteLine(" Usage: ILSpyMac [options] directory/to/all/your/dll ");
+			Console.WriteLine(" Usage: ILSpyCMD [options] directory/to/all/your/dll ");
 			Console.WriteLine(" made it run at all platform support mono.");
-			Console.WriteLine(" by aerror 2015/11/27");
+			Console.WriteLine(" by z3nth10n 2018/10/08");
 			Console.WriteLine(" options:");
 
 			Console.WriteLine("       -a  Decompile yield. OFF if exists this option, default ON.");
@@ -56,7 +57,9 @@ namespace ILSpyCMD
 			Console.WriteLine("       -D  Ony specitfied files to do decompiling in the Directory");
 
 			Console.WriteLine(" Example:");
-			Console.WriteLine(" ILSpyMac -n Example -l /directory/to/Rerences/dll /directory/to/all/your/dll");
+			Console.WriteLine(" ILSpyCMD -n Example -l /directory/to/Rerences/dll /directory/to/all/your/dll");
+
+			Console.Read();
 		}
 
 		public static bool isDecompilingFile(string fullName, List<string> includedList)
@@ -156,10 +159,10 @@ namespace ILSpyCMD
 
 		private static void Main(string[] args)
 		{
-			//Console.WriteLine("Hola mundo");
-			//Console.Read();
+			// Console.WriteLine("Args: {0}", string.Join(", ", args));
+			// Console.Read();
 
-			AttachConsoleWriter();
+			// AttachConsoleWriter();
 
 			string appPath = null;
 			string slnName = null;
