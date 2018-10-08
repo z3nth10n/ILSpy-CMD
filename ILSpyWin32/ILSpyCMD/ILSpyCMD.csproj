@@ -88,6 +88,12 @@
     <Content Include="ILMergeInternalizeExcludeList.txt" />
     <Content Include="ILMergeOrder.txt" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ILSpyCMD.API\ILSpyCMD.API.csproj">
+      <Project>{2fd18153-e0e8-49b5-bc83-464106fae597}</Project>
+      <Name>ILSpyCMD.API</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>

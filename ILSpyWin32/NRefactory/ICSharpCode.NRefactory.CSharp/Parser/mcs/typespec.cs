@@ -18,43 +18,48 @@ using System.Linq;
 using MetaType = IKVM.Reflection.Type;
 using IKVM.Reflection;
 #else
+
 using MetaType = System.Type;
 using System.Reflection;
+
 #endif
 
 namespace Mono.CSharp
 {
 	//
-	// Inflated or non-inflated representation of any type. 
+	// Inflated or non-inflated representation of any type.
 	//
 	public class TypeSpec : MemberSpec
 	{
 		protected MetaType info;
 		protected MemberCache cache;
 		protected IList<TypeSpec> ifaces;
-		TypeSpec base_type;
+		private TypeSpec base_type;
 
-		Dictionary<TypeSpec[], InflatedTypeSpec> inflated_instances;
+		private Dictionary<TypeSpec[], InflatedTypeSpec> inflated_instances;
 
 		public static readonly TypeSpec[] EmptyTypes = new TypeSpec[0];
 
 #if !STATIC
-		// Reflection Emit hacking
-		static readonly Type TypeBuilder;
-		static readonly Type GenericTypeBuilder;
 
-		static TypeSpec ()
+		// Reflection Emit hacking
+		private static readonly Type TypeBuilder;
+
+		private static readonly Type GenericTypeBuilder;
+
+		static TypeSpec()
 		{
-			var assembly = typeof (object).Assembly;
-			TypeBuilder = assembly.GetType ("System.Reflection.Emit.TypeBuilder");
-			GenericTypeBuilder = assembly.GetType ("System.Reflection.MonoGenericClass");
+			var assembly = typeof(object).Assembly;
+			TypeBuilder = assembly.GetType("System.Reflection.Emit.TypeBuilder");
+			GenericTypeBuilder = assembly.GetType("System.Reflection.MonoGenericClass");
 			if (GenericTypeBuilder == null)
-				GenericTypeBuilder = assembly.GetType ("System.Reflection.Emit.TypeBuilderInstantiation");
+				GenericTypeBuilder = assembly.GetType("System.Reflection.Emit.TypeBuilderInstantiation");
 		}
+
 #endif
 
-		public TypeSpec (MemberKind kind, TypeSpec declaringType, ITypeDefinition definition, MetaType info, Modifiers modifiers)
-			: base (kind, declaringType, definition, modifiers)
+		public TypeSpec(MemberKind kind, TypeSpec declaringType, ITypeDefinition definition, MetaType info, Modifiers modifiers)
+			: base(kind, declaringType, definition, modifiers)
 		{
 			this.declaringType = declaringType;
 			this.info = info;
@@ -65,29 +70,38 @@ namespace Mono.CSharp
 
 		#region Properties
 
-		public override int Arity {
-			get {
+		public override int Arity
+		{
+			get
+			{
 				return MemberDefinition.TypeParametersCount;
 			}
 		}
 
-		public virtual TypeSpec BaseType {
-			get {
+		public virtual TypeSpec BaseType
+		{
+			get
+			{
 				return base_type;
 			}
-			set {
+			set
+			{
 				base_type = value;
 			}
 		}
 
-		public virtual BuiltinTypeSpec.Type BuiltinType {
-			get {
+		public virtual BuiltinTypeSpec.Type BuiltinType
+		{
+			get
+			{
 				return BuiltinTypeSpec.Type.None;
 			}
 		}
 
-		public bool HasDynamicElement {
-			get {
+		public bool HasDynamicElement
+		{
+			get
+			{
 				return (state & StateFlags.HasDynamicElement) != 0;
 			}
 		}
@@ -96,9 +110,12 @@ namespace Mono.CSharp
 		// Returns a list of all interfaces including
 		// interfaces from base type or base interfaces
 		//
-		public virtual IList<TypeSpec> Interfaces {
-			get {
-				if ((state & StateFlags.InterfacesImported) == 0) {
+		public virtual IList<TypeSpec> Interfaces
+		{
+			get
+			{
+				if ((state & StateFlags.InterfacesImported) == 0)
+				{
 					state |= StateFlags.InterfacesImported;
 
 					//
@@ -108,36 +125,41 @@ namespace Mono.CSharp
 					//
 					var imported = MemberDefinition as ImportedTypeDefinition;
 					if (imported != null && Kind != MemberKind.MissingType)
-						imported.DefineInterfaces (this);
-
+						imported.DefineInterfaces(this);
 				}
 
 				return ifaces;
 			}
-			set {
+			set
+			{
 				ifaces = value;
 			}
 		}
 
-		public bool IsArray {
-			get {
+		public bool IsArray
+		{
+			get
+			{
 				return Kind == MemberKind.ArrayType;
 			}
 		}
 
-		public bool IsAttribute {
-			get {
+		public bool IsAttribute
+		{
+			get
+			{
 				if (!IsClass)
 					return false;
 
 				var type = this;
-				do {
+				do
+				{
 					if (type.BuiltinType == BuiltinTypeSpec.Type.Attribute)
 						return true;
 
 					if (type.IsGeneric)
 						return false;
-					
+
 					type = type.base_type;
 				} while (type != null);
 
@@ -145,47 +167,56 @@ namespace Mono.CSharp
 			}
 		}
 
-		public bool IsInterface {
-			get {
+		public bool IsInterface
+		{
+			get
+			{
 				return Kind == MemberKind.Interface;
 			}
 		}
 
-		public bool IsClass {
-			get {
+		public bool IsClass
+		{
+			get
+			{
 				return Kind == MemberKind.Class;
 			}
 		}
 
-		public bool IsConstantCompatible {
-			get {
+		public bool IsConstantCompatible
+		{
+			get
+			{
 				if ((Kind & (MemberKind.Enum | MemberKind.Class | MemberKind.Interface | MemberKind.Delegate | MemberKind.ArrayType)) != 0)
 					return true;
 
-				switch (BuiltinType) {
-				case BuiltinTypeSpec.Type.Int:
-				case BuiltinTypeSpec.Type.UInt:
-				case BuiltinTypeSpec.Type.Long:
-				case BuiltinTypeSpec.Type.ULong:
-				case BuiltinTypeSpec.Type.Float:
-				case BuiltinTypeSpec.Type.Double:
-				case BuiltinTypeSpec.Type.Char:
-				case BuiltinTypeSpec.Type.Short:
-				case BuiltinTypeSpec.Type.Decimal:
-				case BuiltinTypeSpec.Type.Bool:
-				case BuiltinTypeSpec.Type.SByte:
-				case BuiltinTypeSpec.Type.Byte:
-				case BuiltinTypeSpec.Type.UShort:
-				case BuiltinTypeSpec.Type.Dynamic:
-					return true;
+				switch (BuiltinType)
+				{
+					case BuiltinTypeSpec.Type.Int:
+					case BuiltinTypeSpec.Type.UInt:
+					case BuiltinTypeSpec.Type.Long:
+					case BuiltinTypeSpec.Type.ULong:
+					case BuiltinTypeSpec.Type.Float:
+					case BuiltinTypeSpec.Type.Double:
+					case BuiltinTypeSpec.Type.Char:
+					case BuiltinTypeSpec.Type.Short:
+					case BuiltinTypeSpec.Type.Decimal:
+					case BuiltinTypeSpec.Type.Bool:
+					case BuiltinTypeSpec.Type.SByte:
+					case BuiltinTypeSpec.Type.Byte:
+					case BuiltinTypeSpec.Type.UShort:
+					case BuiltinTypeSpec.Type.Dynamic:
+						return true;
 				}
 
 				return false;
 			}
 		}
 
-		public bool IsDelegate {
-			get {
+		public bool IsDelegate
+		{
+			get
+			{
 				return Kind == MemberKind.Delegate;
 			}
 		}
@@ -193,17 +224,22 @@ namespace Mono.CSharp
 		//
 		// Returns true for instances of Expression<T>
 		//
-		public virtual bool IsExpressionTreeType {
-			get {
+		public virtual bool IsExpressionTreeType
+		{
+			get
+			{
 				return false;
 			}
-			set {
+			set
+			{
 				state = value ? state | StateFlags.InflatedExpressionType : state & ~StateFlags.InflatedExpressionType;
 			}
 		}
 
-		public bool IsEnum {
-			get {
+		public bool IsEnum
+		{
+			get
+			{
 				return Kind == MemberKind.Enum;
 			}
 		}
@@ -211,11 +247,14 @@ namespace Mono.CSharp
 		//
 		// Returns true for instances of IList<T>, IEnumerable<T>, ICollection<T>
 		//
-		public virtual bool IsArrayGenericInterface {
-			get {
+		public virtual bool IsArrayGenericInterface
+		{
+			get
+			{
 				return false;
 			}
-			set {
+			set
+			{
 				state = value ? state | StateFlags.GenericIterateInterface : state & ~StateFlags.GenericIterateInterface;
 			}
 		}
@@ -223,11 +262,14 @@ namespace Mono.CSharp
 		//
 		// Returns true for instances of System.Threading.Tasks.Task<T>
 		//
-		public virtual bool IsGenericTask {
-			get {
+		public virtual bool IsGenericTask
+		{
+			get
+			{
 				return false;
 			}
-			set {
+			set
+			{
 				state = value ? state | StateFlags.GenericTask : state & ~StateFlags.GenericTask;
 			}
 		}
@@ -235,10 +277,13 @@ namespace Mono.CSharp
 		// TODO: Should probably do
 		// IsGenericType -- recursive
 		// HasTypeParameter -- non-recursive
-		public bool IsGenericOrParentIsGeneric {
-			get {
+		public bool IsGenericOrParentIsGeneric
+		{
+			get
+			{
 				var ts = this;
-				do {
+				do
+				{
 					if (ts.IsGeneric)
 						return true;
 					ts = ts.declaringType;
@@ -248,8 +293,10 @@ namespace Mono.CSharp
 			}
 		}
 
-		public bool IsGenericParameter {
-			get {
+		public bool IsGenericParameter
+		{
+			get
+			{
 				return Kind == MemberKind.TypeParameter;
 			}
 		}
@@ -257,56 +304,72 @@ namespace Mono.CSharp
 		//
 		// Returns true for instances of Nullable<T>
 		//
-		public virtual bool IsNullableType {
-			get {
+		public virtual bool IsNullableType
+		{
+			get
+			{
 				return false;
 			}
-			set {
+			set
+			{
 				state = value ? state | StateFlags.InflatedNullableType : state & ~StateFlags.InflatedNullableType;
 			}
 		}
 
-		public bool IsNested {
+		public bool IsNested
+		{
 			get { return declaringType != null && Kind != MemberKind.TypeParameter; }
 		}
 
-		public bool IsPointer {
-			get {
+		public bool IsPointer
+		{
+			get
+			{
 				return Kind == MemberKind.PointerType;
 			}
 		}
 
-		public bool IsSealed {
+		public bool IsSealed
+		{
 			get { return (Modifiers & Modifiers.SEALED) != 0; }
 		}
 
-		public bool IsSpecialRuntimeType {
-			get {
+		public bool IsSpecialRuntimeType
+		{
+			get
+			{
 				return (state & StateFlags.SpecialRuntimeType) != 0;
 			}
-			set {
+			set
+			{
 				state = value ? state | StateFlags.SpecialRuntimeType : state & ~StateFlags.SpecialRuntimeType;
 			}
 		}
 
-		public bool IsStruct {
-			get { 
+		public bool IsStruct
+		{
+			get
+			{
 				return Kind == MemberKind.Struct;
 			}
 		}
 
-		public bool IsStructOrEnum {
-			get {
+		public bool IsStructOrEnum
+		{
+			get
+			{
 				return (Kind & (MemberKind.Struct | MemberKind.Enum)) != 0;
 			}
 		}
 
-		public bool IsTypeBuilder {
-			get {
+		public bool IsTypeBuilder
+		{
+			get
+			{
 #if STATIC
 				return true;
 #else
-				var meta = GetMetaInfo().GetType ();
+				var meta = GetMetaInfo().GetType();
 				return meta == TypeBuilder || meta == GenericTypeBuilder;
 #endif
 			}
@@ -315,14 +378,16 @@ namespace Mono.CSharp
 		//
 		// Whether a type is unmanaged. This is used by the unsafe code
 		//
-		public bool IsUnmanaged {
-			get {
+		public bool IsUnmanaged
+		{
+			get
+			{
 				if (IsPointer)
-					return ((ElementTypeSpec) this).Element.IsUnmanaged;
+					return ((ElementTypeSpec)this).Element.IsUnmanaged;
 
 				var ds = MemberDefinition as TypeDefinition;
 				if (ds != null)
-					return ds.IsUnmanagedType ();
+					return ds.IsUnmanagedType();
 
 				if (Kind == MemberKind.Void)
 					return true;
@@ -333,63 +398,73 @@ namespace Mono.CSharp
 				if (IsNested && DeclaringType.IsGenericOrParentIsGeneric)
 					return false;
 
-				return IsValueType (this);
+				return IsValueType(this);
 			}
 		}
 
 		//
 		// A cache of all type members (including nested types)
 		//
-		public MemberCache MemberCache {
-			get {
+		public MemberCache MemberCache
+		{
+			get
+			{
 				if (cache == null || (state & StateFlags.PendingMemberCacheMembers) != 0)
-					InitializeMemberCache (false);
+					InitializeMemberCache(false);
 
 				return cache;
 			}
-			set {
+			set
+			{
 				if (cache != null)
-					throw new InternalErrorException ("Membercache reset");
+					throw new InternalErrorException("Membercache reset");
 
 				cache = value;
 			}
 		}
 
-		public MemberCache MemberCacheTypes {
-			get {
+		public MemberCache MemberCacheTypes
+		{
+			get
+			{
 				if (cache == null)
-					InitializeMemberCache (true);
+					InitializeMemberCache(true);
 
 				return cache;
 			}
-		}	
+		}
 
-		public new ITypeDefinition MemberDefinition {
-			get {
-				return (ITypeDefinition) definition;
+		public new ITypeDefinition MemberDefinition
+		{
+			get
+			{
+				return (ITypeDefinition)definition;
 			}
 		}
 
 		// TODO: Wouldn't be better to rely on cast to InflatedTypeSpec and
 		// remove the property, YES IT WOULD !!!
-		public virtual TypeSpec[] TypeArguments {
+		public virtual TypeSpec[] TypeArguments
+		{
 			get { return TypeSpec.EmptyTypes; }
 		}
 
-		#endregion
+		#endregion Properties
 
-		public virtual bool AddInterface (TypeSpec iface)
+		public virtual bool AddInterface(TypeSpec iface)
 		{
 			if ((state & StateFlags.InterfacesExpanded) != 0)
-				throw new InternalErrorException ("Modifying expanded interface list");
+				throw new InternalErrorException("Modifying expanded interface list");
 
-			if (ifaces == null) {
+			if (ifaces == null)
+			{
 				ifaces = new List<TypeSpec> { iface };
 				return true;
 			}
 
-			if (!ifaces.Contains (iface)) {
-				ifaces.Add (iface);
+			if (!ifaces.Contains(iface))
+			{
+				ifaces.Add(iface);
 				return true;
 			}
 
@@ -399,9 +474,9 @@ namespace Mono.CSharp
 		//
 		// Special version used during type definition
 		//
-		public bool AddInterfaceDefined (TypeSpec iface)
+		public bool AddInterfaceDefined(TypeSpec iface)
 		{
-			if (!AddInterface (iface))
+			if (!AddInterface(iface))
 				return false;
 
 			//
@@ -415,14 +490,16 @@ namespace Mono.CSharp
 			// additional expansion any inside usage of A<T> would miss IFoo
 			// interface because it comes from early inflated A`1 definition.
 			//
-			if (inflated_instances != null) {
+			if (inflated_instances != null)
+			{
 				//
 				// Inflate only existing instances not any new instances added
 				// during AddInterface
 				//
-				var inflated_existing = inflated_instances.Values.ToArray ();
-				foreach (var inflated in inflated_existing) {
-					inflated.AddInterface (iface);
+				var inflated_existing = inflated_instances.Values.ToArray();
+				foreach (var inflated in inflated_existing)
+				{
+					inflated.AddInterface(iface);
 				}
 			}
 
@@ -432,17 +509,22 @@ namespace Mono.CSharp
 		//
 		// Returns all type arguments, usefull for nested types
 		//
-		public static TypeSpec[] GetAllTypeArguments (TypeSpec type)
+		public static TypeSpec[] GetAllTypeArguments(TypeSpec type)
 		{
 			IList<TypeSpec> targs = TypeSpec.EmptyTypes;
 
-			do {
-				if (type.Arity > 0) {
-					if (targs.Count == 0) {
+			do
+			{
+				if (type.Arity > 0)
+				{
+					if (targs.Count == 0)
+					{
 						targs = type.TypeArguments;
-					} else {
-						var list = targs as List<TypeSpec> ?? new List<TypeSpec> (targs);
-						list.AddRange (type.TypeArguments);
+					}
+					else
+					{
+						var list = targs as List<TypeSpec> ?? new List<TypeSpec>(targs);
+						list.AddRange(type.TypeArguments);
 						targs = list;
 					}
 				}
@@ -450,21 +532,22 @@ namespace Mono.CSharp
 				type = type.declaringType;
 			} while (type != null);
 
-			return targs as TypeSpec[] ?? ((List<TypeSpec>) targs).ToArray ();
+			return targs as TypeSpec[] ?? ((List<TypeSpec>)targs).ToArray();
 		}
 
-		public AttributeUsageAttribute GetAttributeUsage (PredefinedAttribute pa)
+		public AttributeUsageAttribute GetAttributeUsage(PredefinedAttribute pa)
 		{
 			if (Kind != MemberKind.Class)
-				throw new InternalErrorException ();
+				throw new InternalErrorException();
 
 			if (!pa.IsDefined)
 				return Attribute.DefaultUsageAttribute;
 
 			AttributeUsageAttribute aua = null;
 			var type = this;
-			while (type != null) {
-				aua = type.MemberDefinition.GetAttributeUsage (pa);
+			while (type != null)
+			{
+				aua = type.MemberDefinition.GetAttributeUsage(pa);
 				if (aua != null)
 					break;
 
@@ -477,12 +560,12 @@ namespace Mono.CSharp
 		//
 		// Return metadata information used during emit to describe the type
 		//
-		public virtual MetaType GetMetaInfo ()
+		public virtual MetaType GetMetaInfo()
 		{
 			return info;
 		}
 
-		public virtual TypeSpec GetDefinition ()
+		public virtual TypeSpec GetDefinition()
 		{
 			return this;
 		}
@@ -490,105 +573,125 @@ namespace Mono.CSharp
 		//
 		// Text representation of type used by documentation writer
 		//
-		public override string GetSignatureForDocumentation ()
+		public override string GetSignatureForDocumentation()
 		{
-			StringBuilder sb = new StringBuilder ();
-			if (IsNested) {
-				sb.Append (DeclaringType.GetSignatureForDocumentation ());
-			} else {
-				sb.Append (MemberDefinition.Namespace);
+			StringBuilder sb = new StringBuilder();
+			if (IsNested)
+			{
+				sb.Append(DeclaringType.GetSignatureForDocumentation());
+			}
+			else
+			{
+				sb.Append(MemberDefinition.Namespace);
 			}
 
 			if (sb.Length != 0)
-				sb.Append (".");
+				sb.Append(".");
 
-			sb.Append (Name);
-			if (Arity > 0) {
-				if (this is InflatedTypeSpec) {
-				    sb.Append ("{");
-				    for (int i = 0; i < Arity; ++i) {
-				        if (i > 0)
-				            sb.Append (",");
+			sb.Append(Name);
+			if (Arity > 0)
+			{
+				if (this is InflatedTypeSpec)
+				{
+					sb.Append("{");
+					for (int i = 0; i < Arity; ++i)
+					{
+						if (i > 0)
+							sb.Append(",");
 
-				        sb.Append (TypeArguments[i].GetSignatureForDocumentation ());
-				    }
-				    sb.Append ("}");
-				} else {
-					sb.Append ("`");
-					sb.Append (Arity.ToString ());
+						sb.Append(TypeArguments[i].GetSignatureForDocumentation());
+					}
+					sb.Append("}");
+				}
+				else
+				{
+					sb.Append("`");
+					sb.Append(Arity.ToString());
 				}
 			}
 
-			return sb.ToString ();
+			return sb.ToString();
 		}
 
-		public string GetExplicitNameSignatureForDocumentation ()
+		public string GetExplicitNameSignatureForDocumentation()
 		{
-			StringBuilder sb = new StringBuilder ();
-			if (IsNested) {
-				sb.Append (DeclaringType.GetExplicitNameSignatureForDocumentation ());
-			} else if (MemberDefinition.Namespace != null) {
-				sb.Append (MemberDefinition.Namespace.Replace ('.', '#'));
+			StringBuilder sb = new StringBuilder();
+			if (IsNested)
+			{
+				sb.Append(DeclaringType.GetExplicitNameSignatureForDocumentation());
+			}
+			else if (MemberDefinition.Namespace != null)
+			{
+				sb.Append(MemberDefinition.Namespace.Replace('.', '#'));
 			}
 
 			if (sb.Length != 0)
-				sb.Append ("#");
+				sb.Append("#");
 
-			sb.Append (Name);
-			if (Arity > 0) {
-				sb.Append ("{");
-				for (int i = 0; i < Arity; ++i) {
+			sb.Append(Name);
+			if (Arity > 0)
+			{
+				sb.Append("{");
+				for (int i = 0; i < Arity; ++i)
+				{
 					if (i > 0)
-						sb.Append (",");
+						sb.Append(",");
 
-					sb.Append (TypeArguments[i].GetExplicitNameSignatureForDocumentation ());
+					sb.Append(TypeArguments[i].GetExplicitNameSignatureForDocumentation());
 				}
-				sb.Append ("}");
+				sb.Append("}");
 			}
 
-			return sb.ToString ();
+			return sb.ToString();
 		}
 
-		public override string GetSignatureForError ()
+		public override string GetSignatureForError()
 		{
 			string s;
 
-			if (IsNested) {
-				s = DeclaringType.GetSignatureForError ();
-			} else if (MemberDefinition is AnonymousTypeClass) {
-				return ((AnonymousTypeClass) MemberDefinition).GetSignatureForError ();
-			} else {
+			if (IsNested)
+			{
+				s = DeclaringType.GetSignatureForError();
+			}
+			else if (MemberDefinition is AnonymousTypeClass)
+			{
+				return ((AnonymousTypeClass)MemberDefinition).GetSignatureForError();
+			}
+			else
+			{
 				s = MemberDefinition.Namespace;
 			}
 
-			if (!string.IsNullOrEmpty (s))
+			if (!string.IsNullOrEmpty(s))
 				s += ".";
 
-			return s + Name + GetTypeNameSignature ();
+			return s + Name + GetTypeNameSignature();
 		}
 
-		public string GetSignatureForErrorIncludingAssemblyName ()
+		public string GetSignatureForErrorIncludingAssemblyName()
 		{
-			return string.Format ("{0} [{1}]", GetSignatureForError (), MemberDefinition.DeclaringAssembly.FullName);
+			return string.Format("{0} [{1}]", GetSignatureForError(), MemberDefinition.DeclaringAssembly.FullName);
 		}
 
-		protected virtual string GetTypeNameSignature ()
+		protected virtual string GetTypeNameSignature()
 		{
 			if (!IsGeneric)
 				return null;
 
-			return "<" + TypeManager.CSharpName (MemberDefinition.TypeParameters) + ">";
+			return "<" + TypeManager.CSharpName(MemberDefinition.TypeParameters) + ">";
 		}
 
-		public bool ImplementsInterface (TypeSpec iface, bool variantly)
+		public bool ImplementsInterface(TypeSpec iface, bool variantly)
 		{
 			var ifaces = Interfaces;
-			if (ifaces != null) {
-				for (int i = 0; i < ifaces.Count; ++i) {
-					if (TypeSpecComparer.IsEqual (ifaces[i], iface))
+			if (ifaces != null)
+			{
+				for (int i = 0; i < ifaces.Count; ++i)
+				{
+					if (TypeSpecComparer.IsEqual(ifaces[i], iface))
 						return true;
 
-					if (variantly && TypeSpecComparer.Variant.IsEqual (ifaces[i], iface))
+					if (variantly && TypeSpecComparer.Variant.IsEqual(ifaces[i], iface))
 						return true;
 				}
 			}
@@ -596,12 +699,15 @@ namespace Mono.CSharp
 			return false;
 		}
 
-		protected virtual void InitializeMemberCache (bool onlyTypes)
+		protected virtual void InitializeMemberCache(bool onlyTypes)
 		{
-			try {
-				MemberDefinition.LoadMembers (this, onlyTypes, ref cache);
-			} catch (Exception e) {
-				throw new InternalErrorException (e, "Unexpected error when loading type `{0}'", GetSignatureForError ());
+			try
+			{
+				MemberDefinition.LoadMembers(this, onlyTypes, ref cache);
+			}
+			catch (Exception e)
+			{
+				throw new InternalErrorException(e, "Unexpected error when loading type `{0}'", GetSignatureForError());
 			}
 
 			if (onlyTypes)
@@ -615,17 +721,19 @@ namespace Mono.CSharp
 		// comparison is used to hide differences between `object' and `dynamic' for generic
 		// types. Should not be used for comparisons where G<object> != G<dynamic>
 		//
-		public static bool IsBaseClass (TypeSpec type, TypeSpec baseClass, bool dynamicIsObject)
+		public static bool IsBaseClass(TypeSpec type, TypeSpec baseClass, bool dynamicIsObject)
 		{
-			if (dynamicIsObject && baseClass.IsGeneric) {
+			if (dynamicIsObject && baseClass.IsGeneric)
+			{
 				//
 				// Returns true for a hierarchies like this when passing baseClass of A<dynamic>
 				//
 				// class B : A<object> {}
 				//
 				type = type.BaseType;
-				while (type != null) {
-					if (TypeSpecComparer.IsEqual (type, baseClass))
+				while (type != null)
+				{
+					if (TypeSpecComparer.IsEqual(type, baseClass))
 						return true;
 
 					type = type.BaseType;
@@ -634,7 +742,8 @@ namespace Mono.CSharp
 				return false;
 			}
 
-			while (type != null) {
+			while (type != null)
+			{
 				type = type.BaseType;
 				if (type == baseClass)
 					return true;
@@ -643,54 +752,65 @@ namespace Mono.CSharp
 			return false;
 		}
 
-		public static bool IsReferenceType (TypeSpec t)
+		public static bool IsReferenceType(TypeSpec t)
 		{
-			switch (t.Kind) {
-			case MemberKind.TypeParameter:
-				return ((TypeParameterSpec) t).IsReferenceType;
-			case MemberKind.Struct:
-			case MemberKind.Enum:
-			case MemberKind.Void:
-			case MemberKind.PointerType:
-				return false;
-			case MemberKind.InternalCompilerType:
-				//
-				// Null is considered to be a reference type
-				//			
-				return t == InternalType.NullLiteral || t.BuiltinType == BuiltinTypeSpec.Type.Dynamic;
-			default:
-				return true;
+			switch (t.Kind)
+			{
+				case MemberKind.TypeParameter:
+					return ((TypeParameterSpec)t).IsReferenceType;
+
+				case MemberKind.Struct:
+				case MemberKind.Enum:
+				case MemberKind.Void:
+				case MemberKind.PointerType:
+					return false;
+
+				case MemberKind.InternalCompilerType:
+					//
+					// Null is considered to be a reference type
+					//
+					return t == InternalType.NullLiteral || t.BuiltinType == BuiltinTypeSpec.Type.Dynamic;
+
+				default:
+					return true;
 			}
 		}
 
-		public static bool IsNonNullableValueType (TypeSpec t)
+		public static bool IsNonNullableValueType(TypeSpec t)
 		{
-			switch (t.Kind) {
-			case MemberKind.TypeParameter:
-				return ((TypeParameterSpec) t).IsValueType;
-			case MemberKind.Struct:
-				return !t.IsNullableType;
-			case MemberKind.Enum:
-				return true;
-			default:
-				return false;
+			switch (t.Kind)
+			{
+				case MemberKind.TypeParameter:
+					return ((TypeParameterSpec)t).IsValueType;
+
+				case MemberKind.Struct:
+					return !t.IsNullableType;
+
+				case MemberKind.Enum:
+					return true;
+
+				default:
+					return false;
 			}
 		}
 
-		public static bool IsValueType (TypeSpec t)
+		public static bool IsValueType(TypeSpec t)
 		{
-			switch (t.Kind) {
-			case MemberKind.TypeParameter:
-				return ((TypeParameterSpec) t).IsValueType;
-			case MemberKind.Struct:
-			case MemberKind.Enum:
-				return true;
-			default:
-				return false;
+			switch (t.Kind)
+			{
+				case MemberKind.TypeParameter:
+					return ((TypeParameterSpec)t).IsValueType;
+
+				case MemberKind.Struct:
+				case MemberKind.Enum:
+					return true;
+
+				default:
+					return false;
 			}
 		}
 
-		public override MemberSpec InflateMember (TypeParameterInflator inflator)
+		public override MemberSpec InflateMember(TypeParameterInflator inflator)
 		{
 			var targs = IsGeneric ? MemberDefinition.TypeParameters : TypeSpec.EmptyTypes;
 
@@ -698,94 +818,108 @@ namespace Mono.CSharp
 			// When inflating nested type from inside the type instance will be same
 			// because type parameters are same for all nested types
 			//
-			if (DeclaringType == inflator.TypeInstance) {
-				return MakeGenericType (inflator.Context, targs);
+			if (DeclaringType == inflator.TypeInstance)
+			{
+				return MakeGenericType(inflator.Context, targs);
 			}
 
-			return new InflatedTypeSpec (inflator.Context, this, inflator.TypeInstance, targs);
+			return new InflatedTypeSpec(inflator.Context, this, inflator.TypeInstance, targs);
 		}
 
 		//
 		// Inflates current type using specific type arguments
 		//
-		public InflatedTypeSpec MakeGenericType (IModuleContext context, TypeSpec[] targs)
+		public InflatedTypeSpec MakeGenericType(IModuleContext context, TypeSpec[] targs)
 		{
 			if (targs.Length == 0 && !IsNested)
-				throw new ArgumentException ("Empty type arguments for type " + GetSignatureForError ());
+				throw new ArgumentException("Empty type arguments for type " + GetSignatureForError());
 
 			InflatedTypeSpec instance;
 
-			if (inflated_instances == null) {
-				inflated_instances = new Dictionary<TypeSpec[], InflatedTypeSpec> (TypeSpecComparer.Default);
+			if (inflated_instances == null)
+			{
+				inflated_instances = new Dictionary<TypeSpec[], InflatedTypeSpec>(TypeSpecComparer.Default);
 
-				if (IsNested) {
+				if (IsNested)
+				{
 					instance = this as InflatedTypeSpec;
-					if (instance != null) {
+					if (instance != null)
+					{
 						//
 						// Nested types could be inflated on already inflated instances
 						// Caching this type ensured we are using same instance for
 						// inside/outside inflation using local type parameters
 						//
-						inflated_instances.Add (TypeArguments, instance);
+						inflated_instances.Add(TypeArguments, instance);
 					}
 				}
 			}
 
-			if (!inflated_instances.TryGetValue (targs, out instance)) {
-				if (GetDefinition () != this && !IsNested)
-					throw new InternalErrorException ("`{0}' must be type definition or nested non-inflated type to MakeGenericType",
-						GetSignatureForError ());
+			if (!inflated_instances.TryGetValue(targs, out instance))
+			{
+				if (GetDefinition() != this && !IsNested)
+					throw new InternalErrorException("`{0}' must be type definition or nested non-inflated type to MakeGenericType",
+						GetSignatureForError());
 
-				instance = new InflatedTypeSpec (context, this, declaringType, targs);
-				inflated_instances.Add (targs, instance);
+				instance = new InflatedTypeSpec(context, this, declaringType, targs);
+				inflated_instances.Add(targs, instance);
 			}
 
 			return instance;
 		}
 
-		public virtual TypeSpec Mutate (TypeParameterMutator mutator)
+		public virtual TypeSpec Mutate(TypeParameterMutator mutator)
 		{
 			return this;
 		}
 
-		public override List<MissingTypeSpecReference> ResolveMissingDependencies (MemberSpec caller)
+		public override List<MissingTypeSpecReference> ResolveMissingDependencies(MemberSpec caller)
 		{
 			List<MissingTypeSpecReference> missing = null;
 
-			if (Kind == MemberKind.MissingType) {
-				missing = new List<MissingTypeSpecReference> ();
-				missing.Add (new MissingTypeSpecReference (this, caller));
+			if (Kind == MemberKind.MissingType)
+			{
+				missing = new List<MissingTypeSpecReference>();
+				missing.Add(new MissingTypeSpecReference(this, caller));
 				return missing;
 			}
 
-			foreach (var targ in TypeArguments) {
-				if (targ.Kind == MemberKind.MissingType) {
+			foreach (var targ in TypeArguments)
+			{
+				if (targ.Kind == MemberKind.MissingType)
+				{
 					if (missing == null)
-						missing = new List<MissingTypeSpecReference> ();
+						missing = new List<MissingTypeSpecReference>();
 
-					missing.Add (new MissingTypeSpecReference (targ, caller));
+					missing.Add(new MissingTypeSpecReference(targ, caller));
 				}
 			}
 
-			if (Interfaces != null) {
-				foreach (var iface in Interfaces) {
-					if (iface.Kind == MemberKind.MissingType) {
+			if (Interfaces != null)
+			{
+				foreach (var iface in Interfaces)
+				{
+					if (iface.Kind == MemberKind.MissingType)
+					{
 						if (missing == null)
-							missing = new List<MissingTypeSpecReference> ();
+							missing = new List<MissingTypeSpecReference>();
 
-						missing.Add (new MissingTypeSpecReference (iface, caller));
+						missing.Add(new MissingTypeSpecReference(iface, caller));
 					}
 				}
 			}
 
-			if (MemberDefinition.TypeParametersCount > 0) {
-				foreach (var tp in MemberDefinition.TypeParameters) {
-					var tp_missing = tp.GetMissingDependencies (this);
-					if (tp_missing != null) {
+			if (MemberDefinition.TypeParametersCount > 0)
+			{
+				foreach (var tp in MemberDefinition.TypeParameters)
+				{
+					var tp_missing = tp.GetMissingDependencies(this);
+					if (tp_missing != null)
+					{
 						if (missing == null)
-							missing = new List<MissingTypeSpecReference> ();
+							missing = new List<MissingTypeSpecReference>();
 
-						missing.AddRange (tp_missing);
+						missing.AddRange(tp_missing);
 					}
 				}
 			}
@@ -793,23 +927,23 @@ namespace Mono.CSharp
 			if (missing != null || BaseType == null)
 				return missing;
 
-			return BaseType.ResolveMissingDependencies (this);
+			return BaseType.ResolveMissingDependencies(this);
 		}
 
-		public void SetMetaInfo (MetaType info)
+		public void SetMetaInfo(MetaType info)
 		{
 			if (this.info != null)
-				throw new InternalErrorException ("MetaInfo reset");
+				throw new InternalErrorException("MetaInfo reset");
 
 			this.info = info;
 		}
 
-		public void SetExtensionMethodContainer ()
+		public void SetExtensionMethodContainer()
 		{
 			modifiers |= Modifiers.METHOD_EXTENSION;
 		}
 
-		public void UpdateInflatedInstancesBaseType ()
+		public void UpdateInflatedInstancesBaseType()
 		{
 			//
 			// When nested class has a partial part the situation where parent type
@@ -825,7 +959,8 @@ namespace Mono.CSharp
 			if (inflated_instances == null)
 				return;
 
-			foreach (var inflated in inflated_instances) {
+			foreach (var inflated in inflated_instances)
+			{
 				//
 				// Don't need to inflate possible generic type because for now the method
 				// is always used from within the nested type
@@ -847,6 +982,7 @@ namespace Mono.CSharp
 
 			// Ordered carefully for fast compares
 			FirstPrimitive = 1,
+
 			Bool = 1,
 			Byte = 2,
 			SByte = 3,
@@ -884,20 +1020,20 @@ namespace Mono.CSharp
 			Other,
 		}
 
-		readonly Type type;
-		readonly string ns;
-		readonly string name;
+		private readonly Type type;
+		private readonly string ns;
+		private readonly string name;
 
-		public BuiltinTypeSpec (MemberKind kind, string ns, string name, Type builtinKind)
-			: base (kind, null, null, null, Modifiers.PUBLIC)
+		public BuiltinTypeSpec(MemberKind kind, string ns, string name, Type builtinKind)
+			: base(kind, null, null, null, Modifiers.PUBLIC)
 		{
 			this.type = builtinKind;
 			this.ns = ns;
 			this.name = name;
 		}
 
-		public BuiltinTypeSpec (string name, Type builtinKind)
-			: this (MemberKind.InternalCompilerType, "", name, builtinKind)
+		public BuiltinTypeSpec(string name, Type builtinKind)
+			: this(MemberKind.InternalCompilerType, "", name, builtinKind)
 		{
 			// Make all internal types CLS-compliant, non-obsolete, compact
 			state = (state & ~(StateFlags.CLSCompliant_Undetected | StateFlags.Obsolete_Undetected | StateFlags.MissingDependency_Undetected)) | StateFlags.CLSCompliant;
@@ -905,67 +1041,78 @@ namespace Mono.CSharp
 
 		#region Properties
 
-		public override int Arity {
-			get {
+		public override int Arity
+		{
+			get
+			{
 				return 0;
 			}
 		}
 
-		public override BuiltinTypeSpec.Type BuiltinType {
-			get {
+		public override BuiltinTypeSpec.Type BuiltinType
+		{
+			get
+			{
 				return type;
 			}
 		}
 
-		public string FullName {
-			get {
+		public string FullName
+		{
+			get
+			{
 				return ns + '.' + name;
 			}
 		}
 
-		public override string Name {
-			get {
+		public override string Name
+		{
+			get
+			{
 				return name;
 			}
 		}
 
-		public string Namespace {
-			get {
+		public string Namespace
+		{
+			get
+			{
 				return ns;
 			}
 		}
 
-		#endregion
+		#endregion Properties
 
-		public static bool IsPrimitiveType (TypeSpec type)
+		public static bool IsPrimitiveType(TypeSpec type)
 		{
 			return type.BuiltinType >= Type.FirstPrimitive && type.BuiltinType <= Type.LastPrimitive;
 		}
 
-		public static bool IsPrimitiveTypeOrDecimal (TypeSpec type)
+		public static bool IsPrimitiveTypeOrDecimal(TypeSpec type)
 		{
 			return type.BuiltinType >= Type.FirstPrimitive && type.BuiltinType <= Type.Decimal;
 		}
 
-		public override string GetSignatureForError ()
+		public override string GetSignatureForError()
 		{
-			switch (Name) {
-			case "Int32": return "int";
-			case "Int64": return "long";
-			case "String": return "string";
-			case "Boolean": return "bool";
-			case "Void": return "void";
-			case "Object": return "object";
-			case "UInt32": return "uint";
-			case "Int16": return "short";
-			case "UInt16": return "ushort";
-			case "UInt64": return "ulong";
-			case "Single": return "float";
-			case "Double": return "double";
-			case "Decimal": return "decimal";
-			case "Char": return "char";
-			case "Byte": return "byte";
-			case "SByte": return "sbyte";
+			switch (Name)
+			{
+				case "Int32": return "int";
+				case "Int64": return "long";
+				case "String": return "string";
+				case "Boolean": return "bool";
+				case "Void": return "void";
+				case "Object": return "object";
+				case "UInt32": return "uint";
+				case "Int16": return "short";
+				case "UInt16": return "ushort";
+				case "UInt64": return "ulong";
+				case "Single": return "float";
+				case "Double": return "double";
+				case "Decimal": return "decimal";
+				case "Char": return "char";
+				case "Byte": return "byte";
+				case "SByte": return "sbyte";
 			}
 
 			if (ns.Length == 0)
@@ -977,43 +1124,49 @@ namespace Mono.CSharp
 		//
 		// Returns the size of type if known, otherwise, 0
 		//
-		public static int GetSize (TypeSpec type)
+		public static int GetSize(TypeSpec type)
 		{
-			switch (type.BuiltinType) {
-			case Type.Int:
-			case Type.UInt:
-			case Type.Float:
-				return 4;
-			case Type.Long:
-			case Type.ULong:
-			case Type.Double:
-				return 8;
-			case Type.Byte:
-			case Type.SByte:
-			case Type.Bool:
-				return 1;
-			case Type.Short:
-			case Type.Char:
-			case Type.UShort:
-				return 2;
-			case Type.Decimal:
-				return 16;
-			default:
-				return 0;
+			switch (type.BuiltinType)
+			{
+				case Type.Int:
+				case Type.UInt:
+				case Type.Float:
+					return 4;
+
+				case Type.Long:
+				case Type.ULong:
+				case Type.Double:
+					return 8;
+
+				case Type.Byte:
+				case Type.SByte:
+				case Type.Bool:
+					return 1;
+
+				case Type.Short:
+				case Type.Char:
+				case Type.UShort:
+					return 2;
+
+				case Type.Decimal:
+					return 16;
+
+				default:
+					return 0;
 			}
 		}
 
-		public void SetDefinition (ITypeDefinition td, MetaType type, Modifiers mod)
+		public void SetDefinition(ITypeDefinition td, MetaType type, Modifiers mod)
 		{
 			this.definition = td;
 			this.info = type;
 			this.modifiers |= (mod & ~Modifiers.AccessibilityMask);
 		}
 
-		public void SetDefinition (TypeSpec ts)
+		public void SetDefinition(TypeSpec ts)
 		{
 			this.definition = ts.MemberDefinition;
-			this.info = ts.GetMetaInfo ();
+			this.info = ts.GetMetaInfo();
 			this.BaseType = ts.BaseType;
 			this.Interfaces = ts.Interfaces;
 			this.modifiers = ts.Modifiers;
@@ -1023,18 +1176,18 @@ namespace Mono.CSharp
 	//
 	// Various type comparers used by compiler
 	//
-	static class TypeSpecComparer
+	internal static class TypeSpecComparer
 	{
 		//
 		// Does strict reference comparion only
 		//
-		public static readonly DefaultImpl Default = new DefaultImpl ();
+		public static readonly DefaultImpl Default = new DefaultImpl();
 
 		public class DefaultImpl : IEqualityComparer<TypeSpec[]>
 		{
 			#region IEqualityComparer<TypeSpec[]> Members
 
-			bool IEqualityComparer<TypeSpec[]>.Equals (TypeSpec[] x, TypeSpec[] y)
+			bool IEqualityComparer<TypeSpec[]>.Equals(TypeSpec[] x, TypeSpec[] y)
 			{
 				if (x == y)
 					return true;
@@ -1049,16 +1202,16 @@ namespace Mono.CSharp
 				return true;
 			}
 
-			int IEqualityComparer<TypeSpec[]>.GetHashCode (TypeSpec[] obj)
+			int IEqualityComparer<TypeSpec[]>.GetHashCode(TypeSpec[] obj)
 			{
 				int hash = 0;
 				for (int i = 0; i < obj.Length; ++i)
-					hash = (hash << 5) - hash + obj[i].GetHashCode ();
+					hash = (hash << 5) - hash + obj[i].GetHashCode();
 
 				return hash;
 			}
 
-			#endregion
+			#endregion IEqualityComparer<TypeSpec[]> Members
 		}
 
 		//
@@ -1067,7 +1220,7 @@ namespace Mono.CSharp
 		//
 		public static class Override
 		{
-			public static bool IsEqual (TypeSpec a, TypeSpec b)
+			public static bool IsEqual(TypeSpec a, TypeSpec b)
 			{
 				if (a == b)
 					return true;
@@ -1093,15 +1246,17 @@ namespace Mono.CSharp
 				//
 
 				var tp_a = a as TypeParameterSpec;
-				if (tp_a != null) {
+				if (tp_a != null)
+				{
 					var tp_b = b as TypeParameterSpec;
 					return tp_b != null && tp_a.IsMethodOwned == tp_b.IsMethodOwned && tp_a.DeclaredPosition == tp_b.DeclaredPosition;
 				}
 
 				var ac_a = a as ArrayContainer;
-				if (ac_a != null) {
+				if (ac_a != null)
+				{
 					var ac_b = b as ArrayContainer;
-					return ac_b != null && ac_a.Rank == ac_b.Rank && IsEqual (ac_a.Element, ac_b.Element);
+					return ac_b != null && ac_a.Rank == ac_b.Rank && IsEqual(ac_a.Element, ac_b.Element);
 				}
 
 				if (a.BuiltinType == BuiltinTypeSpec.Type.Dynamic || b.BuiltinType == BuiltinTypeSpec.Type.Dynamic)
@@ -1110,9 +1265,11 @@ namespace Mono.CSharp
 				if (a.MemberDefinition != b.MemberDefinition)
 					return false;
 
-				do {
-					for (int i = 0; i < a.TypeArguments.Length; ++i) {
-						if (!IsEqual (a.TypeArguments[i], b.TypeArguments[i]))
+				do
+				{
+					for (int i = 0; i < a.TypeArguments.Length; ++i)
+					{
+						if (!IsEqual(a.TypeArguments[i], b.TypeArguments[i]))
 							return false;
 					}
 
@@ -1123,7 +1280,7 @@ namespace Mono.CSharp
 				return true;
 			}
 
-			public static bool IsEqual (TypeSpec[] a, TypeSpec[] b)
+			public static bool IsEqual(TypeSpec[] a, TypeSpec[] b)
 			{
 				if (a == b)
 					return true;
@@ -1131,19 +1288,19 @@ namespace Mono.CSharp
 				if (a.Length != b.Length)
 					return false;
 
-				for (int i = 0; i < a.Length; ++i) {
-					if (!IsEqual (a[i], b[i]))
+				for (int i = 0; i < a.Length; ++i)
+				{
+					if (!IsEqual(a[i], b[i]))
 						return false;
 				}
 
 				return true;
 			}
 
-
 			//
 			// Compares unordered arrays
 			//
-			public static bool IsSame (TypeSpec[] a, TypeSpec[] b)
+			public static bool IsSame(TypeSpec[] a, TypeSpec[] b)
 			{
 				if (a == b)
 					return true;
@@ -1151,10 +1308,13 @@ namespace Mono.CSharp
 				if (a == null || b == null || a.Length != b.Length)
 					return false;
 
-				for (int ai = 0; ai < a.Length; ++ai) {
+				for (int ai = 0; ai < a.Length; ++ai)
+				{
 					bool found = false;
-					for (int bi = 0; bi < b.Length; ++bi) {
-						if (IsEqual (a[ai], b[bi])) {
+					for (int bi = 0; bi < b.Length; ++bi)
+					{
+						if (IsEqual(a[ai], b[bi]))
+						{
 							found = true;
 							break;
 						}
@@ -1167,7 +1327,7 @@ namespace Mono.CSharp
 				return true;
 			}
 
-			public static bool IsEqual (AParametersCollection a, AParametersCollection b)
+			public static bool IsEqual(AParametersCollection a, AParametersCollection b)
 			{
 				if (a == b)
 					return true;
@@ -1175,8 +1335,9 @@ namespace Mono.CSharp
 				if (a.Count != b.Count)
 					return false;
 
-				for (int i = 0; i < a.Count; ++i) {
-					if (!IsEqual (a.Types[i], b.Types[i]))
+				for (int i = 0; i < a.Count; ++i)
+				{
+					if (!IsEqual(a.Types[i], b.Types[i]))
 						return false;
 
 					if ((a.FixedParameters[i].ModFlags & Parameter.Modifier.RefOutMask) != (b.FixedParameters[i].ModFlags & Parameter.Modifier.RefOutMask))
@@ -1192,7 +1353,7 @@ namespace Mono.CSharp
 		//
 		public static class Variant
 		{
-			public static bool IsEqual (TypeSpec type1, TypeSpec type2)
+			public static bool IsEqual(TypeSpec type1, TypeSpec type2)
 			{
 				if (!type1.IsGeneric || !type2.IsGeneric)
 					return false;
@@ -1205,23 +1366,29 @@ namespace Mono.CSharp
 				var t2_targs = type2.TypeArguments;
 				var targs_definition = target_type_def.TypeParameters;
 
-				if (!type1.IsInterface && !type1.IsDelegate) {
+				if (!type1.IsInterface && !type1.IsDelegate)
+				{
 					return false;
 				}
 
-				for (int i = 0; i < targs_definition.Length; ++i) {
-					if (TypeSpecComparer.IsEqual (t1_targs[i], t2_targs[i]))
+				for (int i = 0; i < targs_definition.Length; ++i)
+				{
+					if (TypeSpecComparer.IsEqual(t1_targs[i], t2_targs[i]))
 						continue;
 
 					Variance v = targs_definition[i].Variance;
-					if (v == Variance.None) {
+					if (v == Variance.None)
+					{
 						return false;
 					}
 
-					if (v == Variance.Covariant) {
-						if (!Convert.ImplicitReferenceConversionExists (t1_targs[i], t2_targs[i]))
+					if (v == Variance.Covariant)
+					{
+						if (!Convert.ImplicitReferenceConversionExists(t1_targs[i], t2_targs[i]))
 							return false;
-					} else if (!Convert.ImplicitReferenceConversionExists (t2_targs[i], t1_targs[i])) {
+					}
+					else if (!Convert.ImplicitReferenceConversionExists(t2_targs[i], t1_targs[i]))
+					{
 						return false;
 					}
 				}
@@ -1239,13 +1406,16 @@ namespace Mono.CSharp
 			//
 			// Either @a or @b must be generic type
 			//
-			public static bool IsEqual (TypeSpec a, TypeSpec b)
+			public static bool IsEqual(TypeSpec a, TypeSpec b)
 			{
-				if (a.MemberDefinition != b.MemberDefinition) {
+				if (a.MemberDefinition != b.MemberDefinition)
+				{
 					var base_ifaces = a.Interfaces;
-					if (base_ifaces != null) {
-						foreach (var base_iface in base_ifaces) {
-							if (base_iface.Arity > 0 && IsEqual (base_iface, b))
+					if (base_ifaces != null)
+					{
+						foreach (var base_iface in base_ifaces)
+						{
+							if (base_iface.Arity > 0 && IsEqual(base_iface, b))
 								return true;
 						}
 					}
@@ -1255,25 +1425,27 @@ namespace Mono.CSharp
 
 				var ta = a.TypeArguments;
 				var tb = b.TypeArguments;
-				for (int i = 0; i < ta.Length; i++) {
-					if (!MayBecomeEqualGenericTypes (ta[i], tb[i]))
+				for (int i = 0; i < ta.Length; i++)
+				{
+					if (!MayBecomeEqualGenericTypes(ta[i], tb[i]))
 						return false;
 				}
 
 				if (a.IsNested && b.IsNested)
-					return IsEqual (a.DeclaringType, b.DeclaringType);
+					return IsEqual(a.DeclaringType, b.DeclaringType);
 
 				return true;
 			}
 
-			static bool ContainsTypeParameter (TypeSpec tparam, TypeSpec type)
+			private static bool ContainsTypeParameter(TypeSpec tparam, TypeSpec type)
 			{
 				TypeSpec[] targs = type.TypeArguments;
-				for (int i = 0; i < targs.Length; i++) {
+				for (int i = 0; i < targs.Length; i++)
+				{
 					if (tparam == targs[i])
 						return true;
 
-					if (ContainsTypeParameter (tparam, targs[i]))
+					if (ContainsTypeParameter(tparam, targs[i]))
 						return true;
 				}
 
@@ -1284,9 +1456,10 @@ namespace Mono.CSharp
 			///   Check whether `a' and `b' may become equal generic types.
 			///   The algorithm to do that is a little bit complicated.
 			/// </summary>
-			static bool MayBecomeEqualGenericTypes (TypeSpec a, TypeSpec b)
+			private static bool MayBecomeEqualGenericTypes(TypeSpec a, TypeSpec b)
 			{
-				if (a.IsGenericParameter) {
+				if (a.IsGenericParameter)
+				{
 					//
 					// If a is an array of a's type, they may never
 					// become equal.
@@ -1300,7 +1473,7 @@ namespace Mono.CSharp
 					//
 					//    class X<T,U> : I<T>, I<U>
 					//    class X<T> : I<T>, I<float>
-					// 
+					//
 					if (b.IsGenericParameter)
 						return a != b && a.DeclaringType == b.DeclaringType;
 
@@ -1317,11 +1490,11 @@ namespace Mono.CSharp
 					//    class X<T> : I<T>, I<X<T>> -> ok
 					//
 
-					return !ContainsTypeParameter (a, b);
+					return !ContainsTypeParameter(a, b);
 				}
 
 				if (b.IsGenericParameter)
-					return MayBecomeEqualGenericTypes (b, a);
+					return MayBecomeEqualGenericTypes(b, a);
 
 				//
 				// At this point, neither a nor b are a type parameter.
@@ -1330,19 +1503,20 @@ namespace Mono.CSharp
 				// other one is not a generic instance, they can never
 				// become equal).
 				//
-				if (TypeManager.IsGenericType (a) || TypeManager.IsGenericType (b))
-					return IsEqual (a, b);
+				if (TypeManager.IsGenericType(a) || TypeManager.IsGenericType(b))
+					return IsEqual(a, b);
 
 				//
 				// If both of them are arrays.
 				//
 				var a_ac = a as ArrayContainer;
-				if (a_ac != null) {
+				if (a_ac != null)
+				{
 					var b_ac = b as ArrayContainer;
 					if (b_ac == null || a_ac.Rank != b_ac.Rank)
 						return false;
 
-					return MayBecomeEqualGenericTypes (a_ac.Element, b_ac.Element);
+					return MayBecomeEqualGenericTypes(a_ac.Element, b_ac.Element);
 				}
 
 				//
@@ -1352,7 +1526,7 @@ namespace Mono.CSharp
 			}
 		}
 
-		public static bool Equals (TypeSpec[] x, TypeSpec[] y)
+		public static bool Equals(TypeSpec[] x, TypeSpec[] y)
 		{
 			if (x == y)
 				return true;
@@ -1361,7 +1535,7 @@ namespace Mono.CSharp
 				return false;
 
 			for (int i = 0; i < x.Length; ++i)
-				if (!IsEqual (x[i], y[i]))
+				if (!IsEqual(x[i], y[i]))
 					return false;
 
 			return true;
@@ -1373,9 +1547,10 @@ namespace Mono.CSharp
 		// Default reference comparison, it has to be used when comparing
 		// two possible dynamic/internal types
 		//
-		public static bool IsEqual (TypeSpec a, TypeSpec b)
+		public static bool IsEqual(TypeSpec a, TypeSpec b)
 		{
-			if (a == b) {
+			if (a == b)
+			{
 				// This also rejects dynamic == dynamic
 				return a.Kind != MemberKind.InternalCompilerType || a.BuiltinType == BuiltinTypeSpec.Type.Dynamic;
 			}
@@ -1383,16 +1558,18 @@ namespace Mono.CSharp
 			if (a == null || b == null)
 				return false;
 
-			if (a.IsArray) {
-				var a_a = (ArrayContainer) a;
+			if (a.IsArray)
+			{
+				var a_a = (ArrayContainer)a;
 				var b_a = b as ArrayContainer;
 				if (b_a == null)
 					return false;
 
-				return a_a.Rank == b_a.Rank && IsEqual (a_a.Element, b_a.Element);
+				return a_a.Rank == b_a.Rank && IsEqual(a_a.Element, b_a.Element);
 			}
 
-			if (!a.IsGeneric || !b.IsGeneric) {
+			if (!a.IsGeneric || !b.IsGeneric)
+			{
 				//
 				// object and dynamic are considered equivalent there is an identity conversion
 				// between object and dynamic, and between constructed types that are the same
@@ -1407,8 +1584,9 @@ namespace Mono.CSharp
 			if (a.MemberDefinition != b.MemberDefinition)
 				return false;
 
-			do {
-				if (!Equals (a.TypeArguments, b.TypeArguments))
+			do
+			{
+				if (!Equals(a.TypeArguments, b.TypeArguments))
 					return false;
 
 				a = a.DeclaringType;
@@ -1430,27 +1608,31 @@ namespace Mono.CSharp
 		int TypeParametersCount { get; }
 		TypeParameterSpec[] TypeParameters { get; }
 
-		TypeSpec GetAttributeCoClass ();
-		string GetAttributeDefaultMember ();
-		AttributeUsageAttribute GetAttributeUsage (PredefinedAttribute pa);
-		bool IsInternalAsPublic (IAssemblyDefinition assembly);
-		void LoadMembers (TypeSpec declaringType, bool onlyTypes, ref MemberCache cache);
+		TypeSpec GetAttributeCoClass();
+
+		string GetAttributeDefaultMember();
+
+		AttributeUsageAttribute GetAttributeUsage(PredefinedAttribute pa);
+
+		bool IsInternalAsPublic(IAssemblyDefinition assembly);
+
+		void LoadMembers(TypeSpec declaringType, bool onlyTypes, ref MemberCache cache);
 	}
 
-	class InternalType : TypeSpec, ITypeDefinition
+	internal class InternalType : TypeSpec, ITypeDefinition
 	{
-		public static readonly InternalType AnonymousMethod = new InternalType ("anonymous method");
-		public static readonly InternalType Arglist = new InternalType ("__arglist");
-		public static readonly InternalType MethodGroup = new InternalType ("method group");
-		public static readonly InternalType NullLiteral = new InternalType ("null");
-		public static readonly InternalType FakeInternalType = new InternalType ("<fake$type>");
-		public static readonly InternalType Namespace = new InternalType ("<namespace>");
-		public static readonly InternalType ErrorType = new InternalType ("<error>");
+		public static readonly InternalType AnonymousMethod = new InternalType("anonymous method");
+		public static readonly InternalType Arglist = new InternalType("__arglist");
+		public static readonly InternalType MethodGroup = new InternalType("method group");
+		public static readonly InternalType NullLiteral = new InternalType("null");
+		public static readonly InternalType FakeInternalType = new InternalType("<fake$type>");
+		public static readonly InternalType Namespace = new InternalType("<namespace>");
+		public static readonly InternalType ErrorType = new InternalType("<error>");
 
-		readonly string name;
+		private readonly string name;
 
-		InternalType (string name)
-			: base (MemberKind.InternalCompilerType, null, null, null, Modifiers.PUBLIC)
+		private InternalType(string name)
+			: base(MemberKind.InternalCompilerType, null, null, null, Modifiers.PUBLIC)
 		{
 			this.name = name;
 			this.definition = this;
@@ -1462,131 +1644,155 @@ namespace Mono.CSharp
 
 		#region Properties
 
-		public override int Arity {
-			get {
+		public override int Arity
+		{
+			get
+			{
 				return 0;
 			}
 		}
 
-		IAssemblyDefinition ITypeDefinition.DeclaringAssembly {
-			get {
-				throw new NotImplementedException ();
+		IAssemblyDefinition ITypeDefinition.DeclaringAssembly
+		{
+			get
+			{
+				throw new NotImplementedException();
 			}
 		}
 
-		bool ITypeDefinition.IsComImport {
-			get {
+		bool ITypeDefinition.IsComImport
+		{
+			get
+			{
 				return false;
 			}
 		}
 
-		bool IMemberDefinition.IsImported {
-			get {
+		bool IMemberDefinition.IsImported
+		{
+			get
+			{
 				return false;
 			}
 		}
 
-		bool ITypeDefinition.IsPartial {
-			get {
+		bool ITypeDefinition.IsPartial
+		{
+			get
+			{
 				return false;
 			}
 		}
 
-		bool ITypeDefinition.IsTypeForwarder {
-			get {
+		bool ITypeDefinition.IsTypeForwarder
+		{
+			get
+			{
 				return false;
 			}
 		}
 
-		bool ITypeDefinition.IsCyclicTypeForwarder {
-			get {
+		bool ITypeDefinition.IsCyclicTypeForwarder
+		{
+			get
+			{
 				return false;
 			}
 		}
 
-		public override string Name {
-			get {
+		public override string Name
+		{
+			get
+			{
 				return name;
 			}
 		}
 
-		string ITypeDefinition.Namespace {
-			get {
+		string ITypeDefinition.Namespace
+		{
+			get
+			{
 				return null;
 			}
 		}
 
-		int ITypeDefinition.TypeParametersCount {
-			get {
+		int ITypeDefinition.TypeParametersCount
+		{
+			get
+			{
 				return 0;
 			}
 		}
 
-		TypeParameterSpec[] ITypeDefinition.TypeParameters {
-			get {
+		TypeParameterSpec[] ITypeDefinition.TypeParameters
+		{
+			get
+			{
 				return null;
 			}
 		}
 
-		#endregion
+		#endregion Properties
 
-		public override string GetSignatureForError ()
+		public override string GetSignatureForError()
 		{
 			return name;
 		}
 
 		#region ITypeDefinition Members
 
-		TypeSpec ITypeDefinition.GetAttributeCoClass ()
+		TypeSpec ITypeDefinition.GetAttributeCoClass()
 		{
 			return null;
 		}
 
-		string ITypeDefinition.GetAttributeDefaultMember ()
+		string ITypeDefinition.GetAttributeDefaultMember()
 		{
 			return null;
 		}
 
-		AttributeUsageAttribute ITypeDefinition.GetAttributeUsage (PredefinedAttribute pa)
+		AttributeUsageAttribute ITypeDefinition.GetAttributeUsage(PredefinedAttribute pa)
 		{
 			return null;
 		}
 
-		bool ITypeDefinition.IsInternalAsPublic (IAssemblyDefinition assembly)
+		bool ITypeDefinition.IsInternalAsPublic(IAssemblyDefinition assembly)
 		{
-			throw new NotImplementedException ();
+			throw new NotImplementedException();
 		}
 
-		void ITypeDefinition.LoadMembers (TypeSpec declaringType, bool onlyTypes, ref MemberCache cache)
+		void ITypeDefinition.LoadMembers(TypeSpec declaringType, bool onlyTypes, ref MemberCache cache)
 		{
-			throw new NotImplementedException ();
+			throw new NotImplementedException();
 		}
 
-		string[] IMemberDefinition.ConditionalConditions ()
-		{
-			return null;
-		}
-
-		ObsoleteAttribute IMemberDefinition.GetAttributeObsolete ()
+		string[] IMemberDefinition.ConditionalConditions()
 		{
 			return null;
 		}
 
-		bool? IMemberDefinition.CLSAttributeValue {
-			get {
+		ObsoleteAttribute IMemberDefinition.GetAttributeObsolete()
+		{
+			return null;
+		}
+
+		bool? IMemberDefinition.CLSAttributeValue
+		{
+			get
+			{
 				return null;
 			}
 		}
 
-		void IMemberDefinition.SetIsAssigned ()
+		void IMemberDefinition.SetIsAssigned()
 		{
 		}
 
-		void IMemberDefinition.SetIsUsed ()
+		void IMemberDefinition.SetIsUsed()
 		{
 		}
 
-		#endregion
+		#endregion ITypeDefinition Members
 	}
 
 	//
@@ -1594,8 +1800,8 @@ namespace Mono.CSharp
 	//
 	public abstract class ElementTypeSpec : TypeSpec, ITypeDefinition
 	{
-		protected ElementTypeSpec (MemberKind kind, TypeSpec element, MetaType info)
-			: base (kind, element.DeclaringType, null, info, element.Modifiers)
+		protected ElementTypeSpec(MemberKind kind, TypeSpec element, MetaType info)
+			: base(kind, element.DeclaringType, null, info, element.Modifiers)
 		{
 			this.Element = element;
 
@@ -1616,65 +1822,75 @@ namespace Mono.CSharp
 
 		public TypeSpec Element { get; private set; }
 
-		bool ITypeDefinition.IsComImport {
-			get {
-				return false;
-			}
-		}
-
-		bool ITypeDefinition.IsPartial {
-			get {
-				return false;
-			}
-		}
-
-		bool ITypeDefinition.IsTypeForwarder {
-			get {
-				return false;
-			}
-		}
-
-		bool ITypeDefinition.IsCyclicTypeForwarder {
-			get {
-				return false;
-			}
-		}
-
-		public override string Name {
-			get {
-				throw new NotSupportedException ();
-			}
-		}
-
-		#endregion
-
-		public override ObsoleteAttribute GetAttributeObsolete ()
+		bool ITypeDefinition.IsComImport
 		{
-			return Element.GetAttributeObsolete ();
+			get
+			{
+				return false;
+			}
 		}
 
-		protected virtual string GetPostfixSignature ()
+		bool ITypeDefinition.IsPartial
+		{
+			get
+			{
+				return false;
+			}
+		}
+
+		bool ITypeDefinition.IsTypeForwarder
+		{
+			get
+			{
+				return false;
+			}
+		}
+
+		bool ITypeDefinition.IsCyclicTypeForwarder
+		{
+			get
+			{
+				return false;
+			}
+		}
+
+		public override string Name
+		{
+			get
+			{
+				throw new NotSupportedException();
+			}
+		}
+
+		#endregion Properties
+
+		public override ObsoleteAttribute GetAttributeObsolete()
+		{
+			return Element.GetAttributeObsolete();
+		}
+
+		protected virtual string GetPostfixSignature()
 		{
 			return null;
 		}
 
-		public override string GetSignatureForDocumentation ()
+		public override string GetSignatureForDocumentation()
 		{
-			return Element.GetSignatureForDocumentation () + GetPostfixSignature ();
+			return Element.GetSignatureForDocumentation() + GetPostfixSignature();
 		}
 
-		public override string GetSignatureForError ()
+		public override string GetSignatureForError()
 		{
-			return Element.GetSignatureForError () + GetPostfixSignature ();
+			return Element.GetSignatureForError() + GetPostfixSignature();
 		}
 
-		public override TypeSpec Mutate (TypeParameterMutator mutator)
+		public override TypeSpec Mutate(TypeParameterMutator mutator)
 		{
-			var me = Element.Mutate (mutator);
+			var me = Element.Mutate(mutator);
 			if (me == Element)
 				return this;
 
-			var mutated = (ElementTypeSpec) MemberwiseClone ();
+			var mutated = (ElementTypeSpec)MemberwiseClone();
 			mutated.Element = me;
 			mutated.info = null;
 			return mutated;
@@ -1682,195 +1898,209 @@ namespace Mono.CSharp
 
 		#region ITypeDefinition Members
 
-		IAssemblyDefinition ITypeDefinition.DeclaringAssembly {
-			get {
+		IAssemblyDefinition ITypeDefinition.DeclaringAssembly
+		{
+			get
+			{
 				return Element.MemberDefinition.DeclaringAssembly;
 			}
 		}
 
-		bool ITypeDefinition.IsInternalAsPublic (IAssemblyDefinition assembly)
+		bool ITypeDefinition.IsInternalAsPublic(IAssemblyDefinition assembly)
 		{
-			return Element.MemberDefinition.IsInternalAsPublic (assembly);
+			return Element.MemberDefinition.IsInternalAsPublic(assembly);
 		}
 
-		public string Namespace {
-			get { throw new NotImplementedException (); }
+		public string Namespace
+		{
+			get { throw new NotImplementedException(); }
 		}
 
-		public int TypeParametersCount {
-			get {
+		public int TypeParametersCount
+		{
+			get
+			{
 				return 0;
 			}
 		}
 
-		public TypeParameterSpec[] TypeParameters {
-			get {
-				throw new NotSupportedException ();
+		public TypeParameterSpec[] TypeParameters
+		{
+			get
+			{
+				throw new NotSupportedException();
 			}
 		}
 
-		public TypeSpec GetAttributeCoClass ()
+		public TypeSpec GetAttributeCoClass()
 		{
-			return Element.MemberDefinition.GetAttributeCoClass ();
+			return Element.MemberDefinition.GetAttributeCoClass();
 		}
 
-		public string GetAttributeDefaultMember ()
+		public string GetAttributeDefaultMember()
 		{
-			return Element.MemberDefinition.GetAttributeDefaultMember ();
+			return Element.MemberDefinition.GetAttributeDefaultMember();
 		}
 
-		public void LoadMembers (TypeSpec declaringType, bool onlyTypes, ref MemberCache cache)
+		public void LoadMembers(TypeSpec declaringType, bool onlyTypes, ref MemberCache cache)
 		{
-			Element.MemberDefinition.LoadMembers (declaringType, onlyTypes, ref cache);
+			Element.MemberDefinition.LoadMembers(declaringType, onlyTypes, ref cache);
 		}
 
-		public bool IsImported {
-			get {
+		public bool IsImported
+		{
+			get
+			{
 				return Element.MemberDefinition.IsImported;
 			}
 		}
 
-		public string[] ConditionalConditions ()
+		public string[] ConditionalConditions()
 		{
-			return Element.MemberDefinition.ConditionalConditions ();
+			return Element.MemberDefinition.ConditionalConditions();
 		}
 
-		bool? IMemberDefinition.CLSAttributeValue {
-			get {
+		bool? IMemberDefinition.CLSAttributeValue
+		{
+			get
+			{
 				return Element.MemberDefinition.CLSAttributeValue;
 			}
 		}
 
-		public void SetIsAssigned ()
+		public void SetIsAssigned()
 		{
-			Element.MemberDefinition.SetIsAssigned ();
+			Element.MemberDefinition.SetIsAssigned();
 		}
 
-		public void SetIsUsed ()
+		public void SetIsUsed()
 		{
-			Element.MemberDefinition.SetIsUsed ();
+			Element.MemberDefinition.SetIsUsed();
 		}
 
-		#endregion
+		#endregion ITypeDefinition Members
 	}
 
 	public class ArrayContainer : ElementTypeSpec
 	{
 		public struct TypeRankPair : IEquatable<TypeRankPair>
 		{
-			TypeSpec ts;
-			int rank;
+			private TypeSpec ts;
+			private int rank;
 
-			public TypeRankPair (TypeSpec ts, int rank)
+			public TypeRankPair(TypeSpec ts, int rank)
 			{
 				this.ts = ts;
 				this.rank = rank;
 			}
 
-			public override int GetHashCode ()
+			public override int GetHashCode()
 			{
-				return ts.GetHashCode () ^ rank.GetHashCode ();
+				return ts.GetHashCode() ^ rank.GetHashCode();
 			}
 
 			#region IEquatable<Tuple<T1,T2>> Members
 
-			public bool Equals (TypeRankPair other)
+			public bool Equals(TypeRankPair other)
 			{
 				return other.ts == ts && other.rank == rank;
 			}
 
-			#endregion
+			#endregion IEquatable<Tuple<T1,T2>> Members
 		}
 
-		readonly int rank;
-		readonly ModuleContainer module;
+		private readonly int rank;
+		private readonly ModuleContainer module;
 
-		private ArrayContainer (ModuleContainer module, TypeSpec element, int rank)
-			: base (MemberKind.ArrayType, element, null)
+		private ArrayContainer(ModuleContainer module, TypeSpec element, int rank)
+			: base(MemberKind.ArrayType, element, null)
 		{
 			this.module = module;
 			this.rank = rank;
 		}
 
-		public int Rank {
-			get {
+		public int Rank
+		{
+			get
+			{
 				return rank;
 			}
 		}
 
-		public MethodInfo GetConstructor ()
+		public MethodInfo GetConstructor()
 		{
 			var mb = module.Builder;
 
 			var arg_types = new MetaType[rank];
 			for (int i = 0; i < rank; i++)
-				arg_types[i] = module.Compiler.BuiltinTypes.Int.GetMetaInfo ();
+				arg_types[i] = module.Compiler.BuiltinTypes.Int.GetMetaInfo();
 
-			var ctor = mb.GetArrayMethod (
-				GetMetaInfo (), Constructor.ConstructorName,
+			var ctor = mb.GetArrayMethod(
+				GetMetaInfo(), Constructor.ConstructorName,
 				CallingConventions.HasThis,
 				null, arg_types);
 
 			return ctor;
 		}
 
-		public MethodInfo GetAddressMethod ()
+		public MethodInfo GetAddressMethod()
 		{
 			var mb = module.Builder;
 
 			var arg_types = new MetaType[rank];
 			for (int i = 0; i < rank; i++)
-				arg_types[i] = module.Compiler.BuiltinTypes.Int.GetMetaInfo ();
+				arg_types[i] = module.Compiler.BuiltinTypes.Int.GetMetaInfo();
 
-			var address = mb.GetArrayMethod (
-				GetMetaInfo (), "Address",
+			var address = mb.GetArrayMethod(
+				GetMetaInfo(), "Address",
 				CallingConventions.HasThis | CallingConventions.Standard,
-				ReferenceContainer.MakeType (module, Element).GetMetaInfo (), arg_types);
+				ReferenceContainer.MakeType(module, Element).GetMetaInfo(), arg_types);
 
 			return address;
 		}
 
-		public MethodInfo GetGetMethod ()
+		public MethodInfo GetGetMethod()
 		{
 			var mb = module.Builder;
 
 			var arg_types = new MetaType[rank];
 			for (int i = 0; i < rank; i++)
-				arg_types[i] = module.Compiler.BuiltinTypes.Int.GetMetaInfo ();
+				arg_types[i] = module.Compiler.BuiltinTypes.Int.GetMetaInfo();
 
-			var get = mb.GetArrayMethod (
-				GetMetaInfo (), "Get",
+			var get = mb.GetArrayMethod(
+				GetMetaInfo(), "Get",
 				CallingConventions.HasThis | CallingConventions.Standard,
-				Element.GetMetaInfo (), arg_types);
+				Element.GetMetaInfo(), arg_types);
 
 			return get;
 		}
 
-		public MethodInfo GetSetMethod ()
+		public MethodInfo GetSetMethod()
 		{
 			var mb = module.Builder;
 
 			var arg_types = new MetaType[rank + 1];
 			for (int i = 0; i < rank; i++)
-				arg_types[i] = module.Compiler.BuiltinTypes.Int.GetMetaInfo ();
+				arg_types[i] = module.Compiler.BuiltinTypes.Int.GetMetaInfo();
 
-			arg_types[rank] = Element.GetMetaInfo ();
+			arg_types[rank] = Element.GetMetaInfo();
 
-			var set = mb.GetArrayMethod (
-				GetMetaInfo (), "Set",
+			var set = mb.GetArrayMethod(
+				GetMetaInfo(), "Set",
 				CallingConventions.HasThis | CallingConventions.Standard,
-				module.Compiler.BuiltinTypes.Void.GetMetaInfo (), arg_types);
+				module.Compiler.BuiltinTypes.Void.GetMetaInfo(), arg_types);
 
 			return set;
 		}
 
-		public override MetaType GetMetaInfo ()
+		public override MetaType GetMetaInfo()
 		{
-			if (info == null) {
+			if (info == null)
+			{
 				if (rank == 1)
-					info = Element.GetMetaInfo ().MakeArrayType ();
+					info = Element.GetMetaInfo().MakeArrayType();
 				else
-					info = Element.GetMetaInfo ().MakeArrayType (rank);
+					info = Element.GetMetaInfo().MakeArrayType(rank);
 			}
 
 			return info;
@@ -1878,113 +2108,119 @@ namespace Mono.CSharp
 
 		protected override string GetPostfixSignature()
 		{
-			return GetPostfixSignature (rank);
+			return GetPostfixSignature(rank);
 		}
 
-		public static string GetPostfixSignature (int rank)
+		public static string GetPostfixSignature(int rank)
 		{
-			StringBuilder sb = new StringBuilder ();
-			sb.Append ("[");
-			for (int i = 1; i < rank; i++) {
-				sb.Append (",");
+			StringBuilder sb = new StringBuilder();
+			sb.Append("[");
+			for (int i = 1; i < rank; i++)
+			{
+				sb.Append(",");
 			}
-			sb.Append ("]");
+			sb.Append("]");
 
-			return sb.ToString ();
+			return sb.ToString();
 		}
 
-		public override string GetSignatureForDocumentation ()
+		public override string GetSignatureForDocumentation()
 		{
-			StringBuilder sb = new StringBuilder ();
-			GetElementSignatureForDocumentation (sb);
-			return sb.ToString ();
+			StringBuilder sb = new StringBuilder();
+			GetElementSignatureForDocumentation(sb);
+			return sb.ToString();
 		}
 
-		void GetElementSignatureForDocumentation (StringBuilder sb)
+		private void GetElementSignatureForDocumentation(StringBuilder sb)
 		{
 			var ac = Element as ArrayContainer;
 			if (ac == null)
-				sb.Append (Element.GetSignatureForDocumentation ());
+				sb.Append(Element.GetSignatureForDocumentation());
 			else
-				ac.GetElementSignatureForDocumentation (sb);
+				ac.GetElementSignatureForDocumentation(sb);
 
-			sb.Append ("[");
-			for (int i = 1; i < rank; i++) {
+			sb.Append("[");
+			for (int i = 1; i < rank; i++)
+			{
 				if (i == 1)
-					sb.Append ("0:");
+					sb.Append("0:");
 
-				sb.Append (",0:");
+				sb.Append(",0:");
 			}
-			sb.Append ("]");
+			sb.Append("]");
 		}
 
-		public static ArrayContainer MakeType (ModuleContainer module, TypeSpec element)
+		public static ArrayContainer MakeType(ModuleContainer module, TypeSpec element)
 		{
-			return MakeType (module, element, 1);
+			return MakeType(module, element, 1);
 		}
 
-		public static ArrayContainer MakeType (ModuleContainer module, TypeSpec element, int rank)
+		public static ArrayContainer MakeType(ModuleContainer module, TypeSpec element, int rank)
 		{
 			ArrayContainer ac;
-			var key = new TypeRankPair (element, rank);
-			if (!module.ArrayTypesCache.TryGetValue (key, out ac)) {
-				ac = new ArrayContainer (module, element, rank);
+			var key = new TypeRankPair(element, rank);
+			if (!module.ArrayTypesCache.TryGetValue(key, out ac))
+			{
+				ac = new ArrayContainer(module, element, rank);
 				ac.BaseType = module.Compiler.BuiltinTypes.Array;
 				ac.Interfaces = ac.BaseType.Interfaces;
 
-				module.ArrayTypesCache.Add (key, ac);
+				module.ArrayTypesCache.Add(key, ac);
 			}
 
 			return ac;
 		}
 
-		public override List<MissingTypeSpecReference> ResolveMissingDependencies (MemberSpec caller)
+		public override List<MissingTypeSpecReference> ResolveMissingDependencies(MemberSpec caller)
 		{
-			return Element.ResolveMissingDependencies (caller);
+			return Element.ResolveMissingDependencies(caller);
 		}
 	}
 
-	class ReferenceContainer : ElementTypeSpec
+	internal class ReferenceContainer : ElementTypeSpec
 	{
-		private ReferenceContainer (TypeSpec element)
-			: base (MemberKind.Class, element, null)	// TODO: Kind.Class is most likely wrong
+		private ReferenceContainer(TypeSpec element)
+			: base(MemberKind.Class, element, null) // TODO: Kind.Class is most likely wrong
 		{
 		}
 
-		public override MetaType GetMetaInfo ()
+		public override MetaType GetMetaInfo()
 		{
-			if (info == null) {
-				info = Element.GetMetaInfo ().MakeByRefType ();
+			if (info == null)
+			{
+				info = Element.GetMetaInfo().MakeByRefType();
 			}
 
 			return info;
 		}
 
-		public static ReferenceContainer MakeType (ModuleContainer module, TypeSpec element)
+		public static ReferenceContainer MakeType(ModuleContainer module, TypeSpec element)
 		{
 			ReferenceContainer pc;
-			if (!module.ReferenceTypesCache.TryGetValue (element, out pc)) {
-				pc = new ReferenceContainer (element);
-				module.ReferenceTypesCache.Add (element, pc);
+			if (!module.ReferenceTypesCache.TryGetValue(element, out pc))
+			{
+				pc = new ReferenceContainer(element);
+				module.ReferenceTypesCache.Add(element, pc);
 			}
 
 			return pc;
 		}
 	}
 
-	class PointerContainer : ElementTypeSpec
+	internal class PointerContainer : ElementTypeSpec
 	{
-		private PointerContainer (TypeSpec element)
-			: base (MemberKind.PointerType, element, null)
+		private PointerContainer(TypeSpec element)
+			: base(MemberKind.PointerType, element, null)
 		{
 			// It's never CLS-Compliant
 			state &= ~StateFlags.CLSCompliant_Undetected;
 		}
 
-		public override MetaType GetMetaInfo ()
+		public override MetaType GetMetaInfo()
 		{
-			if (info == null) {
-				info = Element.GetMetaInfo ().MakePointerType ();
+			if (info == null)
+			{
+				info = Element.GetMetaInfo().MakePointerType();
 			}
 
 			return info;
@@ -1992,15 +2228,16 @@ namespace Mono.CSharp
 
 		protected override string GetPostfixSignature()
 		{
- 			return "*";
+			return "*";
 		}
 
-		public static PointerContainer MakeType (ModuleContainer module, TypeSpec element)
+		public static PointerContainer MakeType(ModuleContainer module, TypeSpec element)
 		{
 			PointerContainer pc;
-			if (!module.PointerTypesCache.TryGetValue (element, out pc)) {
-				pc = new PointerContainer (element);
-				module.PointerTypesCache.Add (element, pc);
+			if (!module.PointerTypesCache.TryGetValue(element, out pc))
+			{
+				pc = new PointerContainer(element);
+				module.PointerTypesCache.Add(element, pc);
 			}
 
 			return pc;
@@ -2009,7 +2246,7 @@ namespace Mono.CSharp
 
 	public class MissingTypeSpecReference
 	{
-		public MissingTypeSpecReference (TypeSpec type, MemberSpec caller)
+		public MissingTypeSpecReference(TypeSpec type, MemberSpec caller)
 		{
 			Type = type;
 			Caller = caller;

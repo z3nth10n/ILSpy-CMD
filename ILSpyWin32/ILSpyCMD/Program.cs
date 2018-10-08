@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using ILSpyCMD.API;
 
 namespace ILSpyCMD
 {
@@ -289,6 +290,8 @@ namespace ILSpyCMD
 
 			Console.WriteLine("Decompiling all dll in  " + appPath);
 			Console.WriteLine("Please wait...");
+
+			// Extensions.WriteRead($"Path: {appPath}");
 
 			DirectoryInfo di = new DirectoryInfo(appPath);
 			appPath = di.FullName;

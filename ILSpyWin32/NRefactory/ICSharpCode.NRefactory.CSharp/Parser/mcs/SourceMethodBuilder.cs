@@ -15,10 +15,10 @@
 // distribute, sublicense, and/or sell copies of the Software, and to
 // permit persons to whom the Software is furnished to do so, subject to
 // the following conditions:
-// 
+//
 // The above copyright notice and this permission notice shall be
 // included in all copies or substantial portions of the Software.
-// 
+//
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
 // EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
 // MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -34,157 +34,171 @@ namespace Mono.CompilerServices.SymbolWriter
 {
 	public class SourceMethodBuilder
 	{
-		List<LocalVariableEntry> _locals;
-		List<CodeBlockEntry> _blocks;
-		List<ScopeVariable> _scope_vars;
-		Stack<CodeBlockEntry> _block_stack;
-		readonly List<LineNumberEntry> method_lines;
+		private List<LocalVariableEntry> _locals;
+		private List<CodeBlockEntry> _blocks;
+		private List<ScopeVariable> _scope_vars;
+		private Stack<CodeBlockEntry> _block_stack;
+		private readonly List<LineNumberEntry> method_lines;
 
-		readonly ICompileUnit _comp_unit;
-		readonly int ns_id;
-		readonly IMethodDef method;
+		private readonly ICompileUnit _comp_unit;
+		private readonly int ns_id;
+		private readonly IMethodDef method;
 
-		public SourceMethodBuilder (ICompileUnit comp_unit)
+		public SourceMethodBuilder(ICompileUnit comp_unit)
 		{
 			this._comp_unit = comp_unit;
-			method_lines = new List<LineNumberEntry> ();
+			method_lines = new List<LineNumberEntry>();
 		}
 
-		public SourceMethodBuilder (ICompileUnit comp_unit, int ns_id, IMethodDef method)
-			: this (comp_unit)
+		public SourceMethodBuilder(ICompileUnit comp_unit, int ns_id, IMethodDef method)
+			: this(comp_unit)
 		{
 			this.ns_id = ns_id;
 			this.method = method;
 		}
 
-		public void MarkSequencePoint (int offset, SourceFileEntry file, int line, int column, bool is_hidden)
+		public void MarkSequencePoint(int offset, SourceFileEntry file, int line, int column, bool is_hidden)
 		{
-			MarkSequencePoint (offset, file, line, column, -1, -1, is_hidden);
+			MarkSequencePoint(offset, file, line, column, -1, -1, is_hidden);
 		}
 
-		public void MarkSequencePoint (int offset, SourceFileEntry file, int line, int column, int end_line, int end_column, bool is_hidden)
+		public void MarkSequencePoint(int offset, SourceFileEntry file, int line, int column, int end_line, int end_column, bool is_hidden)
 		{
 			int file_idx = file != null ? file.Index : 0;
-			var lne = new LineNumberEntry (file_idx, line, column, end_line, end_column, offset, is_hidden);
+			var lne = new LineNumberEntry(file_idx, line, column, end_line, end_column, offset, is_hidden);
 
-			if (method_lines.Count > 0) {
+			if (method_lines.Count > 0)
+			{
 				var prev = method_lines[method_lines.Count - 1];
 
 				//
 				// Same offset cannot be used for multiple lines
-				// 
-				if (prev.Offset == offset) {
+				//
+				if (prev.Offset == offset)
+				{
 					//
 					// Use the new location because debugger will adjust
 					// the breakpoint to next line with sequence point
 					//
-					if (LineNumberEntry.LocationComparer.Default.Compare (lne, prev) > 0)
+					if (LineNumberEntry.LocationComparer.Default.Compare(lne, prev) > 0)
 						method_lines[method_lines.Count - 1] = lne;
 
 					return;
 				}
 			}
 
-			method_lines.Add (lne);
+			method_lines.Add(lne);
 		}
 
-		public void StartBlock (CodeBlockEntry.Type type, int start_offset)
+		public void StartBlock(CodeBlockEntry.Type type, int start_offset)
 		{
-			if (_block_stack == null) {
-				_block_stack = new Stack<CodeBlockEntry> ();
+			if (_block_stack == null)
+			{
+				_block_stack = new Stack<CodeBlockEntry>();
 			}
-			
+
 			if (_blocks == null)
-				_blocks = new List<CodeBlockEntry> ();
+				_blocks = new List<CodeBlockEntry>();
 
 			int parent = CurrentBlock != null ? CurrentBlock.Index : -1;
 
-			CodeBlockEntry block = new CodeBlockEntry (
+			CodeBlockEntry block = new CodeBlockEntry(
 				_blocks.Count + 1, parent, type, start_offset);
 
-			_block_stack.Push (block);
-			_blocks.Add (block);
+			_block_stack.Push(block);
+			_blocks.Add(block);
 		}
 
-		public void EndBlock (int end_offset)
+		public void EndBlock(int end_offset)
 		{
-			CodeBlockEntry block = (CodeBlockEntry) _block_stack.Pop ();
-			block.Close (end_offset);
+			CodeBlockEntry block = (CodeBlockEntry)_block_stack.Pop();
+			block.Close(end_offset);
 		}
 
-		public CodeBlockEntry[] Blocks {
-			get {
+		public CodeBlockEntry[] Blocks
+		{
+			get
+			{
 				if (_blocks == null)
-					return new CodeBlockEntry [0];
+					return new CodeBlockEntry[0];
 
-				CodeBlockEntry[] retval = new CodeBlockEntry [_blocks.Count];
-				_blocks.CopyTo (retval, 0);
+				CodeBlockEntry[] retval = new CodeBlockEntry[_blocks.Count];
+				_blocks.CopyTo(retval, 0);
 				return retval;
 			}
 		}
 
-		public CodeBlockEntry CurrentBlock {
-			get {
+		public CodeBlockEntry CurrentBlock
+		{
+			get
+			{
 				if ((_block_stack != null) && (_block_stack.Count > 0))
-					return (CodeBlockEntry) _block_stack.Peek ();
+					return (CodeBlockEntry)_block_stack.Peek();
 				else
 					return null;
 			}
 		}
 
-		public LocalVariableEntry[] Locals {
-			get {
+		public LocalVariableEntry[] Locals
+		{
+			get
+			{
 				if (_locals == null)
-					return new LocalVariableEntry [0];
-				else {
-					return _locals.ToArray ();
+					return new LocalVariableEntry[0];
+				else
+				{
+					return _locals.ToArray();
 				}
 			}
 		}
 
-		public ICompileUnit SourceFile {
-			get {
+		public ICompileUnit SourceFile
+		{
+			get
+			{
 				return _comp_unit;
 			}
 		}
 
-		public void AddLocal (int index, string name)
+		public void AddLocal(int index, string name)
 		{
 			if (_locals == null)
-				_locals = new List<LocalVariableEntry> ();
+				_locals = new List<LocalVariableEntry>();
 			int block_idx = CurrentBlock != null ? CurrentBlock.Index : 0;
-			_locals.Add (new LocalVariableEntry (index, name, block_idx));
+			_locals.Add(new LocalVariableEntry(index, name, block_idx));
 		}
 
-		public ScopeVariable[] ScopeVariables {
-			get {
+		public ScopeVariable[] ScopeVariables
+		{
+			get
+			{
 				if (_scope_vars == null)
-					return new ScopeVariable [0];
+					return new ScopeVariable[0];
 
-				return _scope_vars.ToArray ();
+				return _scope_vars.ToArray();
 			}
 		}
 
-		public void AddScopeVariable (int scope, int index)
+		public void AddScopeVariable(int scope, int index)
 		{
 			if (_scope_vars == null)
-				_scope_vars = new List<ScopeVariable> ();
-			_scope_vars.Add (
-				new ScopeVariable (scope, index));
+				_scope_vars = new List<ScopeVariable>();
+			_scope_vars.Add(
+				new ScopeVariable(scope, index));
 		}
 
-		public void DefineMethod (MonoSymbolFile file)
+		public void DefineMethod(MonoSymbolFile file)
 		{
-			DefineMethod (file, method.Token);
+			DefineMethod(file, method.Token);
 		}
 
-		public void DefineMethod (MonoSymbolFile file, int token)
+		public void DefineMethod(MonoSymbolFile file, int token)
 		{
-			MethodEntry entry = new MethodEntry (
+			MethodEntry entry = new MethodEntry(
 				file, _comp_unit.Entry, token, ScopeVariables,
-				Locals, method_lines.ToArray (), Blocks, null, MethodEntry.Flags.ColumnsInfoIncluded, ns_id);
+				Locals, method_lines.ToArray(), Blocks, null, MethodEntry.Flags.ColumnsInfoIncluded, ns_id);
 
-			file.AddMethod (entry);
+			file.AddMethod(entry);
 		}
 	}
 }

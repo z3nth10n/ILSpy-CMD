@@ -12,31 +12,30 @@
 //
 
 using System;
-using System.Linq;
-using System.IO;
-using System.Text;
 using System.Collections.Generic;
+using System.Text;
 
-namespace Mono.CSharp {
-
-	sealed class ReferenceEquality<T> : IEqualityComparer<T> where T : class
+namespace Mono.CSharp
+{
+	internal sealed class ReferenceEquality<T> : IEqualityComparer<T> where T : class
 	{
-		public static readonly IEqualityComparer<T> Default = new ReferenceEquality<T> ();
+		public static readonly IEqualityComparer<T> Default = new ReferenceEquality<T>();
 
-		private ReferenceEquality ()
+		private ReferenceEquality()
 		{
 		}
 
-		public bool Equals (T x, T y)
+		public bool Equals(T x, T y)
 		{
-			return ReferenceEquals (x, y);
+			return ReferenceEquals(x, y);
 		}
 
-		public int GetHashCode (T obj)
+		public int GetHashCode(T obj)
 		{
-			return System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode (obj);
+			return System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode(obj);
 		}
 	}
+
 #if !NET_4_0 && !MOBILE_DYNAMIC
 	public class Tuple<T1, T2> : IEquatable<Tuple<T1, T2>>
 	{
@@ -54,7 +53,7 @@ namespace Mono.CSharp {
 			return ((object)Item1 ?? 0) .GetHashCode () ^ ((object)Item2 ?? 0).GetHashCode ();
 		}
 
-		#region IEquatable<Tuple<T1,T2>> Members
+	#region IEquatable<Tuple<T1,T2>> Members
 
 		public bool Equals (Tuple<T1, T2> other)
 		{
@@ -62,7 +61,7 @@ namespace Mono.CSharp {
 				EqualityComparer<T2>.Default.Equals (Item2, other.Item2);
 		}
 
-		#endregion
+	#endregion IEquatable<Tuple<T1,T2>> Members
 	}
 
 	public class Tuple<T1, T2, T3> : IEquatable<Tuple<T1, T2, T3>>
@@ -83,7 +82,7 @@ namespace Mono.CSharp {
 			return Item1.GetHashCode () ^ Item2.GetHashCode () ^ Item3.GetHashCode ();
 		}
 
-		#region IEquatable<Tuple<T1,T2>> Members
+	#region IEquatable<Tuple<T1,T2>> Members
 
 		public bool Equals (Tuple<T1, T2, T3> other)
 		{
@@ -92,7 +91,7 @@ namespace Mono.CSharp {
 				EqualityComparer<T3>.Default.Equals (Item3, other.Item3);
 		}
 
-		#endregion
+	#endregion IEquatable<Tuple<T1,T2>> Members
 	}
 
 	static class Tuple
@@ -109,17 +108,19 @@ namespace Mono.CSharp {
 	}
 #endif
 
-	static class ArrayComparer
+	internal static class ArrayComparer
 	{
-		public static bool IsEqual<T> (T[] array1, T[] array2)
+		public static bool IsEqual<T>(T[] array1, T[] array2)
 		{
 			if (array1 == null || array2 == null)
 				return array1 == array2;
 
 			var eq = EqualityComparer<T>.Default;
 
-			for (int i = 0; i < array1.Length; ++i) {
-				if (!eq.Equals (array1[i], array2[i])) {
+			for (int i = 0; i < array1.Length; ++i)
+			{
+				if (!eq.Equals(array1[i], array2[i]))
+				{
 					return false;
 				}
 			}
@@ -127,6 +128,7 @@ namespace Mono.CSharp {
 			return true;
 		}
 	}
+
 #if !FULL_AST
 	/// <summary>
 	///   This is an arbitrarily seekable StreamReader wrapper.
@@ -241,14 +243,14 @@ namespace Mono.CSharp {
 
 			return pos < char_count;
 		}
-		
+
 		public char GetChar (int position)
 		{
 			if (buffer_start <= position && position < buffer.Length)
 				return buffer[position];
 			return '\0';
 		}
-		
+
 		public char[] ReadChars (int fromPosition, int toPosition)
 		{
 			char[] chars = new char[toPosition - fromPosition];
@@ -279,15 +281,19 @@ namespace Mono.CSharp {
 	}
 #endif
 
-	public class UnixUtils {
-		[System.Runtime.InteropServices.DllImport ("libc", EntryPoint="isatty")]
-		extern static int _isatty (int fd);
-			
-		public static bool isatty (int fd)
+	public class UnixUtils
+	{
+		[System.Runtime.InteropServices.DllImport("libc", EntryPoint = "isatty")]
+		private static extern int _isatty(int fd);
+
+		public static bool isatty(int fd)
 		{
-			try {
-				return _isatty (fd) == 1;
-			} catch {
+			try
+			{
+				return _isatty(fd) == 1;
+			}
+			catch
+			{
 				return false;
 			}
 		}
@@ -301,44 +307,52 @@ namespace Mono.CSharp {
 	///   terminate the completion process by AST nodes used in
 	///   the completion process.
 	/// </remarks>
-	public class CompletionResult : Exception {
-		string [] result;
-		string base_text;
-		
-		public CompletionResult (string base_text, string [] res)
+	public class CompletionResult : Exception
+	{
+		private string[] result;
+		private string base_text;
+
+		public CompletionResult(string base_text, string[] res)
 		{
 			if (base_text == null)
-				throw new ArgumentNullException ("base_text");
+				throw new ArgumentNullException("base_text");
 			this.base_text = base_text;
 
 			result = res;
-			Array.Sort (result);
+			Array.Sort(result);
 		}
 
-		public string [] Result {
-			get {
+		public string[] Result
+		{
+			get
+			{
 				return result;
 			}
 		}
 
-		public string BaseText {
-			get {
+		public string BaseText
+		{
+			get
+			{
 				return base_text;
 			}
 		}
 	}
 
-	struct TypeNameParser
+	internal struct TypeNameParser
 	{
 		internal static string Escape(string name)
 		{
-			if (name == null) {
+			if (name == null)
+			{
 				return null;
 			}
 			StringBuilder sb = null;
-			for (int pos = 0; pos < name.Length; pos++) {
+			for (int pos = 0; pos < name.Length; pos++)
+			{
 				char c = name[pos];
-				switch (c) {
+				switch (c)
+				{
 					case '\\':
 					case '+':
 					case ',':
@@ -346,13 +360,16 @@ namespace Mono.CSharp {
 					case ']':
 					case '*':
 					case '&':
-						if (sb == null) {
+						if (sb == null)
+						{
 							sb = new StringBuilder(name, 0, pos, name.Length + 3);
 						}
 						sb.Append("\\").Append(c);
 						break;
+
 					default:
-						if (sb != null) {
+						if (sb != null)
+						{
 							sb.Append(c);
 						}
 						break;

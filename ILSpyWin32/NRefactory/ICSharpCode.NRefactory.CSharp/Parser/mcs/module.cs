@@ -14,15 +14,16 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
-using Mono.CompilerServices.SymbolWriter;
 using System.Linq;
 
 #if STATIC
 using IKVM.Reflection;
 using IKVM.Reflection.Emit;
 #else
+
 using System.Reflection;
 using System.Reflection.Emit;
+
 #endif
 
 namespace Mono.CSharp
@@ -107,127 +108,126 @@ namespace Mono.CSharp
 
 		public sealed class PatternMatchingHelper : CompilerGeneratedContainer
 		{
-			public PatternMatchingHelper (ModuleContainer module)
-				: base (module, new MemberName ("<PatternMatchingHelper>", Location.Null),
+			public PatternMatchingHelper(ModuleContainer module)
+				: base(module, new MemberName("<PatternMatchingHelper>", Location.Null),
 					Modifiers.STATIC | Modifiers.INTERNAL | Modifiers.DEBUGGER_HIDDEN)
 			{
 			}
 
 			public Method NumberMatcher { get; private set; }
 
-			protected override bool DoDefineMembers ()
+			protected override bool DoDefineMembers()
 			{
-				if (!base.DoDefineMembers ())
+				if (!base.DoDefineMembers())
 					return false;
 
-				NumberMatcher = GenerateNumberMatcher ();
+				NumberMatcher = GenerateNumberMatcher();
 				return true;
 			}
 
-			Method GenerateNumberMatcher ()
+			private Method GenerateNumberMatcher()
 			{
 				var loc = Location;
-				var parameters = ParametersCompiled.CreateFullyResolved (
-					new [] {
+				var parameters = ParametersCompiled.CreateFullyResolved(
+					new[] {
 						new Parameter (new TypeExpression (Compiler.BuiltinTypes.Object, loc), "obj", 0, null, loc),
 						new Parameter (new TypeExpression (Compiler.BuiltinTypes.Object, loc), "value", 0, null, loc),
 						new Parameter (new TypeExpression (Compiler.BuiltinTypes.Bool, loc), "enumType", 0, null, loc),
 					},
-					new [] {
+					new[] {
 						Compiler.BuiltinTypes.Object,
 						Compiler.BuiltinTypes.Object,
 						Compiler.BuiltinTypes.Bool
 					});
 
-				var m = new Method (this, new TypeExpression (Compiler.BuiltinTypes.Bool, loc),
-					Modifiers.PUBLIC | Modifiers.STATIC | Modifiers.DEBUGGER_HIDDEN, new MemberName ("NumberMatcher", loc),
+				var m = new Method(this, new TypeExpression(Compiler.BuiltinTypes.Bool, loc),
+					Modifiers.PUBLIC | Modifiers.STATIC | Modifiers.DEBUGGER_HIDDEN, new MemberName("NumberMatcher", loc),
 					parameters, null);
 
-				parameters [0].Resolve (m, 0);
-				parameters [1].Resolve (m, 1);
-				parameters [2].Resolve (m, 2);
+				parameters[0].Resolve(m, 0);
+				parameters[1].Resolve(m, 1);
+				parameters[2].Resolve(m, 2);
 
-				ToplevelBlock top_block = new ToplevelBlock (Compiler, parameters, loc);
+				ToplevelBlock top_block = new ToplevelBlock(Compiler, parameters, loc);
 				m.Block = top_block;
 
 				//
 				// if (enumType)
 				//		return Equals (obj, value);
 				//
-				var equals_args = new Arguments (2);
-				equals_args.Add (new Argument (top_block.GetParameterReference (0, loc)));
-				equals_args.Add (new Argument (top_block.GetParameterReference (1, loc)));
+				var equals_args = new Arguments(2);
+				equals_args.Add(new Argument(top_block.GetParameterReference(0, loc)));
+				equals_args.Add(new Argument(top_block.GetParameterReference(1, loc)));
 
-				var if_type = new If (
-					              top_block.GetParameterReference (2, loc),
-					              new Return (new Invocation (new SimpleName ("Equals", loc), equals_args), loc),
-					              loc);
+				var if_type = new If(
+								  top_block.GetParameterReference(2, loc),
+								  new Return(new Invocation(new SimpleName("Equals", loc), equals_args), loc),
+								  loc);
 
-				top_block.AddStatement (if_type);
+				top_block.AddStatement(if_type);
 
 				//
 				// if (obj is Enum || obj == null)
 				//		return false;
 				//
 
-				var if_enum = new If (
-					              new Binary (Binary.Operator.LogicalOr,
-						              new Is (top_block.GetParameterReference (0, loc), new TypeExpression (Compiler.BuiltinTypes.Enum, loc), loc),
-						              new Binary (Binary.Operator.Equality, top_block.GetParameterReference (0, loc), new NullLiteral (loc))),
-					              new Return (new BoolLiteral (Compiler.BuiltinTypes, false, loc), loc),
-					              loc);
+				var if_enum = new If(
+								  new Binary(Binary.Operator.LogicalOr,
+									  new Is(top_block.GetParameterReference(0, loc), new TypeExpression(Compiler.BuiltinTypes.Enum, loc), loc),
+									  new Binary(Binary.Operator.Equality, top_block.GetParameterReference(0, loc), new NullLiteral(loc))),
+								  new Return(new BoolLiteral(Compiler.BuiltinTypes, false, loc), loc),
+								  loc);
 
-				top_block.AddStatement (if_enum);
+				top_block.AddStatement(if_enum);
 
-
-				var system_convert = new MemberAccess (new QualifiedAliasMember ("global", "System", loc), "Convert", loc);
+				var system_convert = new MemberAccess(new QualifiedAliasMember("global", "System", loc), "Convert", loc);
 
 				//
 				// var converted = System.Convert.ChangeType (obj, System.Convert.GetTypeCode (value));
 				//
-				var lv_converted = LocalVariable.CreateCompilerGenerated (Compiler.BuiltinTypes.Object, top_block, loc);
+				var lv_converted = LocalVariable.CreateCompilerGenerated(Compiler.BuiltinTypes.Object, top_block, loc);
 
-				var arguments_gettypecode = new Arguments (1);
-				arguments_gettypecode.Add (new Argument (top_block.GetParameterReference (1, loc)));
+				var arguments_gettypecode = new Arguments(1);
+				arguments_gettypecode.Add(new Argument(top_block.GetParameterReference(1, loc)));
 
-				var gettypecode = new Invocation (new MemberAccess (system_convert, "GetTypeCode", loc), arguments_gettypecode);
+				var gettypecode = new Invocation(new MemberAccess(system_convert, "GetTypeCode", loc), arguments_gettypecode);
 
-				var arguments_changetype = new Arguments (1);
-				arguments_changetype.Add (new Argument (top_block.GetParameterReference (0, loc)));
-				arguments_changetype.Add (new Argument (gettypecode));
+				var arguments_changetype = new Arguments(1);
+				arguments_changetype.Add(new Argument(top_block.GetParameterReference(0, loc)));
+				arguments_changetype.Add(new Argument(gettypecode));
 
-				var changetype = new Invocation (new MemberAccess (system_convert, "ChangeType", loc), arguments_changetype);
+				var changetype = new Invocation(new MemberAccess(system_convert, "ChangeType", loc), arguments_changetype);
 
-				top_block.AddStatement (new StatementExpression (new SimpleAssign (new LocalVariableReference (lv_converted, loc), changetype, loc)));
-
+				top_block.AddStatement(new StatementExpression(new SimpleAssign(new LocalVariableReference(lv_converted, loc), changetype, loc)));
 
 				//
 				// return converted.Equals (value)
 				//
-				var equals_arguments = new Arguments (1);
-				equals_arguments.Add (new Argument (top_block.GetParameterReference (1, loc)));
-				var equals_invocation = new Invocation (new MemberAccess (new LocalVariableReference (lv_converted, loc), "Equals"), equals_arguments);
-				top_block.AddStatement (new Return (equals_invocation, loc));
+				var equals_arguments = new Arguments(1);
+				equals_arguments.Add(new Argument(top_block.GetParameterReference(1, loc)));
+				var equals_invocation = new Invocation(new MemberAccess(new LocalVariableReference(lv_converted, loc), "Equals"), equals_arguments);
+				top_block.AddStatement(new Return(equals_invocation, loc));
 
-				m.Define ();
-				m.PrepareEmit ();
-				AddMember (m);
+				m.Define();
+				m.PrepareEmit();
+				AddMember(m);
 
 				return m;
 			}
 		}
 
-		PatternMatchingHelper pmh;
+		private PatternMatchingHelper pmh;
 
-		public PatternMatchingHelper CreatePatterMatchingHelper ()
+		public PatternMatchingHelper CreatePatterMatchingHelper()
 		{
-			if (pmh == null) {
-				pmh = new PatternMatchingHelper (this);
+			if (pmh == null)
+			{
+				pmh = new PatternMatchingHelper(this);
 
-				pmh.CreateContainer ();
-				pmh.DefineContainer ();
-				pmh.Define ();
-				AddCompilerGeneratedClass (pmh);
+				pmh.CreateContainer();
+				pmh.DefineContainer();
+				pmh.Define();
+				AddCompilerGeneratedClass(pmh);
 			}
 
 			return pmh;
@@ -236,53 +236,55 @@ namespace Mono.CSharp
 		public CharSet? DefaultCharSet;
 		public TypeAttributes DefaultCharSetType = TypeAttributes.AnsiClass;
 
-		readonly Dictionary<int, List<AnonymousTypeClass>> anonymous_types;
-		readonly Dictionary<ArrayContainer.TypeRankPair, ArrayContainer> array_types;
-		readonly Dictionary<TypeSpec, PointerContainer> pointer_types;
-		readonly Dictionary<TypeSpec, ReferenceContainer> reference_types;
-		readonly Dictionary<TypeSpec, MethodSpec> attrs_cache;
-		readonly Dictionary<TypeSpec, AwaiterDefinition> awaiters;
+		private readonly Dictionary<int, List<AnonymousTypeClass>> anonymous_types;
+		private readonly Dictionary<ArrayContainer.TypeRankPair, ArrayContainer> array_types;
+		private readonly Dictionary<TypeSpec, PointerContainer> pointer_types;
+		private readonly Dictionary<TypeSpec, ReferenceContainer> reference_types;
+		private readonly Dictionary<TypeSpec, MethodSpec> attrs_cache;
+		private readonly Dictionary<TypeSpec, AwaiterDefinition> awaiters;
 
-		AssemblyDefinition assembly;
-		readonly CompilerContext context;
-		readonly RootNamespace global_ns;
-		readonly Dictionary<string, RootNamespace> alias_ns;
+		private AssemblyDefinition assembly;
+		private readonly CompilerContext context;
+		private readonly RootNamespace global_ns;
+		private readonly Dictionary<string, RootNamespace> alias_ns;
 
-		ModuleBuilder builder;
+		private ModuleBuilder builder;
 
-		bool has_extenstion_method;
+		private bool has_extenstion_method;
 
-		PredefinedAttributes predefined_attributes;
-		PredefinedTypes predefined_types;
-		PredefinedMembers predefined_members;
+		private PredefinedAttributes predefined_attributes;
+		private PredefinedTypes predefined_types;
+		private PredefinedMembers predefined_members;
 
 		public Binary.PredefinedOperator[] OperatorsBinaryEqualityLifted;
 		public Binary.PredefinedOperator[] OperatorsBinaryLifted;
 
-		static readonly string[] attribute_targets = new string[] { "assembly", "module" };
+		private static readonly string[] attribute_targets = new string[] { "assembly", "module" };
 
-		public ModuleContainer (CompilerContext context)
-			: base (null, MemberName.Null, null, 0)
+		public ModuleContainer(CompilerContext context)
+			: base(null, MemberName.Null, null, 0)
 		{
 			this.context = context;
 
 			caching_flags &= ~(Flags.Obsolete_Undetected | Flags.Excluded_Undetected);
 
-			containers = new List<TypeContainer> ();
-			anonymous_types = new Dictionary<int, List<AnonymousTypeClass>> ();
-			global_ns = new GlobalRootNamespace ();
-			alias_ns = new Dictionary<string, RootNamespace> ();
-			array_types = new Dictionary<ArrayContainer.TypeRankPair, ArrayContainer> ();
-			pointer_types = new Dictionary<TypeSpec, PointerContainer> ();
-			reference_types = new Dictionary<TypeSpec, ReferenceContainer> ();
-			attrs_cache = new Dictionary<TypeSpec, MethodSpec> ();
-			awaiters = new Dictionary<TypeSpec, AwaiterDefinition> ();
+			containers = new List<TypeContainer>();
+			anonymous_types = new Dictionary<int, List<AnonymousTypeClass>>();
+			global_ns = new GlobalRootNamespace();
+			alias_ns = new Dictionary<string, RootNamespace>();
+			array_types = new Dictionary<ArrayContainer.TypeRankPair, ArrayContainer>();
+			pointer_types = new Dictionary<TypeSpec, PointerContainer>();
+			reference_types = new Dictionary<TypeSpec, ReferenceContainer>();
+			attrs_cache = new Dictionary<TypeSpec, MethodSpec>();
+			awaiters = new Dictionary<TypeSpec, AwaiterDefinition>();
 		}
 
 		#region Properties
 
-		internal Dictionary<ArrayContainer.TypeRankPair, ArrayContainer> ArrayTypesCache {
-			get {
+		internal Dictionary<ArrayContainer.TypeRankPair, ArrayContainer> ArrayTypesCache
+		{
+			get
+			{
 				return array_types;
 			}
 		}
@@ -290,308 +292,365 @@ namespace Mono.CSharp
 		//
 		// Cache for parameter-less attributes
 		//
-		internal Dictionary<TypeSpec, MethodSpec> AttributeConstructorCache {
-			get {
+		internal Dictionary<TypeSpec, MethodSpec> AttributeConstructorCache
+		{
+			get
+			{
 				return attrs_cache;
 			}
 		}
 
- 		public override AttributeTargets AttributeTargets {
- 			get {
- 				return AttributeTargets.Assembly;
- 			}
+		public override AttributeTargets AttributeTargets
+		{
+			get
+			{
+				return AttributeTargets.Assembly;
+			}
 		}
 
-		public ModuleBuilder Builder {
-			get {
+		public ModuleBuilder Builder
+		{
+			get
+			{
 				return builder;
 			}
 		}
 
-		public override CompilerContext Compiler {
-			get {
+		public override CompilerContext Compiler
+		{
+			get
+			{
 				return context;
 			}
 		}
 
 		public int CounterAnonymousTypes { get; set; }
 
-		public AssemblyDefinition DeclaringAssembly {
-			get {
+		public AssemblyDefinition DeclaringAssembly
+		{
+			get
+			{
 				return assembly;
 			}
 		}
 
-		internal DocumentationBuilder DocumentationBuilder {
+		internal DocumentationBuilder DocumentationBuilder
+		{
 			get; set;
 		}
 
-		public override string DocCommentHeader {
-			get {
-				throw new NotSupportedException ();
+		public override string DocCommentHeader
+		{
+			get
+			{
+				throw new NotSupportedException();
 			}
 		}
 
-		public Evaluator Evaluator {
+		public Evaluator Evaluator
+		{
 			get; set;
 		}
 
-		public bool HasDefaultCharSet {
-			get {
+		public bool HasDefaultCharSet
+		{
+			get
+			{
 				return DefaultCharSet.HasValue;
 			}
 		}
 
-		public bool HasExtensionMethod {
-			get {
+		public bool HasExtensionMethod
+		{
+			get
+			{
 				return has_extenstion_method;
 			}
-			set {
+			set
+			{
 				has_extenstion_method = value;
 			}
 		}
 
-		public bool HasTypesFullyDefined {
+		public bool HasTypesFullyDefined
+		{
 			get; set;
 		}
 
 		//
 		// Returns module global:: namespace
 		//
-		public RootNamespace GlobalRootNamespace {
-		    get {
-		        return global_ns;
-		    }
+		public RootNamespace GlobalRootNamespace
+		{
+			get
+			{
+				return global_ns;
+			}
 		}
 
-		public override ModuleContainer Module {
-			get {
+		public override ModuleContainer Module
+		{
+			get
+			{
 				return this;
 			}
 		}
 
-		internal Dictionary<TypeSpec, PointerContainer> PointerTypesCache {
-			get {
+		internal Dictionary<TypeSpec, PointerContainer> PointerTypesCache
+		{
+			get
+			{
 				return pointer_types;
 			}
 		}
 
-		internal PredefinedAttributes PredefinedAttributes {
-			get {
+		internal PredefinedAttributes PredefinedAttributes
+		{
+			get
+			{
 				return predefined_attributes;
 			}
 		}
 
-		internal PredefinedMembers PredefinedMembers {
-			get {
+		internal PredefinedMembers PredefinedMembers
+		{
+			get
+			{
 				return predefined_members;
 			}
 		}
 
-		internal PredefinedTypes PredefinedTypes {
-			get {
+		internal PredefinedTypes PredefinedTypes
+		{
+			get
+			{
 				return predefined_types;
 			}
 		}
 
-		internal Dictionary<TypeSpec, ReferenceContainer> ReferenceTypesCache {
-			get {
+		internal Dictionary<TypeSpec, ReferenceContainer> ReferenceTypesCache
+		{
+			get
+			{
 				return reference_types;
 			}
 		}
 
-		public override string[] ValidAttributeTargets {
-			get {
+		public override string[] ValidAttributeTargets
+		{
+			get
+			{
 				return attribute_targets;
 			}
 		}
 
-		#endregion
+		#endregion Properties
 
-		public override void Accept (StructuralVisitor visitor)
+		public override void Accept(StructuralVisitor visitor)
 		{
-			visitor.Visit (this);
+			visitor.Visit(this);
 		}
 
-		public void AddAnonymousType (AnonymousTypeClass type)
+		public void AddAnonymousType(AnonymousTypeClass type)
 		{
 			List<AnonymousTypeClass> existing;
-			if (!anonymous_types.TryGetValue (type.Parameters.Count, out existing))
-			if (existing == null) {
-				existing = new List<AnonymousTypeClass> ();
-				anonymous_types.Add (type.Parameters.Count, existing);
-			}
-
-			existing.Add (type);
-		}
-
-		public void AddAttribute (Attribute attr, IMemberContext context)
-		{
-			attr.AttachTo (this, context);
-
-			if (attributes == null) {
-				attributes = new Attributes (attr);
-				return;
-			}
-
-			attributes.AddAttribute (attr);
-		}
-
-		public override void AddTypeContainer (TypeContainer tc)
-		{
-			AddTypeContainerMember (tc);
-		}
-
-		public override void ApplyAttributeBuilder (Attribute a, MethodSpec ctor, byte[] cdata, PredefinedAttributes pa)
-		{
-			if (a.Target == AttributeTargets.Assembly) {
-				assembly.ApplyAttributeBuilder (a, ctor, cdata, pa);
-				return;
-			}
-
-			if (a.Type == pa.DefaultCharset) {
-				switch (a.GetCharSetValue ()) {
-				case CharSet.Ansi:
-				case CharSet.None:
-					break;
-				case CharSet.Auto:
-					DefaultCharSet = CharSet.Auto;
-					DefaultCharSetType = TypeAttributes.AutoClass;
-					break;
-				case CharSet.Unicode:
-					DefaultCharSet = CharSet.Unicode;
-					DefaultCharSetType = TypeAttributes.UnicodeClass;
-					break;
-				default:
-					Report.Error (1724, a.Location, "Value specified for the argument to `{0}' is not valid",
-						a.GetSignatureForError ());
-					break;
+			if (!anonymous_types.TryGetValue(type.Parameters.Count, out existing))
+				if (existing == null)
+				{
+					existing = new List<AnonymousTypeClass>();
+					anonymous_types.Add(type.Parameters.Count, existing);
 				}
-			} else if (a.Type == pa.CLSCompliant) {
+
+			existing.Add(type);
+		}
+
+		public void AddAttribute(Attribute attr, IMemberContext context)
+		{
+			attr.AttachTo(this, context);
+
+			if (attributes == null)
+			{
+				attributes = new Attributes(attr);
+				return;
+			}
+
+			attributes.AddAttribute(attr);
+		}
+
+		public override void AddTypeContainer(TypeContainer tc)
+		{
+			AddTypeContainerMember(tc);
+		}
+
+		public override void ApplyAttributeBuilder(Attribute a, MethodSpec ctor, byte[] cdata, PredefinedAttributes pa)
+		{
+			if (a.Target == AttributeTargets.Assembly)
+			{
+				assembly.ApplyAttributeBuilder(a, ctor, cdata, pa);
+				return;
+			}
+
+			if (a.Type == pa.DefaultCharset)
+			{
+				switch (a.GetCharSetValue())
+				{
+					case CharSet.Ansi:
+					case CharSet.None:
+						break;
+
+					case CharSet.Auto:
+						DefaultCharSet = CharSet.Auto;
+						DefaultCharSetType = TypeAttributes.AutoClass;
+						break;
+
+					case CharSet.Unicode:
+						DefaultCharSet = CharSet.Unicode;
+						DefaultCharSetType = TypeAttributes.UnicodeClass;
+						break;
+
+					default:
+						Report.Error(1724, a.Location, "Value specified for the argument to `{0}' is not valid",
+							a.GetSignatureForError());
+						break;
+				}
+			}
+			else if (a.Type == pa.CLSCompliant)
+			{
 				Attribute cls = DeclaringAssembly.CLSCompliantAttribute;
-				if (cls == null) {
-					Report.Warning (3012, 1, a.Location,
+				if (cls == null)
+				{
+					Report.Warning(3012, 1, a.Location,
 						"You must specify the CLSCompliant attribute on the assembly, not the module, to enable CLS compliance checking");
-				} else if (DeclaringAssembly.IsCLSCompliant != a.GetBoolean ()) {
-					Report.SymbolRelatedToPreviousError (cls.Location, cls.GetSignatureForError ());
-					Report.Warning (3017, 1, a.Location,
+				}
+				else if (DeclaringAssembly.IsCLSCompliant != a.GetBoolean())
+				{
+					Report.SymbolRelatedToPreviousError(cls.Location, cls.GetSignatureForError());
+					Report.Warning(3017, 1, a.Location,
 						"You cannot specify the CLSCompliant attribute on a module that differs from the CLSCompliant attribute on the assembly");
 					return;
 				}
 			}
 
-			builder.SetCustomAttribute ((ConstructorInfo) ctor.GetMetaInfo (), cdata);
+			builder.SetCustomAttribute((ConstructorInfo)ctor.GetMetaInfo(), cdata);
 		}
 
-		public override void CloseContainer ()
+		public override void CloseContainer()
 		{
-			if (anonymous_types != null) {
+			if (anonymous_types != null)
+			{
 				foreach (var atypes in anonymous_types)
 					foreach (var at in atypes.Value)
-						at.CloseContainer ();
+						at.CloseContainer();
 			}
 
-			base.CloseContainer ();
+			base.CloseContainer();
 		}
 
-		public TypeBuilder CreateBuilder (string name, TypeAttributes attr, int typeSize)
+		public TypeBuilder CreateBuilder(string name, TypeAttributes attr, int typeSize)
 		{
-			return builder.DefineType (name, attr, null, typeSize);
+			return builder.DefineType(name, attr, null, typeSize);
 		}
 
 		//
 		// Creates alias global namespace
 		//
-		public RootNamespace CreateRootNamespace (string alias)
+		public RootNamespace CreateRootNamespace(string alias)
 		{
-			if (alias == global_ns.Alias) {
-				RootNamespace.Error_GlobalNamespaceRedefined (Report, Location.Null);
+			if (alias == global_ns.Alias)
+			{
+				RootNamespace.Error_GlobalNamespaceRedefined(Report, Location.Null);
 				return global_ns;
 			}
 
 			RootNamespace rn;
-			if (!alias_ns.TryGetValue (alias, out rn)) {
-				rn = new RootNamespace (alias);
-				alias_ns.Add (alias, rn);
+			if (!alias_ns.TryGetValue(alias, out rn))
+			{
+				rn = new RootNamespace(alias);
+				alias_ns.Add(alias, rn);
 			}
 
 			return rn;
 		}
 
-		public void Create (AssemblyDefinition assembly, ModuleBuilder moduleBuilder)
+		public void Create(AssemblyDefinition assembly, ModuleBuilder moduleBuilder)
 		{
 			this.assembly = assembly;
 			builder = moduleBuilder;
 		}
 
-		public override bool Define ()
+		public override bool Define()
 		{
-			DefineContainer ();
+			DefineContainer();
 
-			ExpandBaseInterfaces ();
+			ExpandBaseInterfaces();
 
-			base.Define ();
+			base.Define();
 
 			HasTypesFullyDefined = true;
 
 			return true;
 		}
 
-		public override bool DefineContainer ()
+		public override bool DefineContainer()
 		{
-			DefineNamespace ();
+			DefineNamespace();
 
-			return base.DefineContainer ();
+			return base.DefineContainer();
 		}
 
-		public void EnableRedefinition ()
+		public void EnableRedefinition()
 		{
 			is_defined = false;
 		}
 
-		public override void EmitContainer ()
+		public override void EmitContainer()
 		{
 			if (OptAttributes != null)
-				OptAttributes.Emit ();
+				OptAttributes.Emit();
 
-			if (Compiler.Settings.Unsafe && !assembly.IsSatelliteAssembly) {
+			if (Compiler.Settings.Unsafe && !assembly.IsSatelliteAssembly)
+			{
 				var pa = PredefinedAttributes.UnverifiableCode;
 				if (pa.IsDefined)
-					pa.EmitAttribute (builder);
+					pa.EmitAttribute(builder);
 			}
 
-			foreach (var tc in containers) {
-				tc.PrepareEmit ();
+			foreach (var tc in containers)
+			{
+				tc.PrepareEmit();
 			}
 
-			base.EmitContainer ();
+			base.EmitContainer();
 
 			if (Compiler.Report.Errors == 0 && !Compiler.Settings.WriteMetadataOnly)
-				VerifyMembers ();
+				VerifyMembers();
 
-			if (anonymous_types != null) {
+			if (anonymous_types != null)
+			{
 				foreach (var atypes in anonymous_types)
 					foreach (var at in atypes.Value)
-						at.EmitContainer ();
+						at.EmitContainer();
 			}
 		}
 
-		internal override void GenerateDocComment (DocumentationBuilder builder)
+		internal override void GenerateDocComment(DocumentationBuilder builder)
 		{
 			foreach (var tc in containers)
-				tc.GenerateDocComment (builder);
+				tc.GenerateDocComment(builder);
 		}
 
-		public AnonymousTypeClass GetAnonymousType (IList<AnonymousTypeParameter> parameters)
+		public AnonymousTypeClass GetAnonymousType(IList<AnonymousTypeParameter> parameters)
 		{
 			List<AnonymousTypeClass> candidates;
-			if (!anonymous_types.TryGetValue (parameters.Count, out candidates))
+			if (!anonymous_types.TryGetValue(parameters.Count, out candidates))
 				return null;
 
 			int i;
-			foreach (AnonymousTypeClass at in candidates) {
-				for (i = 0; i < parameters.Count; ++i) {
-					if (!parameters [i].Equals (at.Parameters [i]))
+			foreach (AnonymousTypeClass at in candidates)
+			{
+				for (i = 0; i < parameters.Count; ++i)
+				{
+					if (!parameters[i].Equals(at.Parameters[i]))
 						break;
 				}
 
@@ -606,18 +665,18 @@ namespace Mono.CSharp
 		// Return container with awaiter definition. It never returns null
 		// but all container member can be null for easier error reporting
 		//
-		public AwaiterDefinition GetAwaiter (TypeSpec type)
+		public AwaiterDefinition GetAwaiter(TypeSpec type)
 		{
 			AwaiterDefinition awaiter;
-			if (awaiters.TryGetValue (type, out awaiter))
+			if (awaiters.TryGetValue(type, out awaiter))
 				return awaiter;
 
-			awaiter = new AwaiterDefinition ();
+			awaiter = new AwaiterDefinition();
 
 			//
-			// Predefined: bool IsCompleted { get; } 
+			// Predefined: bool IsCompleted { get; }
 			//
-			awaiter.IsCompleted = MemberCache.FindMember (type, MemberFilter.Property ("IsCompleted", Compiler.BuiltinTypes.Bool),
+			awaiter.IsCompleted = MemberCache.FindMember(type, MemberFilter.Property("IsCompleted", Compiler.BuiltinTypes.Bool),
 				BindingRestriction.InstanceOnly) as PropertySpec;
 
 			//
@@ -625,7 +684,7 @@ namespace Mono.CSharp
 			//
 			// The method return type is also result type of await expression
 			//
-			awaiter.GetResult = MemberCache.FindMember (type, MemberFilter.Method ("GetResult", 0,
+			awaiter.GetResult = MemberCache.FindMember(type, MemberFilter.Method("GetResult", 0,
 				ParametersCompiled.EmptyReadOnlyParameters, null),
 				BindingRestriction.InstanceOnly) as MethodSpec;
 
@@ -633,40 +692,43 @@ namespace Mono.CSharp
 			// Predefined: INotifyCompletion.OnCompleted (System.Action)
 			//
 			var nc = PredefinedTypes.INotifyCompletion;
-			awaiter.INotifyCompletion = !nc.Define () || type.ImplementsInterface (nc.TypeSpec, false);
+			awaiter.INotifyCompletion = !nc.Define() || type.ImplementsInterface(nc.TypeSpec, false);
 
-			awaiters.Add (type, awaiter);
+			awaiters.Add(type, awaiter);
 			return awaiter;
 		}
 
-		public override void GetCompletionStartingWith (string prefix, List<string> results)
+		public override void GetCompletionStartingWith(string prefix, List<string> results)
 		{
-			var names = Evaluator.GetVarNames ();
-			results.AddRange (names.Where (l => l.StartsWith (prefix)));
+			var names = Evaluator.GetVarNames();
+			results.AddRange(names.Where(l => l.StartsWith(prefix)));
 		}
 
-		public RootNamespace GetRootNamespace (string name)
+		public RootNamespace GetRootNamespace(string name)
 		{
 			RootNamespace rn;
-			alias_ns.TryGetValue (name, out rn);
+			alias_ns.TryGetValue(name, out rn);
 			return rn;
 		}
 
-		public override string GetSignatureForError ()
+		public override string GetSignatureForError()
 		{
 			return "<module>";
 		}
 
-		public Binary.PredefinedOperator[] GetPredefinedEnumAritmeticOperators (TypeSpec enumType, bool nullable)
+		public Binary.PredefinedOperator[] GetPredefinedEnumAritmeticOperators(TypeSpec enumType, bool nullable)
 		{
 			TypeSpec underlying;
 			Binary.Operator mask = 0;
 
-			if (nullable) {
-				underlying = Nullable.NullableInfo.GetEnumUnderlyingType (this, enumType);
+			if (nullable)
+			{
+				underlying = Nullable.NullableInfo.GetEnumUnderlyingType(this, enumType);
 				mask = Binary.Operator.NullableMask;
-			} else {
-				underlying = EnumSpec.GetUnderlyingType (enumType);
+			}
+			else
+			{
+				underlying = EnumSpec.GetUnderlyingType(enumType);
 			}
 
 			var operators = new[] {
@@ -680,31 +742,32 @@ namespace Mono.CSharp
 			return operators;
 		}
 
-		public void InitializePredefinedTypes ()
+		public void InitializePredefinedTypes()
 		{
-			predefined_attributes = new PredefinedAttributes (this);
-			predefined_types = new PredefinedTypes (this);
-			predefined_members = new PredefinedMembers (this);
+			predefined_attributes = new PredefinedAttributes(this);
+			predefined_types = new PredefinedTypes(this);
+			predefined_members = new PredefinedMembers(this);
 
-			OperatorsBinaryEqualityLifted = Binary.CreateEqualityLiftedOperatorsTable (this);
-			OperatorsBinaryLifted = Binary.CreateStandardLiftedOperatorsTable (this);
+			OperatorsBinaryEqualityLifted = Binary.CreateEqualityLiftedOperatorsTable(this);
+			OperatorsBinaryLifted = Binary.CreateStandardLiftedOperatorsTable(this);
 		}
 
-		public override bool IsClsComplianceRequired ()
+		public override bool IsClsComplianceRequired()
 		{
 			return DeclaringAssembly.IsCLSCompliant;
 		}
 
-		public Attribute ResolveAssemblyAttribute (PredefinedAttribute a_type)
+		public Attribute ResolveAssemblyAttribute(PredefinedAttribute a_type)
 		{
-			Attribute a = OptAttributes.Search ("assembly", a_type);
-			if (a != null) {
-				a.Resolve ();
+			Attribute a = OptAttributes.Search("assembly", a_type);
+			if (a != null)
+			{
+				a.Resolve();
 			}
 			return a;
 		}
 
-		public void SetDeclaringAssembly (AssemblyDefinition assembly)
+		public void SetDeclaringAssembly(AssemblyDefinition assembly)
 		{
 			// TODO: This setter is quite ugly but I have not found a way around it yet
 			this.assembly = assembly;

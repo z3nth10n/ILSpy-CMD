@@ -23,7 +23,7 @@ namespace ILSpyCMD.Batcher
 			{
 				ProcessStartInfo startInfo = new ProcessStartInfo();
 				startInfo.FileName = "../ILSpyCMD.exe";
-				startInfo.Arguments = $@"-n Presentacion -l ""C: \Users\arg10003\Downloads\Librerias ERP"" ${x}";
+				startInfo.Arguments = $@"-n Presentacion -l ""C: \Users\arg10003\Downloads\Librerias ERP"" {x}";
 				startInfo.UseShellExecute = false;
 
 				using (Process p = new Process())

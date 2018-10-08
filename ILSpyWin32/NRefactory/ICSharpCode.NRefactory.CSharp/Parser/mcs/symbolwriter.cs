@@ -16,15 +16,16 @@ using System;
 using IKVM.Reflection;
 using IKVM.Reflection.Emit;
 #else
-using System.Reflection;
+
 using System.Reflection.Emit;
+
 #endif
 
 using Mono.CompilerServices.SymbolWriter;
 
 namespace Mono.CSharp
 {
-	static class SymbolWriter
+	internal static class SymbolWriter
 	{
 #if !NET_4_0 && !STATIC
 		delegate int GetILOffsetFunc (ILGenerator ig);
@@ -55,7 +56,7 @@ namespace Mono.CSharp
 		}
 #endif
 
-		static int GetILOffset (ILGenerator ig)
+		private static int GetILOffset(ILGenerator ig)
 		{
 #if NET_4_0 || STATIC
 			return ig.ILOffset;
@@ -67,7 +68,7 @@ namespace Mono.CSharp
 #endif
 		}
 
-		public static Guid GetGuid (ModuleBuilder module)
+		public static Guid GetGuid(ModuleBuilder module)
 		{
 #if NET_4_0 || STATIC
 			return module.ModuleVersionId;
@@ -79,154 +80,168 @@ namespace Mono.CSharp
 #endif
 		}
 
-		public static bool HasSymbolWriter {
+		public static bool HasSymbolWriter
+		{
 			get { return symwriter != null; }
 		}
 
 		public static MonoSymbolWriter symwriter;
 
-		public static void DefineLocalVariable (string name, LocalBuilder builder)
+		public static void DefineLocalVariable(string name, LocalBuilder builder)
 		{
-			if (symwriter != null) {
-				symwriter.DefineLocalVariable (builder.LocalIndex, name);
+			if (symwriter != null)
+			{
+				symwriter.DefineLocalVariable(builder.LocalIndex, name);
 			}
 		}
 
-		public static SourceMethodBuilder OpenMethod (ICompileUnit file, IMethodDef method)
+		public static SourceMethodBuilder OpenMethod(ICompileUnit file, IMethodDef method)
 		{
 			if (symwriter != null)
-				return symwriter.OpenMethod (file, -1 /* Not used */, method);
+				return symwriter.OpenMethod(file, -1 /* Not used */, method);
 			else
 				return null;
 		}
 
-		public static void CloseMethod ()
+		public static void CloseMethod()
 		{
 			if (symwriter != null)
-				symwriter.CloseMethod ();
+				symwriter.CloseMethod();
 		}
 
-		public static int OpenScope (ILGenerator ig)
+		public static int OpenScope(ILGenerator ig)
 		{
-			if (symwriter != null) {
-				int offset = GetILOffset (ig);
-				return symwriter.OpenScope (offset);
-			} else {
+			if (symwriter != null)
+			{
+				int offset = GetILOffset(ig);
+				return symwriter.OpenScope(offset);
+			}
+			else
+			{
 				return -1;
 			}
 		}
 
-		public static void CloseScope (ILGenerator ig)
+		public static void CloseScope(ILGenerator ig)
 		{
-			if (symwriter != null) {
-				int offset = GetILOffset (ig);
-				symwriter.CloseScope (offset);
+			if (symwriter != null)
+			{
+				int offset = GetILOffset(ig);
+				symwriter.CloseScope(offset);
 			}
 		}
 
-		public static void DefineAnonymousScope (int id)
+		public static void DefineAnonymousScope(int id)
 		{
 			if (symwriter != null)
-				symwriter.DefineAnonymousScope (id);
+				symwriter.DefineAnonymousScope(id);
 		}
 
-		public static void DefineScopeVariable (int scope, LocalBuilder builder)
+		public static void DefineScopeVariable(int scope, LocalBuilder builder)
 		{
-			if (symwriter != null) {
-				symwriter.DefineScopeVariable (scope, builder.LocalIndex);
+			if (symwriter != null)
+			{
+				symwriter.DefineScopeVariable(scope, builder.LocalIndex);
 			}
 		}
 
-		public static void DefineScopeVariable (int scope)
+		public static void DefineScopeVariable(int scope)
 		{
 			if (symwriter != null)
-				symwriter.DefineScopeVariable (scope, -1);
+				symwriter.DefineScopeVariable(scope, -1);
 		}
 
-		public static void DefineCapturedLocal (int scope_id, string name,
+		public static void DefineCapturedLocal(int scope_id, string name,
 							string captured_name)
 		{
 			if (symwriter != null)
-				symwriter.DefineCapturedLocal (scope_id, name, captured_name);
+				symwriter.DefineCapturedLocal(scope_id, name, captured_name);
 		}
 
-		public static void DefineCapturedParameter (int scope_id, string name,
-							    string captured_name)
+		public static void DefineCapturedParameter(int scope_id, string name,
+								string captured_name)
 		{
 			if (symwriter != null)
-				symwriter.DefineCapturedParameter (scope_id, name, captured_name);
+				symwriter.DefineCapturedParameter(scope_id, name, captured_name);
 		}
 
-		public static void DefineCapturedThis (int scope_id, string captured_name)
+		public static void DefineCapturedThis(int scope_id, string captured_name)
 		{
 			if (symwriter != null)
-				symwriter.DefineCapturedThis (scope_id, captured_name);
+				symwriter.DefineCapturedThis(scope_id, captured_name);
 		}
 
-		public static void DefineCapturedScope (int scope_id, int id, string captured_name)
+		public static void DefineCapturedScope(int scope_id, int id, string captured_name)
 		{
 			if (symwriter != null)
-				symwriter.DefineCapturedScope (scope_id, id, captured_name);
+				symwriter.DefineCapturedScope(scope_id, id, captured_name);
 		}
 
-		public static void OpenCompilerGeneratedBlock (EmitContext ec)
+		public static void OpenCompilerGeneratedBlock(EmitContext ec)
 		{
-			if (symwriter != null) {
-				int offset = GetILOffset (ec.ig);
-				symwriter.OpenCompilerGeneratedBlock (offset);
+			if (symwriter != null)
+			{
+				int offset = GetILOffset(ec.ig);
+				symwriter.OpenCompilerGeneratedBlock(offset);
 			}
 		}
 
-		public static void CloseCompilerGeneratedBlock (EmitContext ec)
+		public static void CloseCompilerGeneratedBlock(EmitContext ec)
 		{
-			if (symwriter != null) {
-				int offset = GetILOffset (ec.ig);
-				symwriter.CloseCompilerGeneratedBlock (offset);
+			if (symwriter != null)
+			{
+				int offset = GetILOffset(ec.ig);
+				symwriter.CloseCompilerGeneratedBlock(offset);
 			}
 		}
 
-		public static void StartIteratorBody (EmitContext ec)
+		public static void StartIteratorBody(EmitContext ec)
 		{
-			if (symwriter != null) {
-				int offset = GetILOffset (ec.ig);
-				symwriter.StartIteratorBody (offset);
+			if (symwriter != null)
+			{
+				int offset = GetILOffset(ec.ig);
+				symwriter.StartIteratorBody(offset);
 			}
 		}
 
-		public static void EndIteratorBody (EmitContext ec)
+		public static void EndIteratorBody(EmitContext ec)
 		{
-			if (symwriter != null) {
-				int offset = GetILOffset (ec.ig);
-				symwriter.EndIteratorBody (offset);
+			if (symwriter != null)
+			{
+				int offset = GetILOffset(ec.ig);
+				symwriter.EndIteratorBody(offset);
 			}
 		}
 
-		public static void StartIteratorDispatcher (EmitContext ec)
+		public static void StartIteratorDispatcher(EmitContext ec)
 		{
-			if (symwriter != null) {
-				int offset = GetILOffset (ec.ig);
-				symwriter.StartIteratorDispatcher (offset);
+			if (symwriter != null)
+			{
+				int offset = GetILOffset(ec.ig);
+				symwriter.StartIteratorDispatcher(offset);
 			}
 		}
 
-		public static void EndIteratorDispatcher (EmitContext ec)
+		public static void EndIteratorDispatcher(EmitContext ec)
 		{
-			if (symwriter != null) {
-				int offset = GetILOffset (ec.ig);
-				symwriter.EndIteratorDispatcher (offset);
+			if (symwriter != null)
+			{
+				int offset = GetILOffset(ec.ig);
+				symwriter.EndIteratorDispatcher(offset);
 			}
 		}
 
-		public static void MarkSequencePoint (ILGenerator ig, Location loc)
+		public static void MarkSequencePoint(ILGenerator ig, Location loc)
 		{
-			if (symwriter != null) {
+			if (symwriter != null)
+			{
 				SourceFileEntry file = loc.SourceFile.SourceFileEntry;
-				int offset = GetILOffset (ig);
-				symwriter.MarkSequencePoint (offset, file, loc.Row, loc.Column, false);
+				int offset = GetILOffset(ig);
+				symwriter.MarkSequencePoint(offset, file, loc.Row, loc.Column, false);
 			}
 		}
 
-		public static void Reset ()
+		public static void Reset()
 		{
 			symwriter = null;
 		}
